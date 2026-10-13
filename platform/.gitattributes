@@ -1,7 +1,2 @@
-* text=auto eol=lf
-*.png binary
-*.jpg binary
-*.jpeg binary
-*.gif binary
-*.pdf binary
-
+# Migration 0001 verifies the exact CRLF-encoded approved SQL bytes.
+implementation_handoff/contracts/docs/engineering/physical_schema.sql -text

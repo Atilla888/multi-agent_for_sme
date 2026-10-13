@@ -1,5 +1,7 @@
 # Intelligent Adaptive Multi-Agent Platform
 
+> **Current P2 status: PARTIAL.** The original README text below describes the historical pre-reconstruction repository and must not be treated as current validation. This branch now contains restored PostgreSQL, trusted tools, Business Brain and Knowledge/RAG source, plus the hash-matching physical SQL. Static checks pass, but M01–M07 were **not revalidated**: the host has Python 3.10 while the project requires 3.11–3.13, and the Docker daemon is unavailable. M08 remains deferred. No real `.env` or full sanitized handoff was restored. See [RECOVERY_STATUS.md](RECOVERY_STATUS.md) and [P2 results](../recovery/P2_TEST_RESULTS.md). Do not use the historical start instructions below until a supported isolated environment is available.
+
 This fresh repository implements verified M01–M05 foundations: Compose/PostgreSQL/RLS,
 the tenant-scoped domain/repository core, ten strict business tool boundaries, and
 identity/authorization. The `update_order` mutation branch is policy-blocked pending an
