@@ -1,19 +1,56 @@
 # P2 test and validation results
 
-Date 2026-10-13. Branch `reconstruction/p2-platform-completion`. Host Python 3.10.7 is **outside** `pyproject.toml`'s `>=3.11,<3.14`; installed package versions also differ from the recovered M07 lock. No dependencies were upgraded or substituted. Counts below are observed process results, not historical claims.
+Date: 2026-10-13. Branch: `reconstruction/p2-platform-completion`.
 
-| Exact command / scope | Exit | Passed | Failed/errors | Skipped | Blocked / interpretation |
-| --- | ---: | ---: | ---: | ---: | --- |
-| `python -c "... ast.parse(...) for platform/**/*.py ..."` / complete source | 0 | 72 files parse | 0 | 0 | Syntax only |
-| AST absolute-local-import resolution / full source | 0 | 0 missing `platform_backend.*` modules | 0 | 0 | Relative/dynamic runtime imports still need P3 collection |
-| `python -c "import sys,pytest;sys.dont_write_bytecode=True;sys.exit(pytest.main(['-q','-p','no:cacheprovider','tests/reconstruction/test_p2_static.py']))"` / six P2 static tests | 0 | 6 | 0 | 0 | Static-only; includes Alembic chain and schema hash |
-| `ruff check --no-cache tests/reconstruction/test_p2_static.py services/backend/src/platform_backend/knowledge/service.py tests/integration/test_knowledge.py services/backend/src/platform_backend/repositories/postgres.py services/backend/src/platform_backend/brain services/backend/src/platform_backend/tools` | 0 | Targeted restored/new files | 0 | 0 | Available Ruff 0.11.7, not pinned 0.12.11 |
-| `ruff check --no-cache .` / all platform source and tests | 1 | — | 8 issues in previously recovered unchanged files | 0 | Non-gating diagnostic with older host Ruff; no unrelated M08/Knowledge files rewritten |
-| `docker compose --env-file .env.example -f infra/compose/compose.yaml config --quiet` / structural Compose | 0 | 13-service config accepted | 0 | 0 | No service started, no secrets printed |
-| `docker info --format '{{.ServerVersion}}'` / daemon probe | 1 | 0 | Docker API pipe missing | 0 | Container builds, PostgreSQL/MinIO/Keycloak and Alembic execution BLOCKED |
-| `python -c "import sys,pytest;sys.dont_write_bytecode=True;sys.path.insert(0,'services/backend/src');sys.exit(pytest.main(['--collect-only','-q','-p','no:cacheprovider','tests/unit/test_tenant_contract.py','tests/unit/test_brain_contracts.py','tests/unit/test_knowledge_processing.py','tests/contract','tests/security/test_identity.py']))"` | 1 | 1 collected | 4 collection errors | 0 | `datetime.UTC` / `enum.StrEnum` unavailable in Python 3.10; M01–M07 collection BLOCKED |
-| Local non-provider M01–M07 behavior and M07 database/integration tests | not run | 0 | 0 | 0 | BLOCKED by unsupported Python and unavailable Docker daemon |
-| Alembic `upgrade head` against PostgreSQL | not run | 0 | 0 | 0 | BLOCKED; static chain/hash PASS only, no mutation of user DB |
-| M08 live/external tests | not run | 0 | 0 | 0 | Intentionally DEFERRED / out of P2 scope |
+## Reproducible environment
 
-`pytest` collection failures above are environmental but still prevent P2 COMPLETE under the stated gate. They are not reclassified as skips or passed tests. The earlier M01–M07 historical PASS reports have not been reproduced on this tree.
+- Initial host runtime: Python 3.10.7, outside the declared `>=3.11,<3.14` range.
+- Installed runtime: official CPython 3.12.10 at `C:\Users\Asus\AppData\Local\Programs\Python\Python312\python.exe`.
+- Isolated environment: `platform/.venv`, Python 3.12.10, pip 25.0.1; Git-ignored.
+- Dependency authority: direct/dev pins from `pyproject.toml`, with `requirements-m01-m07.lock` used as constraints. Linux-only `uvloop` was not forced onto Windows.
+- Install: `.venv\Scripts\python.exe -m pip install --constraint requirements-m01-m07.lock --editable ".[dev]"` — PASS.
+- Dependency consistency: `.venv\Scripts\python.exe -m pip check` — PASS, no broken requirements.
+
+## Static and local gates
+
+| Gate | Result |
+| --- | --- |
+| Compile all project Python, excluding `.venv` | PASS — 72 files |
+| `ruff check --no-cache .` with pinned Ruff 0.12.11 | PASS |
+| `ruff format --check --no-cache .` | PASS — 72 files already formatted |
+| `mypy --no-incremental` | PASS — 47 source files |
+| P2 reconstruction tests | PASS — 6 passed in 75.39s |
+| Safe local non-provider subset | PASS — 34 passed, 5 skipped in 63.44s |
+
+The five local skips are database-dependent identity cases without a local `DATABASE_URL`; they were exercised later inside the isolated Compose stack. No failed test was reclassified as skipped.
+
+## Collection and infrastructure gates
+
+| Gate | Result |
+| --- | --- |
+| Exact M01–M07 collection, excluding M08 provider test | PASS — 114 collected, 0 errors in 3.44s |
+| Docker Engine | PASS — server 29.7.2 |
+| Docker Compose | PASS — v5.5.0 |
+| Isolated Compose project | PASS — `diploma-p2`; ordinary services healthy, setup jobs exited 0 |
+| Compose config | PASS — `config --quiet` |
+| Images from current source | PASS — migration, backend and db-tests built |
+| Alembic fresh upgrade | PASS — revisions 0001 through 0005 applied |
+| `alembic heads` / `alembic current` | PASS — `0005_embedding_provenance (head)` |
+
+The project used isolated `diploma-p2_*` resources. Existing unrelated containers, images and historical volumes were not deleted or modified. The local `.env.p2.local` contains generated development-only values, is Git-ignored and was not printed or committed.
+
+## Database/integration gate
+
+The first full run produced **99 passed, 15 failed**. Every failure was a fail-closed MinIO `OBJECT_UNAVAILABLE` caused by the documentation-guided example bucket `platform-private-dev` not matching the recovered least-privilege policy's approved `sme-private-objects` bucket. Project implementation evidence names `sme-private-objects` as the approved development default, so `.env.example` and the ignored P2 environment were corrected; the policy and authorization behavior were not broadened.
+
+After rebuilding from the final formatted source, the exact M01–M07 scope completed with:
+
+**114 passed, 0 failed, 0 skipped in 23.01s.**
+
+This is the P2 completion gate and establishes readiness for P3 revalidation. It does not relabel M01–M07 as newly formal PASS milestones.
+
+## Exclusions
+
+- `tests/unit/test_m08_provider.py` and all live/external provider acceptance remain excluded because M08 is PARTIAL/BLOCKED/DEFERRED.
+- No provider credential or external LLM call was used.
+- M09–M13, Pilot, Final and frontend execution were not started.

@@ -2,20 +2,12 @@
 
 ## Current P2 branch status (2026-10-13)
 
-**PARTIAL — not ready for formal M01–M07 revalidation.** The statements below are the historical P1 snapshot and are superseded for this branch. P2 restored all required missing source paths and the exact Alembic-0001 physical SQL; six structural tests pass. M01–M07 runtime collection remains blocked because only Python 3.10 is installed (project requires 3.11–3.13), and the Docker daemon is unavailable. The complete sanitized handoff and verification report are absent. M08 remains partial/deferred; no later milestone or frontend was started. See [`../recovery/P2_TEST_RESULTS.md`](../recovery/P2_TEST_RESULTS.md) and [`../recovery/P2_PARTIAL_PATH_RESOLUTION.md`](../recovery/P2_PARTIAL_PATH_RESOLUTION.md).
+**P2 COMPLETE — M01–M07 READY FOR P3 REVALIDATION.** This is not a new formal M01–M07 PASS declaration. The reconstructed candidate now has an official Python 3.12.10 isolated environment, consistent pinned dependencies and an isolated Docker stack. A fresh Alembic 0001–0005 migration completed, all 114 in-scope tests were collected without errors, and the final rebuilt-tree gate passed **114/114** with no failures or skips. Ruff, formatter, mypy and six reconstruction tests also pass.
 
-## Historical P1 snapshot (superseded on P2 branch)
+The only current runtime-required handoff asset, the migration-pinned physical SQL, is present with the exact approved SHA-256. The larger historical sanitized handoff/verifier package remains unavailable, but is not a runtime/test dependency and is recorded as a non-blocking provenance gap. M08 remains PARTIAL/BLOCKED/DEFERRED. M09–M13, Pilot, Final and frontend work were not started.
 
-**STATUS: PARTIAL RECONSTRUCTION**
+See [P2 completion report](../recovery/P2_COMPLETE_PLATFORM_RECONSTRUCTION.md), [environment/completion evidence](../recovery/P2_ENVIRONMENT_AND_COMPLETION.md), [test results](../recovery/P2_TEST_RESULTS.md), and [readiness matrix](../recovery/P2_M01_M07_READINESS.md).
 
-Source: successfully executed Codex-session patches, compared with the surviving development-safe master. The master was used as a specification/check, not to fabricate missing source.
+## Historical P1 snapshot (superseded)
 
-- 127 files were reconstructed and imported into `platform/` before this notice was added.
-- 17 paths remain partial and are excluded from the active tree; safe fragments remain in separate `PlatformRecovery` staging, not here.
-- 15 failed patch operations were excluded.
-- Original Git history was **not** recovered or recreated.
-- M01–M07 were historically reported PASS in scope but require complete revalidation in this reconstructed tree.
-- M08 remains **PARTIAL / BLOCKED**; M09–M13 are not re-established.
-- No provider/API credentials are currently available here. No old `.env` was imported.
-
-This platform is **not fully restored, runnable, or validated**. See [`../recovery/FINAL_RECOVERY_REPORT.md`](../recovery/FINAL_RECOVERY_REPORT.md) and [`../recovery/RECOVERY_MATRIX.md`](../recovery/RECOVERY_MATRIX.md) for gaps. Do not treat syntax checks or historical reports as fresh runtime PASS results.
+P1 imported 127 recovered platform files plus a status notice and classified 17 partial paths without inventing missing content. Original Git history and private credentials were not recovered. Those limitations drove P2's source reconstruction and provenance work; they must not be read as the current executable status.

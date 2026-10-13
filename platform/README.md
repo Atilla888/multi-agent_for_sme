@@ -1,25 +1,24 @@
 # Intelligent Adaptive Multi-Agent Platform
 
-> **Current P2 status: PARTIAL.** The original README text below describes the historical pre-reconstruction repository and must not be treated as current validation. This branch now contains restored PostgreSQL, trusted tools, Business Brain and Knowledge/RAG source, plus the hash-matching physical SQL. Static checks pass, but M01–M07 were **not revalidated**: the host has Python 3.10 while the project requires 3.11–3.13, and the Docker daemon is unavailable. M08 remains deferred. No real `.env` or full sanitized handoff was restored. See [RECOVERY_STATUS.md](RECOVERY_STATUS.md) and [P2 results](../recovery/P2_TEST_RESULTS.md). Do not use the historical start instructions below until a supported isolated environment is available.
+> **Current status: P2 COMPLETE; M01–M07 READY FOR P3 REVALIDATION.** This is not a new formal M01–M07 PASS declaration. The final P2 gate collected and passed 114/114 in-scope tests on rebuilt images after a fresh Alembic 0001–0005 migration. M08 remains PARTIAL/BLOCKED/DEFERRED; frontend and later milestones were not started. See [RECOVERY_STATUS.md](RECOVERY_STATUS.md) and [P2 results](../recovery/P2_TEST_RESULTS.md).
 
-This fresh repository implements verified M01–M05 foundations: Compose/PostgreSQL/RLS,
-the tenant-scoped domain/repository core, ten strict business tool boundaries, and
-identity/authorization. The `update_order` mutation branch is policy-blocked pending an
-approved E02 editable-field allowlist; `forecast_sales` returns `MODEL_NOT_READY` before a
-validated artifact. Business LLM agents, orchestration, Brain/RAG, model training, frontend,
-and experiment execution are intentionally absent.
+The candidate provides PostgreSQL/pgvector and tenant isolation, the tenant-scoped domain/repository core, ten strict business-tool boundaries, identity/authorization, Business Brain and Knowledge/RAG foundations. The `update_order` mutation branch remains policy-blocked under E02; `forecast_sales` returns `MODEL_NOT_READY` before a validated artifact.
 
-Authoritative implementation context is the verified `implementation_handoff/` package.
-Never import private or Final benchmark material into this repository.
+## Reproducible local environment
 
-## Local start
+1. Use Python 3.12 and create `.venv`.
+2. Install the project with dev dependencies using `requirements-m01-m07.lock` as constraints.
+3. Copy `.env.example` to an ignored local env file and replace every `CHANGE_ME_*` placeholder.
+4. Validate Compose without printing expanded secrets.
+5. Start an isolated Compose project and wait for ordinary services to become healthy.
+6. Run migrations and the scoped M01–M07 tests. Live/provider M08 tests require a separate authorized gate.
 
-1. Copy `.env.example` to `.env` and replace every placeholder.
-2. Run `docker compose --env-file .env -f infra/compose/compose.yaml config --quiet` (do not print expanded secrets).
-3. Run `docker compose --env-file .env -f infra/compose/compose.yaml up --build --wait`.
-4. Run the M01–M05 PostgreSQL and local Keycloak tests with
-   `docker compose --profile test --env-file .env -f infra/compose/compose.yaml run --rm db-tests pytest -q tests/unit tests/integration tests/security tests/contract`.
+The exact P2 environment, commands, results and boundaries are recorded in [P2 environment and completion evidence](../recovery/P2_ENVIRONMENT_AND_COMPLETION.md). The Windows `py` launcher may require refresh after installing Python; the exact CPython executable or `.venv\Scripts\python.exe` is authoritative.
 
-The host requires Docker. Backend compatibility is established by the Python 3.12 container,
-not by an older host Python.
+## Safety boundaries
 
+- Keep `.env`, `.env.p2.local`, `.venv`, credentials and provider keys out of Git.
+- Use isolated Compose project names; do not reuse or delete unrelated volumes.
+- Preserve exactly ten trusted business tools, E02 restrictions and `OUTCOME_UNKNOWN` no-blind-retry behavior.
+- Do not treat the unavailable full historical handoff as runtime authority. The required physical schema is hash-pinned and present.
+- Do not claim M08, frontend, M09–M13, Pilot or Final completion from the P2 result.

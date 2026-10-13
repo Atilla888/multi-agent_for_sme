@@ -2,6 +2,12 @@
 
 This file records durable project context, evidence limits, and decisions that affect later sessions. Product requirements live in [PRD.md](PRD.md); technical direction lives in [ARCHITECTURE.md](ARCHITECTURE.md); work status lives in [TASKS.md](TASKS.md).
 
+## Current platform reconstruction status
+
+On 2026-10-13, P2 platform reconstruction reached **COMPLETE** on branch `reconstruction/p2-platform-completion`. Official Python 3.12.10, pinned project dependencies and an isolated Docker Compose stack produced a fresh Alembic 0001–0005 migration and a final **114 passed, 0 failed, 0 skipped** M01–M07-scope gate. Ruff, formatter, mypy and reconstruction tests also pass. This evidence makes M01–M07 **READY FOR P3 REVALIDATION**; it intentionally does not replace P3 or declare new formal milestone PASS results.
+
+The full historical sanitized handoff package remains unavailable. Its only current runtime/source/test dependency, the migration-pinned physical SQL, is present with the exact approved SHA-256 and is proven by the fresh migration. The remaining handoff absence is a non-blocking provenance gap, not permission to invent missing documents. M08 remains PARTIAL/BLOCKED/DEFERRED; M09–M13, Pilot, Final and frontend work were not started. See [P2 completion report](../recovery/P2_COMPLETE_PLATFORM_RECONSTRUCTION.md).
+
 ## Current project status and evidence
 
 **Repository audit:** `C:\Users\Asus\Desktop\Diplom` was empty before this documentation work. It had no Git repository, README, source code, requirements, reports, UML/diagrams, PDF/text exports, environment examples, manifests, Docker files, workflows, or `AGENTS.md`. Therefore no application feature, technology, integration, experiment, or design is confirmed as implemented by repository evidence. These six documents are the first project files in this folder.

@@ -21,3 +21,14 @@ Branch `reconstruction/p2-platform-completion`. No restored source is claimed to
 | `platform/README.md`, `platform/RECOVERY_STATUS.md` | STATUS / EVIDENCE DOCUMENTATION | Updated to remove stale statements and state current P2 limitations, not to alter authority. |
 
 Recovery scripts in `recovery/` are one-time fail-closed evidence extractors. They refuse overwrite, check successful command/patch status and non-secret output, and are not platform runtime code. Raw session journals, external staging, old `.env`, INTERNAL master and Figma assets were not copied into this repository.
+
+## P2.1 completion provenance
+
+| File(s) / change | Classification | Evidence / limits |
+| --- | --- | --- |
+| `.env.example` bucket value | DOCUMENTATION-GUIDED CORRECTION | Changed only the reconstructed default from `platform-private-dev` to `sme-private-objects`, matching `docs/implementation/deviations.md`, surviving M01/M07 reports and the recovered least-privilege policy. The initial 15 object-test failures and final 114/114 gate demonstrate the configuration defect and correction. |
+| 50 tracked Python files normalized by Ruff 0.12.11 | MECHANICAL FORMAT RESTORATION | Pinned formatter/import fixes only; includes shared M08 files but no intended feature or behavior change. Full Ruff, mypy and 114-test gates pass afterward. |
+| `P2_ENVIRONMENT_DECISIONS.md`, `P2_ENVIRONMENT_AND_COMPLETION.md` and updated P2 status/evidence | STATUS / EVIDENCE DOCUMENTATION | Records installed runtime, dependency decision, Docker/Alembic/test evidence and the non-blocking historical handoff gap. |
+| `platform/.venv`, `platform/.env.p2.local` | LOCAL IGNORED STATE — NOT COMMITTED | Fresh environment and generated local-only credentials used for P2. No historical or provider secret was restored. |
+
+The earlier table describes reconstruction-time provenance and its contemporary limits. P2.1 did not retroactively upgrade documentation-guided files to original historical content; it supplied current executable validation.

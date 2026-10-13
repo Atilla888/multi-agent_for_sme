@@ -16,3 +16,15 @@
 | P2-D012 | Git may normalize CRLF SQL and break migration 0001 hash after checkout | Initial Git index normalized the restored 21,267-byte SQL to 20,738 bytes under repository text defaults; migration expects the former SHA-256 | Preserve existing `platform/.gitattributes` rules and add a single `-text` exception for this SQL; renormalize the staged entry and verify index bytes equal worktree bytes/hash | Change migration's approved digest or use a global binary/text policy change | Committed SQL SHA-256 equals approved digest; check again after a fresh P3 checkout |
 
 Decision records will be extended as work proceeds. No implementation change preceded this register.
+
+## P2.1 completion decisions
+
+| ID | Component / problem | Decision | Verification |
+| --- | --- | --- | --- |
+| P2-D013 | Supported runtime unavailable | Install official CPython 3.12.10 and create ignored `platform/.venv`; do not relax project compatibility | Python/version and executable path verified; 114 tests collect |
+| P2-D014 | Recovered lock is a Linux Python 3.12 snapshot | Use `pyproject.toml` direct/dev requirements with the lock as constraints, preserving selected transitive versions without forcing `uvloop` on Windows | Install succeeds; `pip check` reports no broken requirements |
+| P2-D015 | Recovered files have deterministic pinned-Ruff drift | Apply Ruff 0.12.11 mechanical fixes/formatting across Python only; no behavioral editing | Ruff lint/format, mypy and final 114-test gate pass |
+| P2-D016 | Example MinIO bucket conflicts with recovered policy | Align the documentation-guided example with the documented approved `sme-private-objects` bucket; keep policy least-privilege | Initial 99/15 failure narrows to object access; final gate is 114/114 |
+| P2-D017 | Full historical handoff/verifier unavailable | Classify as non-blocking provenance gap because current runtime/source/tests reference only the present hash-exact physical SQL; do not invent missing documents | Fresh 0001–0005 migration and full gate pass; targeted reference audit finds no other runtime dependency |
+
+Detailed environment rationale is in [P2_ENVIRONMENT_DECISIONS.md](P2_ENVIRONMENT_DECISIONS.md).

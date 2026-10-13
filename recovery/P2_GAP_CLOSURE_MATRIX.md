@@ -1,15 +1,15 @@
 # P2 gap closure matrix
 
-| Area | Initial gap | Evidence source | Implementation action | Test | Result | Remaining gap |
-| --- | --- | --- | --- | --- | --- | --- |
-| R0 Foundation | Six missing absolute imports; unsupported host | P1 inventory, `pyproject.toml` | Restored modules without changing package layout | Python parse; static import graph | 72/72 parse; 0 unresolved absolute local imports | Python 3.11–3.13 runtime unavailable; collection fails on 3.10 |
-| R1 Config / Docker | Missing lock, Compose, Dockerfile, MinIO policy, example env | Bounded successful session outputs/patches; settings | Restored config; safe new `.env.example` | TOML/JSON/YAML and `docker compose config --quiet` | PASS; 13 services | Docker daemon absent; no image build/service startup |
-| R2 Database / Alembic | Missing repository and migration 0001 physical SQL | Session 3157/3275/3604 and hash-pinned SQL output 1019 | Restored repository and byte-exact SQL | Static five-revision chain + SHA-256 | PASS structurally | No PostgreSQL migration or RLS runtime test; full handoff absent |
-| R3 Security / Identity | Source present but persistence dependency missing | Recovered policy/OIDC/tenant files and tests | Restored repository dependency; no policy expansion | Parse/import graph; identity collection attempted | Structural source present | Security tests not executable on Python 3.10 / no DB/Keycloak |
-| R4 Domain / Application | Source present but repository dependency missing | Recovered M03 application/domain and tests | Restored repository dependency; no business rule change | Parse/import graph | Structural source present | Domain integration tests not run |
-| R5 Ten Tools / Executor | Executor and ports missing | Frozen ten-tool M04 report, session outputs 4692/4859 | Restored exact ten-tool executor and ports | Static ten-name/role/E02/unknown/pre-artifact test; lint | PASS structurally | Contract/runtime tests not run on supported Python/DB |
-| R6 Brain / RAG | Brain modules and Knowledge service missing | Session outputs 3157/4692; M06/M07 reports and late patches | Restored Brain; reconstructed Knowledge service/test with marked uncertainty | Parse/import graph, targeted lint | PASS structurally | M07 integration/real-model tests not run; source not byte-identical after formatter gap |
-| R7 Agents | Three-specialist M08 partial code already present | Recovered agent contracts/prompts/runtime and M08 report | No provider extension or new agent | Parse/import graph | Source retained, M08 DEFERRED | Live provider unavailable/out of scope; no M08 completion |
-| R8 Orchestration foundation | No standalone worker | Architecture map says no orchestration worker; recovered agent runtime and evidence/state contracts | Preserve shared in-memory outcome, handoff proposal, budget and unknown-state contracts; no M09–M12 algorithm | Static source review | Foundation represented in recovered modules | No durable orchestrator/resume or treatment implementation; intentionally deferred |
+| Area | Initial gap | P2 closure | Verification | Remaining gap |
+| --- | --- | --- | --- | --- |
+| R0 Foundation | Missing modules; unsupported Python 3.10 | Restored source; installed official Python 3.12.10 and isolated `.venv` | 72 files compile; 114 tests collect; Ruff/mypy pass | None for P2 |
+| R1 Config / Docker | Missing lock, Compose, Dockerfile, MinIO policy and env template | Restored evidenced config; safe placeholder template; approved MinIO bucket aligned | Compose config/build/start healthy under isolated `diploma-p2` | None for P2 |
+| R2 Database / Alembic | Missing repository and migration-0001 SQL | Restored adapter and exact hash-pinned SQL | Fresh 0001–0005 upgrade; current/head 0005; DB tests pass | Historical handoff package absent, non-blocking |
+| R3 Security / Identity | Runtime dependencies unavailable | Restored dependencies and isolated Keycloak/PostgreSQL services | Security/identity/RLS cases pass in 114-test gate | None for P2 |
+| R4 Domain / Application | Repository dependency missing | Restored repository without business-rule expansion | Domain/acceptance cases pass | None for P2 |
+| R5 Ten Tools / Executor | Executor and ports missing | Restored frozen ten-tool boundary and ports | Contract/security tests pass; E02 remains enforced | None for P2 |
+| R6 Brain / RAG | Brain and Knowledge gaps; formatter-obscured provenance | Restored/reconstructed with explicit provenance; normalized with pinned Ruff | Brain, Knowledge, object-store and local-model tests pass | Historical byte identity remains unknowable, non-blocking |
+| R7 Agents | M08 partial code only | Preserved without provider extension | Shared source compiles/lints/types; provider test excluded | M08 intentionally PARTIAL/BLOCKED/DEFERRED |
+| R8 Orchestration foundation | No standalone worker or later algorithms | Preserved evidenced shared contracts only | Static/runtime shared checks pass | M09–M12 intentionally not started |
 
-No row's structural PASS is a fresh milestone PASS. P2 overall remains PARTIAL until a supported runtime can collect and execute the relevant tests and database behavior can be checked.
+P2 is **COMPLETE**. The executable results establish that M01–M07 are **READY FOR P3 REVALIDATION**, not newly declared PASS. No frontend, provider completion or later milestone was started.

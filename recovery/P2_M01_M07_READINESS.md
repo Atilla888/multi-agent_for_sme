@@ -1,17 +1,21 @@
 # P2 readiness for P3 revalidation
 
-Historical statuses below come from `MILESTONE_RECOVERY.md` and surviving implementation reports. They are **not** current PASS results. All `READY FOR P3 REVALIDATION` decisions are conservative: the executable test gate cannot collect on this Python 3.10 host, Docker is unavailable, and the complete sanitized handoff/verifier report is absent. P3 should run only after a supported environment and authority package are established.
+Historical statuses come from `MILESTONE_RECOVERY.md` and surviving implementation reports. P2 now supplies a reproducible Python 3.12 environment and an isolated successful runtime/database gate. The table deliberately says **READY**, not a new formal milestone PASS; P3 remains the revalidation phase.
 
-| Milestone | Historical status | Reconstructed source coverage | Test coverage present | Remaining blocker | READY FOR P3 REVALIDATION |
-| --- | --- | --- | --- | --- | --- |
-| M01 | PASS in original environment | Compose, Dockerfile, lock and safe env template restored; physical schema restored but full handoff absent | Historical M01 report and recovered suite | Docker daemon unavailable; handoff verifier/report absent | NO |
-| M02 | PASS | Alembic 0001–0005, hash-pinned SQL, repository restored | `test_schema.py`, `test_rls.py` | No PostgreSQL; migration/RLS behavior not executed | NO |
-| M03 | PASS | Domain/application and PostgreSQL adapter present | `test_domain_core.py`, `test_acceptance_core.py` | No supported Python/DB; adapter behavior unexecuted | NO |
-| M04 | PASS with controlled E02 limitation | Exactly ten tool contracts, trusted executor/ports, E02 and unknown-state guards present | `test_tools.py` plus P2 structural test | Contract/runtime tests fail collection on Python 3.10; no DB | NO |
-| M05 | PASS | OIDC/policy/identity plus repository/Compose present | `test_identity.py`, `test_keycloak_live.py`, RLS tests | No supported Python, Keycloak or DB | NO |
-| M06 | PASS | Brain contracts/service/sources and conflict logic present | Brain unit/integration tests plus static import gate | Runtime collection blocked; behavior not executed | NO |
-| M07 | PASS | Knowledge service, storage, repository, embedding and migration present; final service reconstructed from partial evidence | Processing, integration and real-model tests present, but reconstructed integration test unexecuted | No supported Python, PostgreSQL/MinIO; final service not byte-identical verified | NO |
+| Milestone | Historical status | P2 executable evidence | Remaining P2 blocker | READY FOR P3 REVALIDATION |
+| --- | --- | --- | --- | --- |
+| M01 | PASS | Compose config/build/start healthy in isolated project; dependencies consistent | None | YES |
+| M02 | PASS | Fresh Alembic 0001–0005 upgrade; head/current at 0005; schema/RLS tests pass in full gate | None | YES |
+| M03 | PASS | Domain/application/repository tests pass in full gate | None | YES |
+| M04 | PASS with controlled E02 limitation | Ten-tool contracts, executor, E02 and unknown-state checks pass | None; E02 remains the approved limitation | YES |
+| M05 | PASS | Identity, OIDC/policy, Keycloak and RLS scope passes in isolated stack | None | YES |
+| M06 | PASS | Brain unit/integration and conflict/source behavior pass | None | YES |
+| M07 | PASS | Knowledge processing, PostgreSQL/MinIO and local-model integration pass | None | YES |
 
-M08: historical **PARTIAL / BLOCKED**; recovered code remains **PARTIAL**; current P2 **DEFERRED**. Real provider access and acceptance are unavailable and outside P2. No M09–M13, Pilot or Final execution is claimed.
+Shared evidence: 114 tests collected with zero errors; final rebuilt-tree gate **114 passed, 0 failed, 0 skipped**; Ruff, format, mypy and six reconstruction tests pass. See [test results](P2_TEST_RESULTS.md).
 
-Recommendation: recover or formally replace the missing sanitized handoff verification artifact without inventing a PASS; provision Python 3.12 (or another declared supported version) with the recovered pinned dependencies and Docker/PostgreSQL/MinIO/Keycloak; then run P3's full collection, migration, local and integration gates. P2 is not P3.
+The complete historical sanitized `implementation_handoff/` package and its old verifier/report were not recovered. This is a non-blocking historical-provenance gap for P2/P3: the only current runtime-required handoff input is `contracts/docs/engineering/physical_schema.sql`, which is present with the exact migration-pinned SHA-256 and was proven by a fresh migration. The absent historical documents are not runtime or test inputs and are not reconstructed by invention.
+
+M08 remains **PARTIAL / BLOCKED / DEFERRED**. No real-provider acceptance, M09–M13, Pilot, Final or frontend execution is claimed.
+
+Recommendation: proceed to P3 under a separate task and perform formal M01–M07 revalidation from the recorded environment. Do not start M08 or frontend work implicitly.
