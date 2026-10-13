@@ -3,7 +3,8 @@
 ## Current engineering recovery track
 
 - [x] **P2 — Complete platform reconstruction:** supported Python 3.12 environment, pinned dependencies, isolated Docker stack, fresh Alembic 0001–0005 migration, source-quality gates and final **114/114** in-scope test gate are complete. This makes M01–M07 **READY FOR P3 REVALIDATION**, not newly formal PASS. See [P2 completion evidence](../recovery/P2_COMPLETE_PLATFORM_RECONSTRUCTION.md).
-- [ ] **P3 — Formal M01–M07 revalidation:** recommended next phase; not started. M08 remains PARTIAL/BLOCKED/DEFERRED. Frontend and M09–M13 remain outside P2.
+- [x] **P3 — Formal M01–M07 revalidation:** frozen-baseline common gates, independent fresh-state milestone suites and final **114/114** regression passed. M01–M03 and M05–M07 are PASS; M04 is PASS WITH APPROVED LIMITATION — E02. [Formal evidence](../recovery/P3_M01_M07_FORMAL_REVALIDATION.md).
+- [ ] **P4/P5 — M08 deferral freeze, then frontend implementation:** recommended sequence, not started. M08 remains PARTIAL/BLOCKED/DEFERRED; M09–M13 remain unstarted.
 
 The numbered Phase 0–11 sections below are the **older working roadmap** and await a separate reconciliation with the current consolidated master. Their unchecked engineering items must not be read as proof that the newer project-wide M01–M07 gates are unimplemented. For current design/engineering authority and evidence limits, use the [Phase 2B validation](research/PHASE_2B_UX_VALIDATION.md#2b0-scope-and-source-authority) and its linked master PDF. Product scope: [PRD.md](PRD.md). Technical direction: [ARCHITECTURE.md](ARCHITECTURE.md). Open decisions: [MEMORY.md](MEMORY.md).
 
