@@ -16,4 +16,3 @@ def tenant_transaction(connection: Connection, business_id: UUID) -> Iterator[Co
             {"business_id": str(business_id)},
         )
         yield connection
-

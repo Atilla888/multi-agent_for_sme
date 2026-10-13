@@ -19,7 +19,9 @@ class OrderService:
         self._ledger = OperationLedger(database)
 
     def create_order(
-        self, context: ExecutionContext, customer_id: UUID,
+        self,
+        context: ExecutionContext,
+        customer_id: UUID,
         lines: tuple[OrderLineRequest, ...],
     ) -> dict[str, Any]:
         if not lines or len(lines) > 50:
@@ -70,20 +72,36 @@ class OrderService:
                     repository.insert_order_item(
                         item_id, order_id, product.id, line.quantity, product.price.amount
                     )
-                    snapshots.append({
-                        "item_id": str(item_id), "product_id": str(product.id),
-                        "quantity": str(line.quantity), "unit_price": str(product.price.amount),
-                    })
+                    snapshots.append(
+                        {
+                            "item_id": str(item_id),
+                            "product_id": str(product.id),
+                            "quantity": str(line.quantity),
+                            "unit_price": str(product.price.amount),
+                        }
+                    )
                 result = {
-                    "order_id": str(order_id), "status": OrderStatus.CREATED.value,
-                    "order_version": 1, "currency": currency, "items": snapshots,
+                    "order_id": str(order_id),
+                    "status": OrderStatus.CREATED.value,
+                    "order_version": 1,
+                    "currency": currency,
+                    "items": snapshots,
                 }
                 repository.finish_operation(ticket.id, "SUCCEEDED", result, None)
                 repository.append_audit(
-                    uuid4(), context.correlation_id, context.principal.actor_scope,
-                    "ORDER_CREATED", "order", order_id,
-                    {"operation_id": str(ticket.id), "version_before": None, "version_after": 1,
-                     "item_count": len(lines)}, context.run_id,
+                    uuid4(),
+                    context.correlation_id,
+                    context.principal.actor_scope,
+                    "ORDER_CREATED",
+                    "order",
+                    order_id,
+                    {
+                        "operation_id": str(ticket.id),
+                        "version_before": None,
+                        "version_after": 1,
+                        "item_count": len(lines),
+                    },
+                    context.run_id,
                 )
             return result
         except DomainFailure as failure:
@@ -97,20 +115,26 @@ class OrderService:
                 # The committed STARTED admission remains a reconciliation marker.
                 pass
             raise DomainFailure(
-                ErrorCode.OUTCOME_UNKNOWN, "Order result requires reconciliation",
+                ErrorCode.OUTCOME_UNKNOWN,
+                "Order result requires reconciliation",
                 reconciliation_required=True,
             ) from exc
 
     def reserve_inventory(
-        self, context: ExecutionContext, order_id: UUID, expected_order_version: int,
+        self,
+        context: ExecutionContext,
+        order_id: UUID,
+        expected_order_version: int,
         expected_inventory_versions: dict[UUID, int],
     ) -> dict[str, Any]:
         if expected_order_version < 1 or not expected_inventory_versions:
             raise DomainFailure(ErrorCode.VALIDATION_ERROR, "Expected versions are required")
         payload = {
-            "order_id": str(order_id), "expected_order_version": expected_order_version,
+            "order_id": str(order_id),
+            "expected_order_version": expected_order_version,
             "expected_inventory_versions": {
-                str(key): value for key, value in sorted(
+                str(key): value
+                for key, value in sorted(
                     expected_inventory_versions.items(), key=lambda item: item[0].hex
                 )
             },
@@ -161,10 +185,18 @@ class OrderService:
                         ticket.id, "FAILED", None, ErrorCode.INSUFFICIENT_INVENTORY.value
                     )
                     repository.append_audit(
-                        uuid4(), context.correlation_id, context.principal.actor_scope,
-                        "RESERVATION_REJECTED", "order", order_id,
-                        {"operation_id": str(ticket.id), "error_code": "INSUFFICIENT_INVENTORY",
-                         "version_before": order.version, "version_after": new_version},
+                        uuid4(),
+                        context.correlation_id,
+                        context.principal.actor_scope,
+                        "RESERVATION_REJECTED",
+                        "order",
+                        order_id,
+                        {
+                            "operation_id": str(ticket.id),
+                            "error_code": "INSUFFICIENT_INVENTORY",
+                            "version_before": order.version,
+                            "version_after": new_version,
+                        },
                         context.run_id,
                     )
                     after_commit_failure = DomainFailure(
@@ -182,26 +214,38 @@ class OrderService:
                             raise DomainFailure(ErrorCode.STALE_STATE, "Inventory version is stale")
                         if not repository.mark_order_item_reserved(item.id, item.quantity):
                             raise DomainFailure(ErrorCode.STALE_STATE, "Order line changed")
-                        reservations.append({
-                            "product_id": str(item.product_id), "quantity": str(item.quantity),
-                            "inventory_version": new_inventory_version,
-                        })
+                        reservations.append(
+                            {
+                                "product_id": str(item.product_id),
+                                "quantity": str(item.quantity),
+                                "inventory_version": new_inventory_version,
+                            }
+                        )
                     new_order_version = repository.set_order_status(
                         order_id, order.version, OrderStatus.CONFIRMED
                     )
                     if new_order_version is None:
                         raise DomainFailure(ErrorCode.STALE_STATE, "Order version is stale")
                     result = {
-                        "order_id": str(order_id), "status": OrderStatus.CONFIRMED.value,
-                        "order_version": new_order_version, "reservations": reservations,
+                        "order_id": str(order_id),
+                        "status": OrderStatus.CONFIRMED.value,
+                        "order_version": new_order_version,
+                        "reservations": reservations,
                     }
                     repository.finish_operation(ticket.id, "SUCCEEDED", result, None)
                     repository.append_audit(
-                        uuid4(), context.correlation_id, context.principal.actor_scope,
-                        "INVENTORY_RESERVED", "order", order_id,
-                        {"operation_id": str(ticket.id), "version_before": order.version,
-                         "version_after": new_order_version,
-                         "products": [str(item.product_id) for item in order.items]},
+                        uuid4(),
+                        context.correlation_id,
+                        context.principal.actor_scope,
+                        "INVENTORY_RESERVED",
+                        "order",
+                        order_id,
+                        {
+                            "operation_id": str(ticket.id),
+                            "version_before": order.version,
+                            "version_after": new_order_version,
+                            "products": [str(item.product_id) for item in order.items],
+                        },
                         context.run_id,
                     )
             if after_commit_failure is not None:
@@ -217,6 +261,7 @@ class OrderService:
             except psycopg.Error:
                 pass
             raise DomainFailure(
-                ErrorCode.OUTCOME_UNKNOWN, "Reservation result requires reconciliation",
+                ErrorCode.OUTCOME_UNKNOWN,
+                "Reservation result requires reconciliation",
                 reconciliation_required=True,
             ) from exc

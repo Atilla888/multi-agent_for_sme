@@ -1,4 +1,5 @@
 """Add runtime grants and forced row-level tenant isolation."""
+
 import os
 import re
 
@@ -10,11 +11,30 @@ branch_labels = None
 depends_on = None
 
 TENANT_TABLES = [
-    "businesses", "business_memberships", "customers", "customer_identities", "integrations",
-    "products", "inventory", "orders", "order_items", "conversations", "messages",
-    "object_records", "message_attachments", "documents", "document_versions", "embeddings",
-    "agent_runs", "idempotency_operations", "tool_calls", "agent_steps", "escalations",
-    "audit_logs", "model_artifacts", "forecast_runs",
+    "businesses",
+    "business_memberships",
+    "customers",
+    "customer_identities",
+    "integrations",
+    "products",
+    "inventory",
+    "orders",
+    "order_items",
+    "conversations",
+    "messages",
+    "object_records",
+    "message_attachments",
+    "documents",
+    "document_versions",
+    "embeddings",
+    "agent_runs",
+    "idempotency_operations",
+    "tool_calls",
+    "agent_steps",
+    "escalations",
+    "audit_logs",
+    "model_artifacts",
+    "forecast_runs",
 ]
 
 
@@ -27,7 +47,7 @@ def _runtime_role() -> str:
 
 def upgrade() -> None:
     role = _runtime_role()
-    op.execute('REVOKE ALL ON SCHEMA public FROM PUBLIC')
+    op.execute("REVOKE ALL ON SCHEMA public FROM PUBLIC")
     op.execute(f'GRANT USAGE ON SCHEMA public TO "{role}"')
     for table in TENANT_TABLES:
         predicate = (
@@ -39,7 +59,7 @@ def upgrade() -> None:
         op.execute(f'ALTER TABLE "{table}" FORCE ROW LEVEL SECURITY')
         op.execute(
             f'CREATE POLICY tenant_isolation ON "{table}" '
-            f'USING ({predicate}) WITH CHECK ({predicate})'
+            f"USING ({predicate}) WITH CHECK ({predicate})"
         )
         privileges = "SELECT, INSERT, UPDATE, DELETE"
         if table == "businesses":
@@ -56,4 +76,3 @@ def downgrade() -> None:
         op.execute(f'REVOKE ALL ON TABLE "{table}" FROM "{role}"')
         op.execute(f'DROP POLICY IF EXISTS tenant_isolation ON "{table}"')
         op.execute(f'ALTER TABLE "{table}" DISABLE ROW LEVEL SECURITY')
-

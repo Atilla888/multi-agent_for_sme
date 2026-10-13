@@ -30,13 +30,18 @@ class OidcConfig:
     def __post_init__(self) -> None:
         parsed = urlparse(self.issuer)
         local_http = (
-            self.allow_local_http and parsed.scheme == "http"
+            self.allow_local_http
+            and parsed.scheme == "http"
             and parsed.hostname in {"keycloak", "localhost", "127.0.0.1"}
         )
         if (
-            not self.audience or not parsed.netloc or (parsed.scheme != "https" and not local_http)
-            or self.issuer.endswith("/") or self.cache_seconds < 1
-            or self.timeout_seconds <= 0 or self.algorithms != ("RS256",)
+            not self.audience
+            or not parsed.netloc
+            or (parsed.scheme != "https" and not local_http)
+            or self.issuer.endswith("/")
+            or self.cache_seconds < 1
+            or self.timeout_seconds <= 0
+            or self.algorithms != ("RS256",)
         ):
             raise ValueError("OIDC verifier requires a trusted issuer and explicit settings")
 
@@ -46,9 +51,7 @@ class OidcConfig:
 
 
 class OidcVerifier:
-    def __init__(
-        self, config: OidcConfig, fetch_jwks: Callable[[], JWKS] | None = None
-    ) -> None:
+    def __init__(self, config: OidcConfig, fetch_jwks: Callable[[], JWKS] | None = None) -> None:
         self._config = config
         self._fetch_jwks = fetch_jwks or self._fetch_from_issuer
         self._cached: JWKS | None = None
@@ -82,7 +85,8 @@ class OidcVerifier:
                 if not isinstance(item, dict) or item.get("kid") != kid:
                     continue
                 if (
-                    item.get("kty") != "RSA" or item.get("use", "sig") != "sig"
+                    item.get("kty") != "RSA"
+                    or item.get("use", "sig") != "sig"
                     or item.get("alg", algorithm) != algorithm
                 ):
                     raise ValueError("JWKS key is not an allowed signing key")
@@ -97,8 +101,11 @@ class OidcVerifier:
                 raise ValueError("Unsupported JWT header")
             key = self._key(kid, algorithm)
             claims = jwt.decode(
-                token, key=key, algorithms=list(self._config.algorithms),
-                issuer=self._config.issuer, audience=self._config.audience,
+                token,
+                key=key,
+                algorithms=list(self._config.algorithms),
+                issuer=self._config.issuer,
+                audience=self._config.audience,
                 options={"require": ["iss", "aud", "sub", "iat", "exp"]},
             )
             if claims.get("typ") != "Bearer" or not isinstance(claims.get("sub"), str):
@@ -132,6 +139,8 @@ class StaffIdentityService:
             else:
                 raise DomainFailure(ErrorCode.FORBIDDEN, "Business membership is required")
         return PrincipalContext(
-            kind=PrincipalKind.USER, subject_id=user_id, business_id=business_id,
+            kind=PrincipalKind.USER,
+            subject_id=user_id,
+            business_id=business_id,
             staff_role=role,
         )

@@ -26,7 +26,9 @@ def _seed(admin_connection):
 @pytest.mark.integration
 def test_runtime_role_has_rls_without_bypass(admin_connection, runtime_url: str) -> None:
     with psycopg.connect(runtime_url) as connection, connection.cursor() as cursor:
-        cursor.execute("SELECT rolsuper, rolbypassrls, rolcreatedb, rolcreaterole FROM pg_roles WHERE rolname = current_user")
+        cursor.execute(
+            "SELECT rolsuper, rolbypassrls, rolcreatedb, rolcreaterole FROM pg_roles WHERE rolname = current_user"
+        )
         assert cursor.fetchone() == (False, False, False, False)
         cursor.execute(
             "SELECT relrowsecurity, relforcerowsecurity FROM pg_class WHERE oid='customers'::regclass"
@@ -63,7 +65,9 @@ def test_runtime_grants_are_least_privilege(admin_connection, runtime_url: str) 
             "has_table_privilege(current_user,'audit_logs','DELETE')"
         )
         assert cursor.fetchone() == (True, False, False, False)
-        cursor.execute("SELECT pg_get_userbyid(relowner) FROM pg_class WHERE oid='customers'::regclass")
+        cursor.execute(
+            "SELECT pg_get_userbyid(relowner) FROM pg_class WHERE oid='customers'::regclass"
+        )
         assert cursor.fetchone() != ("platform_runtime",)
         with pytest.raises(psycopg.errors.InsufficientPrivilege):
             cursor.execute("SELECT count(*) FROM app_users")
@@ -87,7 +91,9 @@ def test_runtime_cannot_insert_foreign_tenant_row(admin_connection, runtime_url:
     with psycopg.connect(runtime_url, autocommit=True) as connection:
         with pytest.raises(psycopg.errors.InsufficientPrivilege), connection.transaction():
             with connection.cursor() as cursor:
-                cursor.execute("SELECT set_config('app.current_business_id', %s, true)", (str(tenant_a),))
+                cursor.execute(
+                    "SELECT set_config('app.current_business_id', %s, true)", (str(tenant_a),)
+                )
                 cursor.execute(
                     "INSERT INTO customers(business_id,id,display_name,updated_at) VALUES (%s,%s,'Spoofed',now())",
                     (tenant_b, uuid4()),
@@ -96,7 +102,9 @@ def test_runtime_cannot_insert_foreign_tenant_row(admin_connection, runtime_url:
 
 @pytest.mark.postgres
 @pytest.mark.integration
-def test_sqlalchemy_tenant_transaction_resets_on_pool_reuse(admin_connection, runtime_url: str) -> None:
+def test_sqlalchemy_tenant_transaction_resets_on_pool_reuse(
+    admin_connection, runtime_url: str
+) -> None:
     tenant_a, tenant_b = _seed(admin_connection)
     url = runtime_url.replace("postgresql://", "postgresql+psycopg://", 1)
     engine = create_engine(url, pool_size=1, max_overflow=0)
@@ -117,7 +125,9 @@ def test_sqlalchemy_tenant_transaction_resets_on_pool_reuse(admin_connection, ru
 
 @pytest.mark.postgres
 @pytest.mark.integration
-def test_missing_context_fails_closed_and_other_tenant_is_hidden(admin_connection, runtime_url: str) -> None:
+def test_missing_context_fails_closed_and_other_tenant_is_hidden(
+    admin_connection, runtime_url: str
+) -> None:
     tenant_a, tenant_b = _seed(admin_connection)
     with psycopg.connect(runtime_url) as connection, connection.cursor() as cursor:
         cursor.execute("SELECT count(*) FROM customers")
@@ -131,12 +141,16 @@ def test_missing_context_fails_closed_and_other_tenant_is_hidden(admin_connectio
 
 @pytest.mark.postgres
 @pytest.mark.integration
-def test_transaction_local_context_does_not_leak_through_pool(admin_connection, runtime_url: str) -> None:
+def test_transaction_local_context_does_not_leak_through_pool(
+    admin_connection, runtime_url: str
+) -> None:
     tenant_a, tenant_b = _seed(admin_connection)
     with ConnectionPool(runtime_url, min_size=1, max_size=1) as pool:
         with pool.connection() as connection:
             with connection.transaction(), connection.cursor() as cursor:
-                cursor.execute("SELECT set_config('app.current_business_id', %s, true)", (str(tenant_a),))
+                cursor.execute(
+                    "SELECT set_config('app.current_business_id', %s, true)", (str(tenant_a),)
+                )
                 cursor.execute("SELECT count(*) FROM customers")
                 assert cursor.fetchone() == (1,)
         with pool.connection() as reused:
@@ -145,7 +159,8 @@ def test_transaction_local_context_does_not_leak_through_pool(admin_connection, 
                 assert cursor.fetchone()[0] in (None, "")
                 cursor.execute("SELECT count(*) FROM customers")
                 assert cursor.fetchone() == (0,)
-                cursor.execute("SELECT set_config('app.current_business_id', %s, true)", (str(tenant_b),))
+                cursor.execute(
+                    "SELECT set_config('app.current_business_id', %s, true)", (str(tenant_b),)
+                )
                 cursor.execute("SELECT count(*) FROM customers")
                 assert cursor.fetchone() == (1,)
-

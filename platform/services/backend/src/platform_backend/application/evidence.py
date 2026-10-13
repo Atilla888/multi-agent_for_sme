@@ -44,8 +44,12 @@ class OperationLedger:
         proposed_id = uuid4()
         with self._database.transaction(context.business_id) as repository:
             created = repository.admit_operation(
-                proposed_id, context.operation_key, tool_name, digest,
-                context.principal.actor_scope, context.run_id,
+                proposed_id,
+                context.operation_key,
+                tool_name,
+                digest,
+                context.principal.actor_scope,
+                context.run_id,
             )
             if created:
                 return OperationTicket(proposed_id)
@@ -53,8 +57,11 @@ class OperationLedger:
                 tool_name, context.principal.actor_scope, context.operation_key
             )
             if prior is None:
-                raise DomainFailure(ErrorCode.OUTCOME_UNKNOWN, "Operation requires reconciliation",
-                                    reconciliation_required=True)
+                raise DomainFailure(
+                    ErrorCode.OUTCOME_UNKNOWN,
+                    "Operation requires reconciliation",
+                    reconciliation_required=True,
+                )
             if prior["canonical_payload_hash"] != digest:
                 raise DomainFailure(
                     ErrorCode.CONFLICT, "Operation key was used for another request"
@@ -65,7 +72,8 @@ class OperationLedger:
                 code = ErrorCode(prior["error_code"] or ErrorCode.TOOL_FAILED.value)
                 raise DomainFailure(code, "Prior operation failed")
             raise DomainFailure(
-                ErrorCode.OUTCOME_UNKNOWN, "Operation requires reconciliation",
+                ErrorCode.OUTCOME_UNKNOWN,
+                "Operation requires reconciliation",
                 reconciliation_required=True,
             )
 
@@ -75,22 +83,30 @@ class OperationLedger:
         with self._database.transaction(context.business_id) as repository:
             repository.finish_operation(operation_id, "FAILED", None, failure.code.value)
             repository.append_audit(
-                uuid4(), context.correlation_id, context.principal.actor_scope,
-                "TOOL_FAILED", "operation", operation_id,
-                {"error_code": failure.code.value}, context.run_id,
+                uuid4(),
+                context.correlation_id,
+                context.principal.actor_scope,
+                "TOOL_FAILED",
+                "operation",
+                operation_id,
+                {"error_code": failure.code.value},
+                context.run_id,
             )
 
     def mark_unknown(self, context: ExecutionContext, operation_id: UUID) -> None:
         with self._database.transaction(context.business_id) as repository:
             if repository.mark_operation_unknown(operation_id):
                 repository.append_audit(
-                    uuid4(), context.correlation_id, context.principal.actor_scope,
-                    "TOOL_OUTCOME_UNKNOWN", "operation", operation_id,
-                    {"error_code": ErrorCode.OUTCOME_UNKNOWN.value}, context.run_id,
+                    uuid4(),
+                    context.correlation_id,
+                    context.principal.actor_scope,
+                    "TOOL_OUTCOME_UNKNOWN",
+                    "operation",
+                    operation_id,
+                    {"error_code": ErrorCode.OUTCOME_UNKNOWN.value},
+                    context.run_id,
                 )
 
-    def lookup(
-        self, context: ExecutionContext, tool_name: str, key: str
-    ) -> dict[str, Any] | None:
+    def lookup(self, context: ExecutionContext, tool_name: str, key: str) -> dict[str, Any] | None:
         with self._database.transaction(context.business_id) as repository:
             return repository.get_operation(tool_name, context.principal.actor_scope, key)

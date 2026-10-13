@@ -34,12 +34,9 @@ def main() -> None:
             cursor.execute(
                 sql.SQL(
                     "ALTER ROLE {} NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT NOBYPASSRLS"
-                ).format(
-                    sql.Identifier(runtime_user)
-                )
+                ).format(sql.Identifier(runtime_user))
             )
 
 
 if __name__ == "__main__":
     main()
-

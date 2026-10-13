@@ -33,34 +33,38 @@ def resolve_claims(kind: FactKind, claims: tuple[SourceClaim, ...]) -> ConflictD
 
     if kind is FactKind.ORDER_STATUS:
         authoritative = tuple(
-            claim for claim in matching
-            if claim.source_type is SourceType.ORDER and claim.current
+            claim for claim in matching if claim.source_type is SourceType.ORDER and claim.current
         )
     elif kind is FactKind.INVENTORY_QUANTITY:
         authoritative = tuple(
-            claim for claim in matching
+            claim
+            for claim in matching
             if claim.source_type is SourceType.INVENTORY and claim.current
         )
     elif kind is FactKind.POLICY_RULE:
         authoritative = tuple(
-            claim for claim in matching
-            if claim.source_type is SourceType.POLICY and claim.current
+            claim for claim in matching if claim.source_type is SourceType.POLICY and claim.current
         )
     else:
         authoritative = tuple(
-            claim for claim in matching
+            claim
+            for claim in matching
             if claim.source_type is SourceType.KNOWLEDGE and claim.current and claim.published
         )
 
     if not authoritative:
-        return ConflictDecision(kind.value, ContextStatus.INSUFFICIENT, None,
-                                "NO_CURRENT_AUTHORITATIVE_CLAIM")
+        return ConflictDecision(
+            kind.value, ContextStatus.INSUFFICIENT, None, "NO_CURRENT_AUTHORITATIVE_CLAIM"
+        )
     if len({claim.value for claim in authoritative}) > 1:
-        return ConflictDecision(kind.value, ContextStatus.CONFLICT, None,
-                                "EQUAL_AUTHORITY_CONFLICT")
+        return ConflictDecision(
+            kind.value, ContextStatus.CONFLICT, None, "EQUAL_AUTHORITY_CONFLICT"
+        )
     selected = authoritative[0]
     ignored = any(claim.value != selected.value for claim in matching if claim not in authoritative)
     return ConflictDecision(
-        kind.value, ContextStatus.PRESENT, selected.source_type,
+        kind.value,
+        ContextStatus.PRESENT,
+        selected.source_type,
         "LOWER_AUTHORITY_CONTRADICTION_IGNORED" if ignored else "CONSISTENT",
     )

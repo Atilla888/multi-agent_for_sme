@@ -49,12 +49,15 @@ class DevKnowledgeConfig:
     def __post_init__(self) -> None:
         if not 0 <= self.DEV_CHUNK_OVERLAP_CHARS < self.DEV_CHUNK_MAX_CHARS:
             raise ValueError("Invalid development chunk overlap")
-        if min(
-            self.DEV_DOCUMENT_MAX_BYTES,
-            self.DEV_CHUNK_MAX_CHARS,
-            self.DEV_RETRIEVAL_MAX_RESULTS,
-            self.DEV_RETRIEVAL_MAX_QUERY_CHARS,
-        ) < 1:
+        if (
+            min(
+                self.DEV_DOCUMENT_MAX_BYTES,
+                self.DEV_CHUNK_MAX_CHARS,
+                self.DEV_RETRIEVAL_MAX_RESULTS,
+                self.DEV_RETRIEVAL_MAX_QUERY_CHARS,
+            )
+            < 1
+        ):
             raise ValueError("Development limits must be positive")
 
 

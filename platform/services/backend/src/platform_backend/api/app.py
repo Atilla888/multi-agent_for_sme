@@ -28,4 +28,3 @@ def readiness(response: Response) -> dict[str, str]:
         response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
         return {"status": "not_ready"}
     return {"status": "ready", "migration": str(revision)}
-

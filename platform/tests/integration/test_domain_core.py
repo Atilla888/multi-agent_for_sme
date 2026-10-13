@@ -33,7 +33,8 @@ def test_cross_tenant_and_missing_order_are_not_accessible(
     a, b = seed_tenant(admin_connection), seed_tenant(admin_connection)
     database = PostgresDatabase(runtime_url)
     created = OrderService(database).create_order(
-        a.context(operation_key="order-a"), a.customer_id,
+        a.context(operation_key="order-a"),
+        a.customer_id,
         (OrderLineRequest(a.product_id, Decimal("1"), 1),),
     )
     query = QueryService(database)
@@ -69,7 +70,9 @@ def test_order_creation_is_atomic_audited_and_idempotent(
     with database.transaction(fixture.business_id) as repository:
         order = repository.get_order(UUID(result["order_id"]))
         inventory = repository.get_inventory(fixture.product_id)
-        operation = repository.get_operation("create_order", context.principal.actor_scope, "create-1")
+        operation = repository.get_operation(
+            "create_order", context.principal.actor_scope, "create-1"
+        )
         assert order is not None and order.version == 1 and len(order.items) == 1
         assert inventory is not None and inventory.available_qty == Decimal("5.0000")
         assert operation is not None and operation["status"] == "SUCCEEDED"
@@ -90,13 +93,15 @@ def test_stale_quote_and_changed_idempotency_payload_fail(
     context = fixture.context(operation_key="stale-quote")
     with pytest.raises(DomainFailure) as stale:
         service.create_order(
-            context, fixture.customer_id,
+            context,
+            fixture.customer_id,
             (OrderLineRequest(fixture.product_id, Decimal("1"), 2),),
         )
     assert stale.value.code is ErrorCode.STALE_STATE
     with pytest.raises(DomainFailure) as changed:
         service.create_order(
-            context, fixture.customer_id,
+            context,
+            fixture.customer_id,
             (OrderLineRequest(fixture.product_id, Decimal("2"), 1),),
         )
     assert changed.value.code is ErrorCode.CONFLICT
@@ -108,7 +113,9 @@ def test_last_unit_concurrency_cannot_oversell(admin_connection, runtime_url: st
     service = OrderService(database)
     line = OrderLineRequest(fixture.product_id, Decimal("1"), 1)
     orders = [
-        service.create_order(fixture.context(operation_key=f"make-{n}"), fixture.customer_id, (line,))
+        service.create_order(
+            fixture.context(operation_key=f"make-{n}"), fixture.customer_id, (line,)
+        )
         for n in range(2)
     ]
 
@@ -116,7 +123,9 @@ def test_last_unit_concurrency_cannot_oversell(admin_connection, runtime_url: st
         try:
             service.reserve_inventory(
                 fixture.context(operation_key=f"reserve-{index}"),
-                UUID(orders[index]["order_id"]), 1, {fixture.product_id: 1},
+                UUID(orders[index]["order_id"]),
+                1,
+                {fixture.product_id: 1},
             )
             return "SUCCEEDED"
         except DomainFailure as failure:
@@ -154,13 +163,18 @@ def test_multi_line_insufficiency_keeps_all_inventory_unchanged(
     database = PostgresDatabase(runtime_url)
     service = OrderService(database)
     order = service.create_order(
-        fixture.context(operation_key="two-lines"), fixture.customer_id,
-        (OrderLineRequest(fixture.product_id, Decimal("1"), 1),
-         OrderLineRequest(other_product, Decimal("1"), 1)),
+        fixture.context(operation_key="two-lines"),
+        fixture.customer_id,
+        (
+            OrderLineRequest(fixture.product_id, Decimal("1"), 1),
+            OrderLineRequest(other_product, Decimal("1"), 1),
+        ),
     )
     with pytest.raises(DomainFailure) as failure:
         service.reserve_inventory(
-            fixture.context(operation_key="reserve-two"), UUID(order["order_id"]), 1,
+            fixture.context(operation_key="reserve-two"),
+            UUID(order["order_id"]),
+            1,
             {fixture.product_id: 1, other_product: 1},
         )
     assert failure.value.code is ErrorCode.INSUFFICIENT_INVENTORY
@@ -207,8 +221,7 @@ def test_unknown_operation_is_durable_and_requires_reconciliation(
         assert operation is not None and operation["status"] == "UNKNOWN"
     with admin_connection.cursor() as cursor:
         cursor.execute(
-            "SELECT reconcile_after FROM idempotency_operations "
-            "WHERE business_id=%s AND id=%s",
+            "SELECT reconcile_after FROM idempotency_operations WHERE business_id=%s AND id=%s",
             (fixture.business_id, ticket.id),
         )
         assert cursor.fetchone()[0] is not None

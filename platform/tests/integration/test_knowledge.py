@@ -28,8 +28,10 @@ from tests.unit.test_knowledge_processing import FakeTestEmbedding
 def rag(admin_connection: psycopg.Connection, runtime_url: str):
     tenant = seed_tenant(admin_connection)
     store = MinioPrivateStore(
-        os.environ["MINIO_ENDPOINT"], os.environ["MINIO_APP_USER"],
-        os.environ["MINIO_APP_PASSWORD"], os.environ["MINIO_APP_BUCKET"],
+        os.environ["MINIO_ENDPOINT"],
+        os.environ["MINIO_APP_USER"],
+        os.environ["MINIO_APP_PASSWORD"],
+        os.environ["MINIO_APP_BUCKET"],
     )
     database = PostgresDatabase(runtime_url)
     service = KnowledgeService(database, store, FakeTestEmbedding())
@@ -42,8 +44,11 @@ def _owner(tenant):
 
 def _customer(tenant):
     return PrincipalContext(
-        PrincipalKind.CUSTOMER, tenant.identity_id, tenant.business_id,
-        customer_id=tenant.customer_id, identity_id=tenant.identity_id,
+        PrincipalKind.CUSTOMER,
+        tenant.identity_id,
+        tenant.business_id,
+        customer_id=tenant.customer_id,
+        identity_id=tenant.identity_id,
     )
 
 
@@ -59,7 +64,9 @@ def test_real_minio_pgvector_private_hash_and_provenance(rag, admin_connection):
     tenant, _, store, service = rag
     owner = _owner(tenant)
     document = service.create_document(owner, "Refund guidance", "CUSTOMER")
-    staged, revision = _publish(service, owner, document, "Refunds require receipt.\nReturn within 30 days.")
+    staged, revision = _publish(
+        service, owner, document, "Refunds require receipt.\nReturn within 30 days."
+    )
     assert revision == 2
     row = admin_connection.execute(
         "SELECT o.object_key,o.status,o.sha256,e.embedding_dimension,vector_dims(e.embedding),"
@@ -71,9 +78,11 @@ def test_real_minio_pgvector_private_hash_and_provenance(rag, admin_connection):
     ).fetchone()
     assert row[0].startswith(f"business/{tenant.business_id}/DOCUMENT/")
     assert row[1] == "CLEAN"
-    assert row[2] == staged.source_sha256 == hashlib.sha256(
-        b"Refunds require receipt.\nReturn within 30 days."
-    ).hexdigest()
+    assert (
+        row[2]
+        == staged.source_sha256
+        == hashlib.sha256(b"Refunds require receipt.\nReturn within 30 days.").hexdigest()
+    )
     assert row[3] == row[4] == 4 and row[5].startswith("line:")
     assert len(row[6]) == 64 and row[7] and row[8] == service.embedding_revision
     result = service.retrieve(RetrievalRequest(owner, "refund policy"))
@@ -110,17 +119,26 @@ def test_v1_v2_stage_ready_publish_revoke_sequence(rag):
     owner = _owner(tenant)
     doc = service.create_document(owner, "Versioned returns", "CUSTOMER")
     v1, revision = _publish(service, owner, doc, "Refunds require a receipt.")
-    assert service.retrieve(RetrievalRequest(owner, "refund")).evidence[0].version_id == v1.version_id
+    assert (
+        service.retrieve(RetrievalRequest(owner, "refund")).evidence[0].version_id == v1.version_id
+    )
     v2 = service.stage_version(owner, doc, b"Refunds now require order reference.", "text/plain")
-    assert service.retrieve(RetrievalRequest(owner, "refund")).evidence[0].version_id == v1.version_id
+    assert (
+        service.retrieve(RetrievalRequest(owner, "refund")).evidence[0].version_id == v1.version_id
+    )
     service.process_version(owner, v2.version_id)
-    assert service.retrieve(RetrievalRequest(owner, "refund")).evidence[0].version_id == v1.version_id
+    assert (
+        service.retrieve(RetrievalRequest(owner, "refund")).evidence[0].version_id == v1.version_id
+    )
     revision = service.publish(owner, doc, v2.version_id, revision)
     current = service.retrieve(RetrievalRequest(owner, "refund"))
     assert current.evidence and {item.version_id for item in current.evidence} == {v2.version_id}
     assert all("order reference" in item.text for item in current.evidence)
     service.revoke(owner, doc, revision)
-    assert service.retrieve(RetrievalRequest(owner, "refund")).trace.status is KnowledgeCode.RETRIEVAL_EMPTY
+    assert (
+        service.retrieve(RetrievalRequest(owner, "refund")).trace.status
+        is KnowledgeCode.RETRIEVAL_EMPTY
+    )
 
 
 def test_failed_v2_preserves_published_v1(rag):
@@ -210,7 +228,9 @@ def test_invalid_upload_rejected_before_object(rag, data, media_type, code):
 def test_oversized_upload_rejected(rag):
     tenant, database, store, _ = rag
     service = KnowledgeService(
-        database, store, FakeTestEmbedding(),
+        database,
+        store,
+        FakeTestEmbedding(),
         config=DevKnowledgeConfig(DEV_DOCUMENT_MAX_BYTES=5),
     )
     owner = _owner(tenant)
@@ -297,10 +317,13 @@ def test_object_read_failure_is_typed_and_keeps_current_version(rag, admin_conne
     with pytest.raises(KnowledgeFailure) as failure:
         broken.process_version(owner, v2.version_id)
     assert failure.value.code is KnowledgeCode.OBJECT_UNAVAILABLE
-    assert admin_connection.execute(
-        "SELECT status FROM document_versions WHERE business_id=%s AND id=%s",
-        (tenant.business_id, v2.version_id),
-    ).fetchone()[0] == "FAILED"
+    assert (
+        admin_connection.execute(
+            "SELECT status FROM document_versions WHERE business_id=%s AND id=%s",
+            (tenant.business_id, v2.version_id),
+        ).fetchone()[0]
+        == "FAILED"
+    )
     current = service.retrieve(RetrievalRequest(owner, "refund"))
     assert current.evidence and {item.version_id for item in current.evidence} == {v1.version_id}
 
@@ -327,10 +350,13 @@ def test_embedding_failure_and_dimension_mismatch_fail_closed(rag, admin_connect
         with pytest.raises(KnowledgeFailure) as failure:
             service.process_version(owner, staged.version_id)
         assert failure.value.code is code
-        assert admin_connection.execute(
-            "SELECT status FROM document_versions WHERE business_id=%s AND id=%s",
-            (tenant.business_id, staged.version_id),
-        ).fetchone()[0] == "FAILED"
+        assert (
+            admin_connection.execute(
+                "SELECT status FROM document_versions WHERE business_id=%s AND id=%s",
+                (tenant.business_id, staged.version_id),
+            ).fetchone()[0]
+            == "FAILED"
+        )
 
 
 def test_embedding_revision_change_requires_new_version_path(rag):
@@ -367,7 +393,8 @@ def test_postgres_unavailable_is_typed(rag):
     tenant, _, store, _ = rag
     service = KnowledgeService(
         PostgresDatabase("postgresql://invalid:invalid@127.0.0.1:1/none"),
-        store, FakeTestEmbedding(),
+        store,
+        FakeTestEmbedding(),
     )
     with pytest.raises(KnowledgeFailure) as failure:
         service.create_document(_owner(tenant), "Unavailable", "CUSTOMER")
@@ -395,18 +422,28 @@ def test_malicious_document_is_data_only_in_brain(rag, admin_connection):
         (tenant.business_id, tenant.product_id),
     )
     request = ContextRequest(
-        request_id=uuid4(), principal=owner, purpose=ContextPurpose.SUPPORT,
-        question="refund order policy", policy_version="m07-dev-v1",
-        agent_role=AgentRole.SUPPORT, order_id=order_id,
-        product_ids=(tenant.product_id,), include_knowledge=True,
+        request_id=uuid4(),
+        principal=owner,
+        purpose=ContextPurpose.SUPPORT,
+        question="refund order policy",
+        policy_version="m07-dev-v1",
+        agent_role=AgentRole.SUPPORT,
+        order_id=order_id,
+        product_ids=(tenant.product_id,),
+        include_knowledge=True,
     )
     bundle = BusinessBrain(database, knowledge=KnowledgeContextProvider(service)).build(request)
     baseline = BusinessBrain(database).build(
         ContextRequest(
-            request_id=uuid4(), principal=owner, purpose=ContextPurpose.SUPPORT,
-            question="refund order policy", policy_version="m07-dev-v1",
-            agent_role=AgentRole.SUPPORT, order_id=order_id,
-            product_ids=(tenant.product_id,), include_knowledge=False,
+            request_id=uuid4(),
+            principal=owner,
+            purpose=ContextPurpose.SUPPORT,
+            question="refund order policy",
+            policy_version="m07-dev-v1",
+            agent_role=AgentRole.SUPPORT,
+            order_id=order_id,
+            product_ids=(tenant.product_id,),
+            include_knowledge=False,
         )
     )
     assert bundle.structured.order is not None and bundle.structured.order.status == "CREATED"
@@ -418,10 +455,13 @@ def test_malicious_document_is_data_only_in_brain(rag, admin_connection):
         (item.code, item.statement) for item in baseline.rules.rules
     ]
     assert bundle.rules.status is ContextStatus.PRESENT
-    assert admin_connection.execute(
-        "SELECT status FROM orders WHERE business_id=%s AND id=%s",
-        (tenant.business_id, order_id),
-    ).fetchone()[0] == "CREATED"
+    assert (
+        admin_connection.execute(
+            "SELECT status FROM orders WHERE business_id=%s AND id=%s",
+            (tenant.business_id, order_id),
+        ).fetchone()[0]
+        == "CREATED"
+    )
 
 
 def test_empty_retrieval_query_is_explicit(rag):

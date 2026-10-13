@@ -33,16 +33,29 @@ def _b64(value: int) -> str:
 def keys():
     private = rsa.generate_private_key(public_exponent=65537, key_size=2048)
     public = private.public_key().public_numbers()
-    jwks = {"keys": [{"kty": "RSA", "kid": "engineering-key", "use": "sig",
-                      "alg": "RS256", "n": _b64(public.n), "e": _b64(public.e)}]}
+    jwks = {
+        "keys": [
+            {
+                "kty": "RSA",
+                "kid": "engineering-key",
+                "use": "sig",
+                "alg": "RS256",
+                "n": _b64(public.n),
+                "e": _b64(public.e),
+            }
+        ]
+    }
     return private, jwks
 
 
 def token(private, subject: UUID, **changes) -> str:
     now = datetime.now(UTC)
     claims = {
-        "iss": ISSUER, "aud": AUDIENCE, "sub": str(subject),
-        "iat": int(now.timestamp()), "exp": int((now + timedelta(minutes=10)).timestamp()),
+        "iss": ISSUER,
+        "aud": AUDIENCE,
+        "sub": str(subject),
+        "iat": int(now.timestamp()),
+        "exp": int((now + timedelta(minutes=10)).timestamp()),
         "typ": "Bearer",
     }
     claims.update(changes)
@@ -93,9 +106,16 @@ def test_invalid_signature_and_unsupported_algorithm_are_rejected(keys) -> None:
         verifier(jwks).verify_access_token(token(other, uuid4()))
     assert invalid.value.code is ErrorCode.UNAUTHENTICATED
     hs = jwt.encode(
-        {"iss": ISSUER, "aud": AUDIENCE, "sub": str(uuid4()), "iat": 1,
-         "exp": 9999999999, "typ": "Bearer"},
-        "not-an-allowed-key-with-32-byte-minimum", algorithm="HS256",
+        {
+            "iss": ISSUER,
+            "aud": AUDIENCE,
+            "sub": str(uuid4()),
+            "iat": 1,
+            "exp": 9999999999,
+            "typ": "Bearer",
+        },
+        "not-an-allowed-key-with-32-byte-minimum",
+        algorithm="HS256",
         headers={"kid": "engineering-key"},
     )
     with pytest.raises(DomainFailure) as unsupported:
@@ -116,8 +136,12 @@ def test_platform_admin_is_not_automatically_business_owner(
     assert principal.staff_role is StaffRole.PLATFORM_ADMIN
     with pytest.raises(DomainFailure) as forbidden:
         QueryService(PostgresDatabase(runtime_url)).report(
-            principal, datetime.now(UTC) - timedelta(days=1), datetime.now(UTC),
-            "DAY", "CONFIRMED_ORDER_UNITS", None,
+            principal,
+            datetime.now(UTC) - timedelta(days=1),
+            datetime.now(UTC),
+            "DAY",
+            "CONFIRMED_ORDER_UNITS",
+            None,
         )
     assert forbidden.value.code is ErrorCode.FORBIDDEN
 
@@ -155,22 +179,26 @@ def test_customer_owns_only_linked_order_and_uuid_is_not_authority(
         fixture.business_id, "TELEGRAM", "different-account", uuid4()
     )
     order = OrderService(database).create_order(
-        fixture.context(operation_key="customer-protected-order"), fixture.customer_id,
+        fixture.context(operation_key="customer-protected-order"),
+        fixture.customer_id,
         (OrderLineRequest(fixture.product_id, Decimal("1"), 1),),
     )
     own = PrincipalContext(
-        PrincipalKind.CUSTOMER, fixture.identity_id, fixture.business_id,
-        customer_id=fixture.customer_id, identity_id=fixture.identity_id,
+        PrincipalKind.CUSTOMER,
+        fixture.identity_id,
+        fixture.business_id,
+        customer_id=fixture.customer_id,
+        identity_id=fixture.identity_id,
     )
-    assert QueryService(database).get_order(own, UUID(order["order_id"])).id == UUID(order["order_id"])
+    assert QueryService(database).get_order(own, UUID(order["order_id"])).id == UUID(
+        order["order_id"]
+    )
     with pytest.raises(DomainFailure) as forbidden:
         QueryService(database).get_order(other.principal(), UUID(order["order_id"]))
     assert forbidden.value.code is ErrorCode.NOT_ACCESSIBLE
 
 
-def test_operator_needs_explicit_escalation_assignment(
-    admin_connection, runtime_url: str
-) -> None:
+def test_operator_needs_explicit_escalation_assignment(admin_connection, runtime_url: str) -> None:
     fixture = seed_tenant(admin_connection, role="OPERATOR")
     order_id = uuid4()
     with admin_connection.cursor() as cursor:

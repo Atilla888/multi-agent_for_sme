@@ -29,8 +29,11 @@ class TenantFixture:
     message_id: UUID
 
     def context(
-        self, *, agent: AgentRole = AgentRole.SALES,
-        role: StaffRole = StaffRole.OWNER, operation_key: str | None = None,
+        self,
+        *,
+        agent: AgentRole = AgentRole.SALES,
+        role: StaffRole = StaffRole.OWNER,
+        operation_key: str | None = None,
     ) -> ExecutionContext:
         return ExecutionContext(
             principal=PrincipalContext(
@@ -47,7 +50,8 @@ class TenantFixture:
 
 def seed_tenant(
     connection: psycopg.Connection,
-    *, quantity: Decimal = Decimal("5.0000"),
+    *,
+    quantity: Decimal = Decimal("5.0000"),
     price: Decimal = Decimal("12.3400"),
     role: str = "OWNER",
 ) -> TenantFixture:
@@ -122,6 +126,13 @@ def seed_tenant(
             (business_id, run_id, message_id),
         )
     return TenantFixture(
-        business_id, user_id, customer_id, identity_id, product_id, inventory_id,
-        run_id, conversation_id, message_id,
+        business_id,
+        user_id,
+        customer_id,
+        identity_id,
+        product_id,
+        inventory_id,
+        run_id,
+        conversation_id,
+        message_id,
     )

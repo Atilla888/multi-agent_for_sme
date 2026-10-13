@@ -29,16 +29,14 @@ class ProductCursor:
 
     def encode(self, business_id: UUID, query: str, name: str, product_id: UUID) -> str:
         payload = json.dumps(
-            {"b": str(business_id), "q": self._query_hash(query),
-             "n": name, "i": str(product_id)},
-            sort_keys=True, separators=(",", ":"),
+            {"b": str(business_id), "q": self._query_hash(query), "n": name, "i": str(product_id)},
+            sort_keys=True,
+            separators=(",", ":"),
         ).encode()
         signature = hmac.new(self._secret, payload, hashlib.sha256).digest()
         return f"{_b64(payload)}.{_b64(signature)}"
 
-    def decode(
-        self, token: str, business_id: UUID, query: str
-    ) -> tuple[str, UUID]:
+    def decode(self, token: str, business_id: UUID, query: str) -> tuple[str, UUID]:
         try:
             left, right = token.split(".", 1)
             payload, signature = _unb64(left), _unb64(right)

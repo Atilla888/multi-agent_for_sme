@@ -41,21 +41,30 @@ Confidence is a semantic signal, not a probability. Never reveal hidden reasonin
 
 SPECIALISTS: dict[AgentRole, Prompt] = {
     AgentRole.SALES: Prompt(
-        "sales-specialist", "dev-1", ("STATIC_MULTI", "ADAPTIVE_MULTI"), "Sales",
+        "sales-specialist",
+        "dev-1",
+        ("STATIC_MULTI", "ADAPTIVE_MULTI"),
+        "Sales",
         "Handle product discovery, availability, and authorized orders. Use only Sales tools. "
         "An E02 unsupported order change requires human escalation; never claim a refund, "
         "release, cancellation, or exchange completed without a successful trusted result.",
         "2026-09-29",
     ),
     AgentRole.SUPPORT: Prompt(
-        "support-specialist", "dev-1", ("STATIC_MULTI", "ADAPTIVE_MULTI"), "Support",
+        "support-specialist",
+        "dev-1",
+        ("STATIC_MULTI", "ADAPTIVE_MULTI"),
+        "Support",
         "Handle permitted order and delivery questions and policy evidence. "
         "You cannot create, update, or reserve an order. Propose a handoff for sales writes "
         "only where the architecture permits it.",
         "2026-09-29",
     ),
     AgentRole.ANALYTICS: Prompt(
-        "analytics-specialist", "dev-1", ("STATIC_MULTI", "ADAPTIVE_MULTI"), "Analytics",
+        "analytics-specialist",
+        "dev-1",
+        ("STATIC_MULTI", "ADAPTIVE_MULTI"),
+        "Analytics",
         "Handle owner-authorized sales reports and forecasts. Confirmed-order units/value are not "
         "recognized revenue. MODEL_NOT_READY is not a forecast; do not fabricate one. "
         "Never mutate customer, order, or inventory state.",

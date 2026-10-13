@@ -4,11 +4,31 @@ import psycopg
 import pytest
 
 EXPECTED_TABLES = {
-    "businesses", "app_users", "business_memberships", "customers", "customer_identities",
-    "integrations", "products", "inventory", "orders", "order_items", "conversations",
-    "messages", "object_records", "message_attachments", "documents", "document_versions",
-    "embeddings", "agent_runs", "idempotency_operations", "tool_calls", "agent_steps",
-    "escalations", "audit_logs", "model_artifacts", "forecast_runs",
+    "businesses",
+    "app_users",
+    "business_memberships",
+    "customers",
+    "customer_identities",
+    "integrations",
+    "products",
+    "inventory",
+    "orders",
+    "order_items",
+    "conversations",
+    "messages",
+    "object_records",
+    "message_attachments",
+    "documents",
+    "document_versions",
+    "embeddings",
+    "agent_runs",
+    "idempotency_operations",
+    "tool_calls",
+    "agent_steps",
+    "escalations",
+    "audit_logs",
+    "model_artifacts",
+    "forecast_runs",
 }
 
 
@@ -114,7 +134,10 @@ def test_transaction_rollback_does_not_persist_product(migrator_url: str) -> Non
                 )
             raise RuntimeError("rollback test sentinel")
         with connection.cursor() as cursor:
-            cursor.execute("SELECT count(*) FROM products WHERE business_id=%s AND id=%s", (business_id, product_id))
+            cursor.execute(
+                "SELECT count(*) FROM products WHERE business_id=%s AND id=%s",
+                (business_id, product_id),
+            )
             assert cursor.fetchone() == (0,)
 
 
@@ -130,4 +153,3 @@ def test_forecast_artifact_fk_is_required(admin_connection) -> None:
             "SELECT count(*) FROM pg_constraint WHERE conname='fk_forecast_runs_0' AND contype='f'"
         )
         assert cursor.fetchone() == (1,)
-

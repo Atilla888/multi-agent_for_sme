@@ -20,8 +20,14 @@ pytestmark = [pytest.mark.postgres, pytest.mark.integration]
 BASE = "http://keycloak:8080"
 
 
-def _http(path: str, *, method: str = "GET", body: dict | None = None,
-          bearer: str | None = None, form: bool = False) -> tuple[int, dict, str | None]:
+def _http(
+    path: str,
+    *,
+    method: str = "GET",
+    body: dict | None = None,
+    bearer: str | None = None,
+    form: bool = False,
+) -> tuple[int, dict, str | None]:
     headers = {"Accept": "application/json"}
     data = None
     if body is not None:
@@ -57,9 +63,15 @@ def test_live_keycloak_token_jwks_membership_and_wrong_audience(
     admin_user = os.environ["KEYCLOAK_SMOKE_ADMIN_USER"]
     admin_password = os.environ["KEYCLOAK_SMOKE_ADMIN_PASSWORD"]
     _, admin_grant, _ = _http(
-        "/realms/master/protocol/openid-connect/token", method="POST", form=True,
-        body={"grant_type": "password", "client_id": "admin-cli",
-              "username": admin_user, "password": admin_password},
+        "/realms/master/protocol/openid-connect/token",
+        method="POST",
+        form=True,
+        body={
+            "grant_type": "password",
+            "client_id": "admin-cli",
+            "username": admin_user,
+            "password": admin_password,
+        },
     )
     admin_token = admin_grant["access_token"]
     realm = f"m05-smoke-{uuid4().hex}"
@@ -67,49 +79,80 @@ def test_live_keycloak_token_jwks_membership_and_wrong_audience(
     created = False
     try:
         status, _, _ = _http(
-            "/admin/realms", method="POST", bearer=admin_token,
+            "/admin/realms",
+            method="POST",
+            bearer=admin_token,
             body={"realm": realm, "enabled": True},
         )
         assert status == 201
         created = True
         status, _, _ = _http(
-            f"/admin/realms/{realm}/clients", method="POST", bearer=admin_token,
+            f"/admin/realms/{realm}/clients",
+            method="POST",
+            bearer=admin_token,
             body={
-                "clientId": "business-api", "enabled": True, "publicClient": True,
-                "directAccessGrantsEnabled": True, "protocol": "openid-connect",
-                "protocolMappers": [{
-                    "name": "business-api-audience", "protocol": "openid-connect",
-                    "protocolMapper": "oidc-audience-mapper", "consentRequired": False,
-                    "config": {"included.client.audience": "business-api",
-                               "access.token.claim": "true", "id.token.claim": "false"},
-                }],
+                "clientId": "business-api",
+                "enabled": True,
+                "publicClient": True,
+                "directAccessGrantsEnabled": True,
+                "protocol": "openid-connect",
+                "protocolMappers": [
+                    {
+                        "name": "business-api-audience",
+                        "protocol": "openid-connect",
+                        "protocolMapper": "oidc-audience-mapper",
+                        "consentRequired": False,
+                        "config": {
+                            "included.client.audience": "business-api",
+                            "access.token.claim": "true",
+                            "id.token.claim": "false",
+                        },
+                    }
+                ],
             },
         )
         assert status == 201
         password = secrets.token_urlsafe(32)
         username = f"smoke-{uuid4().hex}"
         status, _, location = _http(
-            f"/admin/realms/{realm}/users", method="POST", bearer=admin_token,
-            body={"username": username, "enabled": True,
-                  "email": f"{username}@example.invalid", "emailVerified": True,
-                  "firstName": "Engineering", "lastName": "Smoke",
-                  "requiredActions": [],
-                  "credentials": [{"type": "password", "value": password,
-                                   "temporary": False}]},
+            f"/admin/realms/{realm}/users",
+            method="POST",
+            bearer=admin_token,
+            body={
+                "username": username,
+                "enabled": True,
+                "email": f"{username}@example.invalid",
+                "emailVerified": True,
+                "firstName": "Engineering",
+                "lastName": "Smoke",
+                "requiredActions": [],
+                "credentials": [{"type": "password", "value": password, "temporary": False}],
+            },
         )
         assert status == 201 and location is not None
         keycloak_subject = location.rsplit("/", 1)[-1]
         UUID(keycloak_subject)
         _, grant, _ = _http(
-            f"/realms/{realm}/protocol/openid-connect/token", method="POST", form=True,
-            body={"grant_type": "password", "client_id": "business-api",
-                  "username": username, "password": password},
+            f"/realms/{realm}/protocol/openid-connect/token",
+            method="POST",
+            form=True,
+            body={
+                "grant_type": "password",
+                "client_id": "business-api",
+                "username": username,
+                "password": password,
+            },
         )
         token = grant["access_token"]
-        verifier = OidcVerifier(OidcConfig(
-            issuer, "business-api", cache_seconds=60, timeout_seconds=5,
-            allow_local_http=True,
-        ))
+        verifier = OidcVerifier(
+            OidcConfig(
+                issuer,
+                "business-api",
+                cache_seconds=60,
+                timeout_seconds=5,
+                allow_local_http=True,
+            )
+        )
         claims = verifier.verify_access_token(token)
         assert claims["sub"] == keycloak_subject and claims["iss"] == issuer
         fixture = seed_tenant(admin_connection)
@@ -124,14 +167,17 @@ def test_live_keycloak_token_jwks_membership_and_wrong_audience(
         assert principal.subject_id == fixture.user_id
         assert principal.staff_role is StaffRole.OWNER
         with pytest.raises(DomainFailure) as rejected:
-            OidcVerifier(OidcConfig(
-                issuer, "wrong-audience", cache_seconds=60, timeout_seconds=5,
-                allow_local_http=True,
-            )).verify_access_token(token)
+            OidcVerifier(
+                OidcConfig(
+                    issuer,
+                    "wrong-audience",
+                    cache_seconds=60,
+                    timeout_seconds=5,
+                    allow_local_http=True,
+                )
+            ).verify_access_token(token)
         assert rejected.value.code is ErrorCode.UNAUTHENTICATED
     finally:
         if created:
-            status, _, _ = _http(
-                f"/admin/realms/{realm}", method="DELETE", bearer=admin_token
-            )
+            status, _, _ = _http(f"/admin/realms/{realm}", method="DELETE", bearer=admin_token)
             assert status == 204

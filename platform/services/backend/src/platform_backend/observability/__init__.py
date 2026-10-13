@@ -1,2 +1,1 @@
 """Reserved observability boundary."""
-

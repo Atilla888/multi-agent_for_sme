@@ -2,7 +2,8 @@
 
 import math
 from collections.abc import Sequence
-from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeout
+from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import TimeoutError as FutureTimeout
 from typing import Protocol
 
 from platform_backend.knowledge.contracts import KnowledgeCode, KnowledgeFailure
@@ -29,9 +30,13 @@ def validated_embeddings(
     except KnowledgeFailure:
         raise
     except Exception as exc:
-        raise KnowledgeFailure(KnowledgeCode.EMBEDDING_UNAVAILABLE, "Embedding unavailable") from exc
+        raise KnowledgeFailure(
+            KnowledgeCode.EMBEDDING_UNAVAILABLE, "Embedding unavailable"
+        ) from exc
     if len(result) != len(texts):
-        raise KnowledgeFailure(KnowledgeCode.EMBEDDING_DIMENSION_MISMATCH, "Embedding count mismatch")
+        raise KnowledgeFailure(
+            KnowledgeCode.EMBEDDING_DIMENSION_MISMATCH, "Embedding count mismatch"
+        )
     checked = []
     for vector in result:
         if (
@@ -77,6 +82,8 @@ class LocalFastEmbed:
             return future.result(timeout=self._timeout)
         except FutureTimeout as exc:
             future.cancel()
-            raise KnowledgeFailure(KnowledgeCode.EMBEDDING_UNAVAILABLE, "Embedding timed out") from exc
+            raise KnowledgeFailure(
+                KnowledgeCode.EMBEDDING_UNAVAILABLE, "Embedding timed out"
+            ) from exc
         finally:
             executor.shutdown(wait=False, cancel_futures=True)

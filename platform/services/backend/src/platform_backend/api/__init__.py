@@ -1,2 +1,1 @@
 """HTTP adapter boundary."""
-

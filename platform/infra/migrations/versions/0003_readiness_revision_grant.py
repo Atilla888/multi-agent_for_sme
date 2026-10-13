@@ -1,4 +1,5 @@
 """Allow the unprivileged runtime role to read only the migration revision."""
+
 import os
 import re
 

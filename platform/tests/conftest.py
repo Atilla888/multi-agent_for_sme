@@ -26,4 +26,3 @@ def admin_connection(migrator_url: str):
 
     with psycopg.connect(migrator_url, autocommit=True) as connection:
         yield connection
-

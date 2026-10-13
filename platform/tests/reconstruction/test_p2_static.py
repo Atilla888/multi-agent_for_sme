@@ -36,8 +36,10 @@ def test_backend_absolute_imports_resolve_in_source_tree() -> None:
     }
     for path in ROOT.rglob("*.py"):
         for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
-            if isinstance(node, ast.ImportFrom) and node.module and node.module.startswith(
-                "platform_backend."
+            if (
+                isinstance(node, ast.ImportFrom)
+                and node.module
+                and node.module.startswith("platform_backend.")
             ):
                 assert node.module in modules or any(
                     module.startswith(node.module + ".") for module in modules
@@ -66,9 +68,16 @@ def test_frozen_ten_tool_names_and_role_scopes() -> None:
     assert isinstance(inputs, ast.Dict)
     tool_names = {ast.literal_eval(key) for key in inputs.keys}
     assert tool_names == {
-        "find_product", "check_inventory", "find_customer", "get_order",
-        "create_order", "update_order", "reserve_inventory", "get_delivery_status",
-        "get_sales_report", "forecast_sales",
+        "find_product",
+        "check_inventory",
+        "find_customer",
+        "get_order",
+        "create_order",
+        "update_order",
+        "reserve_inventory",
+        "get_delivery_status",
+        "get_sales_report",
+        "forecast_sales",
     }
     scopes = _assigned(executor, "ROLE_TOOLS")
     assert isinstance(scopes, ast.Dict)
@@ -79,11 +88,19 @@ def test_frozen_ten_tool_names_and_role_scopes() -> None:
         role_tools[key.attr] = set(ast.literal_eval(call.args[0]))
     assert role_tools == {
         "SALES": {
-            "find_product", "check_inventory", "find_customer", "get_order",
-            "create_order", "update_order", "reserve_inventory",
+            "find_product",
+            "check_inventory",
+            "find_customer",
+            "get_order",
+            "create_order",
+            "update_order",
+            "reserve_inventory",
         },
         "SUPPORT": {
-            "check_inventory", "find_customer", "get_order", "get_delivery_status",
+            "check_inventory",
+            "find_customer",
+            "get_order",
+            "get_delivery_status",
         },
         "ANALYTICS": {"get_sales_report", "forecast_sales"},
     }

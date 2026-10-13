@@ -32,7 +32,9 @@ class MinioPrivateStore:
             )
             return response.version_id
         except Exception as exc:
-            raise KnowledgeFailure(KnowledgeCode.OBJECT_UNAVAILABLE, "Object upload unavailable") from exc
+            raise KnowledgeFailure(
+                KnowledgeCode.OBJECT_UNAVAILABLE, "Object upload unavailable"
+            ) from exc
 
     def read_verified(self, key: str, size: int) -> bytes:
         try:
@@ -48,4 +50,6 @@ class MinioPrivateStore:
         except KnowledgeFailure:
             raise
         except Exception as exc:
-            raise KnowledgeFailure(KnowledgeCode.OBJECT_UNAVAILABLE, "Object read unavailable") from exc
+            raise KnowledgeFailure(
+                KnowledgeCode.OBJECT_UNAVAILABLE, "Object read unavailable"
+            ) from exc

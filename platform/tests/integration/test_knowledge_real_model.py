@@ -14,8 +14,10 @@ def test_local_model_ranks_public_development_refund_example(admin_connection, r
     tenant = seed_tenant(admin_connection)
     owner = tenant.context().principal
     store = MinioPrivateStore(
-        os.environ["MINIO_ENDPOINT"], os.environ["MINIO_APP_USER"],
-        os.environ["MINIO_APP_PASSWORD"], os.environ["MINIO_APP_BUCKET"],
+        os.environ["MINIO_ENDPOINT"],
+        os.environ["MINIO_APP_USER"],
+        os.environ["MINIO_APP_PASSWORD"],
+        os.environ["MINIO_APP_BUCKET"],
     )
     service = KnowledgeService(PostgresDatabase(runtime_url), store, LocalFastEmbed())
     relevant = service.create_document(owner, "Returns", "CUSTOMER")

@@ -109,4 +109,3 @@ class AgentOutcome:
     output_tokens: int
     latency_ms: float
     handoff_proposal: AgentRole | None = None
-

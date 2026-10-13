@@ -35,7 +35,10 @@ class IdentityService:
         self._database = database
 
     def resolve_or_create_verified_channel_identity(
-        self, business_id: UUID, channel: str, external_user_id: str,
+        self,
+        business_id: UUID,
+        channel: str,
+        external_user_id: str,
         correlation_id: UUID,
     ) -> LinkedCustomer:
         """Caller must have verified the provider/session before invoking this method."""
@@ -56,8 +59,12 @@ class IdentityService:
                     customer_id, identity_id, channel, external_user_id
                 )
                 repository.append_audit(
-                    uuid4(), correlation_id, f"CHANNEL:{actor_digest}",
-                    "IDENTITY_RESOLVED", "customer_identity", identity_id,
+                    uuid4(),
+                    correlation_id,
+                    f"CHANNEL:{actor_digest}",
+                    "IDENTITY_RESOLVED",
+                    "customer_identity",
+                    identity_id,
                     {"link_method": "FIRST_CONTACT", "channel": channel},
                 )
                 return LinkedCustomer(business_id, customer_id, identity_id, channel)
@@ -67,7 +74,8 @@ class IdentityService:
                 winner = repository.get_customer_identity(channel, external_user_id)
                 if winner is None:
                     raise DomainFailure(
-                        ErrorCode.OUTCOME_UNKNOWN, "Identity creation needs reconciliation",
+                        ErrorCode.OUTCOME_UNKNOWN,
+                        "Identity creation needs reconciliation",
                         reconciliation_required=True,
                     ) from None
                 return LinkedCustomer(business_id, winner["customer_id"], winner["id"], channel)

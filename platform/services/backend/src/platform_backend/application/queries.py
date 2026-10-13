@@ -20,7 +20,10 @@ class QueryService:
         self._database = database
 
     def find_products(
-        self, principal: PrincipalContext, query: str, limit: int,
+        self,
+        principal: PrincipalContext,
+        query: str,
+        limit: int,
         after: tuple[str, UUID] | None = None,
     ) -> list[Product]:
         if not query.strip() or len(query) > 120 or not 1 <= limit <= 50:
@@ -78,11 +81,18 @@ class QueryService:
             return order
 
     def report(
-        self, principal: PrincipalContext, start: datetime, end: datetime,
-        granularity: str, target: str, product_id: UUID | None,
+        self,
+        principal: PrincipalContext,
+        start: datetime,
+        end: datetime,
+        granularity: str,
+        target: str,
+        product_id: UUID | None,
     ) -> dict[str, Any]:
         if (
-            start.tzinfo is None or end.tzinfo is None or start >= end
+            start.tzinfo is None
+            or end.tzinfo is None
+            or start >= end
             or granularity not in {"DAY", "WEEK", "MONTH"}
             or target not in {"CONFIRMED_ORDER_UNITS", "CONFIRMED_ORDER_VALUE"}
         ):
@@ -95,15 +105,21 @@ class QueryService:
         measure = "units" if target == "CONFIRMED_ORDER_UNITS" else "value"
         series = [
             {
-                "period": row["period"].isoformat(), "currency": row["currency"],
+                "period": row["period"].isoformat(),
+                "currency": row["currency"],
                 "value": str(row[measure]),
             }
             for row in rows
         ]
         # No cross-currency total is invented; every series point carries its currency.
         return {
-            "series": series, "target_definition": target, "included_statuses": ["CONFIRMED"],
-            "event_timestamp": "orders.created_at", "cutoff": end.isoformat(),
-            "as_of": datetime.now(UTC).isoformat(), "granularity": granularity,
-            "currency_scope": "PER_CURRENCY", "product_id": str(product_id) if product_id else None,
+            "series": series,
+            "target_definition": target,
+            "included_statuses": ["CONFIRMED"],
+            "event_timestamp": "orders.created_at",
+            "cutoff": end.isoformat(),
+            "as_of": datetime.now(UTC).isoformat(),
+            "granularity": granularity,
+            "currency_scope": "PER_CURRENCY",
+            "product_id": str(product_id) if product_id else None,
         }

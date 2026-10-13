@@ -11,12 +11,12 @@ from uuid import UUID
 from pydantic import ValidationError
 
 from platform_backend.agents.contracts import (
+    MODEL_DECISION_SCHEMA,
     AgentDecision,
     AgentEvent,
     AgentOutcome,
     Confidence,
     DecisionType,
-    MODEL_DECISION_SCHEMA,
     OutcomeStatus,
 )
 from platform_backend.agents.prompts import specialist_digest, specialist_prompt
@@ -116,23 +116,41 @@ class SpecialistAgent:
             confirmed = self._confirmed_effects(executed_names, tool_results)
             if confirmed:
                 # The model cannot reverse or invent a committed write in user-facing text.
-                response = confirmed if status is OutcomeStatus.AUTONOMOUS_SUCCESS else (
-                    f"{confirmed} {response}"
+                response = (
+                    confirmed
+                    if status is OutcomeStatus.AUTONOMOUS_SUCCESS
+                    else (f"{confirmed} {response}")
                 )
             events.append(AgentEvent("TERMINAL", status.value))
             return AgentOutcome(
-                request.run_id, self.role, status, response, confidence, refs,
-                tuple(tool_results), tuple(events), context_digest, prompt_digest,
-                model_calls, input_tokens, output_tokens,
-                (time.monotonic() - started) * 1000, handoff,
+                request.run_id,
+                self.role,
+                status,
+                response,
+                confidence,
+                refs,
+                tuple(tool_results),
+                tuple(events),
+                context_digest,
+                prompt_digest,
+                model_calls,
+                input_tokens,
+                output_tokens,
+                (time.monotonic() - started) * 1000,
+                handoff,
             )
 
         try:
             bundle = self._brain.build(
                 ContextRequest(
-                    request.request_id, request.principal, ROLE_PURPOSE[self.role],
-                    request.message, request.policy_version, self.role,
-                    conversation_id=request.conversation_id, run_id=request.run_id,
+                    request.request_id,
+                    request.principal,
+                    ROLE_PURPOSE[self.role],
+                    request.message,
+                    request.policy_version,
+                    self.role,
+                    conversation_id=request.conversation_id,
+                    run_id=request.run_id,
                     include_knowledge=True,
                 )
             )
@@ -210,8 +228,13 @@ class SpecialistAgent:
                     ).hexdigest()
                     operation_key = f"m08:{request.run_id}:{decision.tool_name}:{digest[:24]}"
                 context = ExecutionContext(
-                    request.principal, self.role, request.run_id, request.correlation_id,
-                    request.policy_version, deadline, operation_key,
+                    request.principal,
+                    self.role,
+                    request.run_id,
+                    request.correlation_id,
+                    request.policy_version,
+                    deadline,
+                    operation_key,
                 )
                 result = self._executor.execute(
                     decision.tool_name, decision.tool_arguments, context
@@ -240,36 +263,43 @@ class SpecialistAgent:
             if decision.decision is DecisionType.CLARIFY:
                 return outcome(
                     OutcomeStatus.CLARIFICATION_REQUIRED,
-                    decision.clarification or "Please clarify.", decision.confidence,
+                    decision.clarification or "Please clarify.",
+                    decision.confidence,
                 )
             if decision.decision is DecisionType.ESCALATE:
                 return outcome(
                     OutcomeStatus.CONTROLLED_ESCALATION,
-                    "This needs human review.", decision.confidence,
+                    "This needs human review.",
+                    decision.confidence,
                 )
             if decision.decision is DecisionType.HANDOFF:
                 return outcome(
                     OutcomeStatus.SAFE_FAILURE,
                     "A specialist handoff was proposed but requires orchestration.",
-                    decision.confidence, handoff=decision.target_agent,
+                    decision.confidence,
+                    handoff=decision.target_agent,
                 )
             if decision.confidence in {Confidence.LOW, Confidence.UNKNOWN}:
                 return outcome(
                     OutcomeStatus.CONTROLLED_ESCALATION,
-                    "I cannot verify this with sufficient confidence.", decision.confidence,
+                    "I cannot verify this with sufficient confidence.",
+                    decision.confidence,
                 )
             if not decision.evidence_refs or not set(decision.evidence_refs).issubset(evidence):
                 events.append(AgentEvent("GROUNDING_REJECTED", "MISSING_OR_UNKNOWN_EVIDENCE"))
                 return outcome(
                     OutcomeStatus.CLARIFICATION_REQUIRED,
-                    "I need verified information before answering.", decision.confidence,
+                    "I need verified information before answering.",
+                    decision.confidence,
                 )
             if not decision.response:
                 return outcome(OutcomeStatus.SAFE_FAILURE, "No validated answer was produced.")
             if any(item.status is not ResultStatus.SUCCEEDED for item in tool_results):
                 return outcome(OutcomeStatus.SAFE_FAILURE, "A required tool did not succeed.")
             return outcome(
-                OutcomeStatus.AUTONOMOUS_SUCCESS, decision.response, decision.confidence,
+                OutcomeStatus.AUTONOMOUS_SUCCESS,
+                decision.response,
+                decision.confidence,
                 decision.evidence_refs,
             )
         return outcome(OutcomeStatus.BUDGET_EXHAUSTED, "Model-call budget exhausted.")
@@ -300,9 +330,7 @@ class SpecialistAgent:
         refs.update(item.provenance.source_reference for item in bundle.structured.inventory)
         refs.update(item.provenance.source_reference for item in bundle.retrieved.evidence)
         refs.update(item.provenance.source_reference for item in bundle.rules.rules)
-        for item in (
-            bundle.structured.customer, bundle.structured.order, bundle.structured.report
-        ):
+        for item in (bundle.structured.customer, bundle.structured.order, bundle.structured.report):
             if item is not None:
                 refs.add(item.provenance.source_reference)
         return refs

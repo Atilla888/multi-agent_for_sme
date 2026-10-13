@@ -71,7 +71,11 @@ class KnowledgeService:
                 require_owner(principal, repository)
                 repository.knowledge.create_document(document_id, title.strip(), access_scope)
                 repository.knowledge.audit(
-                    uuid4(), uuid4(), principal.actor_scope, "DOCUMENT_CREATED", document_id,
+                    uuid4(),
+                    uuid4(),
+                    principal.actor_scope,
+                    "DOCUMENT_CREATED",
+                    document_id,
                     {"scope": access_scope},
                 )
         except psycopg.Error as exc:
@@ -93,9 +97,7 @@ class KnowledgeService:
         signature = data.lstrip()[:32].lower()
         if data.startswith(
             (b"%PDF", b"PK\x03\x04", b"\x89PNG", b"\xff\xd8")
-        ) or signature.startswith(
-            (b"<!doctype html", b"<html", b"<?xml")
-        ):
+        ) or signature.startswith((b"<!doctype html", b"<html", b"<?xml")):
             raise KnowledgeFailure(KnowledgeCode.UNSUPPORTED_TYPE, "Unsupported document signature")
         version_id, object_id = uuid4(), uuid4()
         key = f"business/{principal.business_id}/DOCUMENT/{object_id}/{version_id}"
@@ -119,8 +121,12 @@ class KnowledgeService:
                     dimension=self._embedding.dimension,
                 )
                 repository.knowledge.audit(
-                    uuid4(), uuid4(), principal.actor_scope, "DOCUMENT_VERSION_STAGED",
-                    document_id, {"version_id": str(version_id), "source_sha256": digest},
+                    uuid4(),
+                    uuid4(),
+                    principal.actor_scope,
+                    "DOCUMENT_VERSION_STAGED",
+                    document_id,
+                    {"version_id": str(version_id), "source_sha256": digest},
                 )
         except psycopg.Error as exc:
             raise KnowledgeFailure(
@@ -137,9 +143,17 @@ class KnowledgeService:
             ) from exc
         # Keep the object quarantined until read-back hash, parsing and indexing succeed.
         return IngestionTrace(
-            principal.business_id, document_id, version_id, object_id, digest,
-            self._parser.version, CHUNKER_VERSION, self.embedding_revision, 0,
-            (time.monotonic() - started) * 1000, "STAGED",
+            principal.business_id,
+            document_id,
+            version_id,
+            object_id,
+            digest,
+            self._parser.version,
+            CHUNKER_VERSION,
+            self.embedding_revision,
+            0,
+            (time.monotonic() - started) * 1000,
+            "STAGED",
         )
 
     def process_version(self, principal: PrincipalContext, version_id: UUID) -> IngestionTrace:
@@ -191,20 +205,39 @@ class KnowledgeService:
                     current["object_id"], current["storage_version_id"]
                 )
                 repository.knowledge.finish_index(
-                    current, chunks, vectors, CHUNKER_VERSION, self.embedding_revision,
+                    current,
+                    chunks,
+                    vectors,
+                    CHUNKER_VERSION,
+                    self.embedding_revision,
                     tuple(uuid4() for _ in chunks),
                 )
                 repository.knowledge.audit(
-                    uuid4(), uuid4(), principal.actor_scope, "DOCUMENT_VERSION_READY",
+                    uuid4(),
+                    uuid4(),
+                    principal.actor_scope,
+                    "DOCUMENT_VERSION_READY",
                     current["document_id"],
-                    {"version_id": str(version_id), "chunk_count": len(chunks),
-                     "source_sha256": current["content_hash"]},
+                    {
+                        "version_id": str(version_id),
+                        "chunk_count": len(chunks),
+                        "source_sha256": current["content_hash"],
+                    },
                 )
             return IngestionTrace(
-                principal.business_id, version["document_id"], version_id, version["object_id"],
-                version["content_hash"], parsed.parser_version, CHUNKER_VERSION,
-                self.embedding_revision, len(chunks), (time.monotonic() - started) * 1000, "READY",
-                parse_duration_ms=parse_ms, embedding_duration_ms=embedding_ms,
+                principal.business_id,
+                version["document_id"],
+                version_id,
+                version["object_id"],
+                version["content_hash"],
+                parsed.parser_version,
+                CHUNKER_VERSION,
+                self.embedding_revision,
+                len(chunks),
+                (time.monotonic() - started) * 1000,
+                "READY",
+                parse_duration_ms=parse_ms,
+                embedding_duration_ms=embedding_ms,
             )
         except (KnowledgeFailure, psycopg.Error) as exc:
             if isinstance(exc, KnowledgeFailure):
@@ -221,7 +254,10 @@ class KnowledgeService:
             raise failure from exc
 
     def publish(
-        self, principal: PrincipalContext, document_id: UUID, version_id: UUID,
+        self,
+        principal: PrincipalContext,
+        document_id: UUID,
+        version_id: UUID,
         expected_document_version: int,
     ) -> int:
         try:
@@ -245,10 +281,17 @@ class KnowledgeService:
                 ):
                     raise KnowledgeFailure(KnowledgeCode.CONFLICT, "Publication race")
                 repository.knowledge.audit(
-                    uuid4(), uuid4(), principal.actor_scope, "DOCUMENT_VERSION_PUBLISHED",
-                    document_id, {"version_id": str(version_id), "previous_version_id":
-                                  str(document["published_version_id"])
-                                  if document["published_version_id"] else None},
+                    uuid4(),
+                    uuid4(),
+                    principal.actor_scope,
+                    "DOCUMENT_VERSION_PUBLISHED",
+                    document_id,
+                    {
+                        "version_id": str(version_id),
+                        "previous_version_id": str(document["published_version_id"])
+                        if document["published_version_id"]
+                        else None,
+                    },
                 )
                 return expected_document_version + 1
         except psycopg.Error as exc:
@@ -268,9 +311,16 @@ class KnowledgeService:
                 if not repository.knowledge.revoke(document_id, expected_version):
                     raise KnowledgeFailure(KnowledgeCode.CONFLICT, "Revocation race")
                 repository.knowledge.audit(
-                    uuid4(), uuid4(), principal.actor_scope, "DOCUMENT_REVOKED", document_id,
-                    {"previous_version_id": str(document["published_version_id"])
-                     if document["published_version_id"] else None},
+                    uuid4(),
+                    uuid4(),
+                    principal.actor_scope,
+                    "DOCUMENT_REVOKED",
+                    document_id,
+                    {
+                        "previous_version_id": str(document["published_version_id"])
+                        if document["published_version_id"]
+                        else None
+                    },
                 )
                 return expected_version + 1
         except psycopg.Error as exc:
@@ -286,9 +336,11 @@ class KnowledgeService:
         if not 1 <= request.limit <= self._config.DEV_RETRIEVAL_MAX_RESULTS:
             raise KnowledgeFailure(KnowledgeCode.RETRIEVAL_UNAVAILABLE, "Invalid retrieval limit")
         principal = request.principal
-        scopes = ("CUSTOMER", "STAFF") if (
-            principal.kind is PrincipalKind.USER and principal.staff_role is StaffRole.OWNER
-        ) else ("CUSTOMER",)
+        scopes = (
+            ("CUSTOMER", "STAFF")
+            if (principal.kind is PrincipalKind.USER and principal.staff_role is StaffRole.OWNER)
+            else ("CUSTOMER",)
+        )
         try:
             with self._database.transaction(principal.business_id) as repository:
                 require_business_access(principal, repository)
@@ -313,18 +365,25 @@ class KnowledgeService:
                         continue
                     evidence.append(
                         KnowledgeEvidence(
-                            row["document_id"], row["version_id"], row["chunk_id"],
-                            row["chunk_text"], 1.0 - float(row["distance"]),
+                            row["document_id"],
+                            row["version_id"],
+                            row["chunk_id"],
+                            row["chunk_text"],
+                            1.0 - float(row["distance"]),
                             row["chunk_locator"],
                             Provenance(
                                 SourceType.KNOWLEDGE,
                                 f"document:{row['document_id']}/version:{row['version_id']}/"
                                 f"chunk:{row['chunk_index']}",
-                                str(row["publication_revision"]), principal.business_id,
-                                row["updated_at"], ContextStatus.PRESENT,
-                                row["access_scope"], row["chunk_text_sha256"],
+                                str(row["publication_revision"]),
+                                principal.business_id,
+                                row["updated_at"],
+                                ContextStatus.PRESENT,
+                                row["access_scope"],
+                                row["chunk_text_sha256"],
                             ),
-                            source_sha256=row["content_hash"], object_id=row["object_id"],
+                            source_sha256=row["content_hash"],
+                            object_id=row["object_id"],
                             parser_version=row["parser_version"],
                             chunker_version=row["chunker_version"],
                             embedding_revision=row["embedding_revision"],
@@ -335,9 +394,12 @@ class KnowledgeService:
                 KnowledgeCode.RETRIEVAL_UNAVAILABLE, "Knowledge retrieval unavailable"
             ) from exc
         trace = RetrievalTrace(
-            principal.business_id, principal.actor_scope,
-            hashlib.sha256(query.encode("utf-8")).hexdigest(), self.embedding_revision,
-            candidate_count, len(rows) - len(evidence),
+            principal.business_id,
+            principal.actor_scope,
+            hashlib.sha256(query.encode("utf-8")).hexdigest(),
+            self.embedding_revision,
+            candidate_count,
+            len(rows) - len(evidence),
             tuple(item.chunk_id for item in evidence),
             tuple(sorted({item.version_id for item in evidence}, key=str)),
             (time.monotonic() - started) * 1000,
@@ -346,7 +408,10 @@ class KnowledgeService:
         return RetrievalResult(tuple(evidence), trace)
 
     def _fail_stage(
-        self, principal: PrincipalContext, version_id: UUID, document_id: UUID,
+        self,
+        principal: PrincipalContext,
+        version_id: UUID,
+        document_id: UUID,
         code: KnowledgeCode,
     ) -> None:
         try:
@@ -354,8 +419,12 @@ class KnowledgeService:
                 require_owner(principal, repository)
                 repository.knowledge.mark_failed(version_id)
                 repository.knowledge.audit(
-                    uuid4(), uuid4(), principal.actor_scope, "DOCUMENT_VERSION_FAILED",
-                    document_id, {"version_id": str(version_id), "failure_code": code.value},
+                    uuid4(),
+                    uuid4(),
+                    principal.actor_scope,
+                    "DOCUMENT_VERSION_FAILED",
+                    document_id,
+                    {"version_id": str(version_id), "failure_code": code.value},
                 )
         except (psycopg.Error, DomainFailure) as exc:
             raise KnowledgeFailure(
@@ -376,9 +445,12 @@ class KnowledgeContextProvider:
         try:
             result = self._service.retrieve(
                 RetrievalRequest(
-                    request.principal, request.question,
-                    min(request.limits.DEV_CONTEXT_MAX_RETRIEVED_CHUNKS,
-                        self._service._config.DEV_RETRIEVAL_MAX_RESULTS),
+                    request.principal,
+                    request.question,
+                    min(
+                        request.limits.DEV_CONTEXT_MAX_RETRIEVED_CHUNKS,
+                        self._service._config.DEV_RETRIEVAL_MAX_RESULTS,
+                    ),
                     request.request_id,
                 )
             )

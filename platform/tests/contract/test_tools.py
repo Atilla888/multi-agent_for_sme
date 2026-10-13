@@ -19,16 +19,23 @@ pytestmark = [pytest.mark.postgres, pytest.mark.integration]
 
 def executor(runtime_url: str, **kwargs) -> ToolExecutor:
     return ToolExecutor(
-        PostgresDatabase(runtime_url), cursor_signing_key=b"synthetic-test-cursor-key-32-bytes!",
-        limits=ToolLimits(max_forecast_horizon=12), **kwargs,
+        PostgresDatabase(runtime_url),
+        cursor_signing_key=b"synthetic-test-cursor-key-32-bytes!",
+        limits=ToolLimits(max_forecast_horizon=12),
+        **kwargs,
     )
 
 
 def create_payload(fixture) -> dict:
     return {
         "customer_id": str(fixture.customer_id),
-        "items": [{"product_id": str(fixture.product_id), "quantity": "1.0000",
-                   "quoted_product_version": 1}],
+        "items": [
+            {
+                "product_id": str(fixture.product_id),
+                "quantity": "1.0000",
+                "quoted_product_version": 1,
+            }
+        ],
     }
 
 
@@ -38,8 +45,15 @@ def test_exact_registry_and_strict_extra_field_rejection(
     fixture = seed_tenant(admin_connection)
     assert len(TOOL_INPUTS) == 10
     assert set(TOOL_INPUTS) == {
-        "find_product", "check_inventory", "find_customer", "get_order", "create_order",
-        "update_order", "reserve_inventory", "get_delivery_status", "get_sales_report",
+        "find_product",
+        "check_inventory",
+        "find_customer",
+        "get_order",
+        "create_order",
+        "update_order",
+        "reserve_inventory",
+        "get_delivery_status",
+        "get_sales_report",
         "forecast_sales",
     }
     samples = {
@@ -49,13 +63,24 @@ def test_exact_registry_and_strict_extra_field_rejection(
         "get_order": {"order_id": str(uuid4())},
         "create_order": create_payload(fixture),
         "update_order": {"order_id": str(uuid4()), "expected_version": 1, "patch": {}},
-        "reserve_inventory": {"order_id": str(uuid4()), "expected_order_version": 1,
-                              "expected_inventory_versions": {str(fixture.product_id): 1}},
+        "reserve_inventory": {
+            "order_id": str(uuid4()),
+            "expected_order_version": 1,
+            "expected_inventory_versions": {str(fixture.product_id): 1},
+        },
         "get_delivery_status": {"order_id": str(uuid4())},
-        "get_sales_report": {"from_at": "2026-01-01T00:00:00Z", "to_at": "2026-01-02T00:00:00Z",
-                             "granularity": "DAY", "target_definition": "CONFIRMED_ORDER_UNITS"},
-        "forecast_sales": {"as_of": "2026-01-01T00:00:00Z", "horizon": 1,
-                           "granularity": "DAY", "target_definition": "CONFIRMED_ORDER_UNITS"},
+        "get_sales_report": {
+            "from_at": "2026-01-01T00:00:00Z",
+            "to_at": "2026-01-02T00:00:00Z",
+            "granularity": "DAY",
+            "target_definition": "CONFIRMED_ORDER_UNITS",
+        },
+        "forecast_sales": {
+            "as_of": "2026-01-01T00:00:00Z",
+            "horizon": 1,
+            "granularity": "DAY",
+            "target_definition": "CONFIRMED_ORDER_UNITS",
+        },
     }
     # Every schema rejects protected control fields, even when the role would also deny it.
     for name, sample in samples.items():
@@ -71,9 +96,7 @@ def test_exact_registry_and_strict_extra_field_rejection(
                 parsed.model_validate_json(json.dumps({**sample, protected: value}))
 
 
-def test_find_product_search_cursor_empty_and_tamper(
-    admin_connection, runtime_url: str
-) -> None:
+def test_find_product_search_cursor_empty_and_tamper(admin_connection, runtime_url: str) -> None:
     fixture = seed_tenant(admin_connection)
     second_id = uuid4()
     with admin_connection.cursor() as cursor:
@@ -102,7 +125,8 @@ def test_find_product_search_cursor_empty_and_tamper(
     assert tampered.status is ResultStatus.REJECTED
     empty = tools.execute("find_product", {"query": "no-such-product"}, context)
     assert empty.status is ResultStatus.SUCCEEDED and empty.data == {
-        "products": [], "next_cursor": None,
+        "products": [],
+        "next_cursor": None,
     }
 
 
@@ -152,9 +176,7 @@ def test_create_order_get_order_replay_and_audit(admin_connection, runtime_url: 
         assert cursor.fetchone() == (1,)
 
 
-def test_reserve_inventory_and_labelled_owner_report(
-    admin_connection, runtime_url: str
-) -> None:
+def test_reserve_inventory_and_labelled_owner_report(admin_connection, runtime_url: str) -> None:
     fixture = seed_tenant(admin_connection)
     tools = executor(runtime_url)
     created = tools.execute(
@@ -163,8 +185,11 @@ def test_reserve_inventory_and_labelled_owner_report(
     assert created.data is not None
     reserved = tools.execute(
         "reserve_inventory",
-        {"order_id": created.data["order_id"], "expected_order_version": 1,
-         "expected_inventory_versions": {str(fixture.product_id): 1}},
+        {
+            "order_id": created.data["order_id"],
+            "expected_order_version": 1,
+            "expected_inventory_versions": {str(fixture.product_id): 1},
+        },
         fixture.context(operation_key="reserve-once"),
     )
     assert reserved.status is ResultStatus.SUCCEEDED
@@ -178,9 +203,12 @@ def test_reserve_inventory_and_labelled_owner_report(
         )
     report = tools.execute(
         "get_sales_report",
-        {"from_at": (now - timedelta(days=1)).isoformat(),
-         "to_at": (now + timedelta(days=1)).isoformat(), "granularity": "DAY",
-         "target_definition": "CONFIRMED_ORDER_VALUE"},
+        {
+            "from_at": (now - timedelta(days=1)).isoformat(),
+            "to_at": (now + timedelta(days=1)).isoformat(),
+            "granularity": "DAY",
+            "target_definition": "CONFIRMED_ORDER_VALUE",
+        },
         fixture.context(agent=AgentRole.ANALYTICS),
     )
     assert report.status is ResultStatus.SUCCEEDED
@@ -210,8 +238,11 @@ def test_update_order_is_controlled_policy_block_not_fake_mutation(
     assert blocked.error.detail == "BLOCKED_BY_APPROVED_POLICY"
     unknown_field = tools.execute(
         "update_order",
-        {"order_id": created.data["order_id"], "expected_version": 1,
-         "patch": {"status": "CANCELLED"}},
+        {
+            "order_id": created.data["order_id"],
+            "expected_version": 1,
+            "patch": {"status": "CANCELLED"},
+        },
         fixture.context(operation_key="unsupported-patch"),
     )
     assert unknown_field.status is ResultStatus.REJECTED
@@ -232,7 +263,8 @@ def test_delivery_unavailable_is_not_order_status(admin_connection, runtime_url:
             (fixture.business_id, fixture.run_id),
         )
     delivery = tools.execute(
-        "get_delivery_status", {"order_id": created.data["order_id"]},
+        "get_delivery_status",
+        {"order_id": created.data["order_id"]},
         fixture.context(agent=AgentRole.SUPPORT),
     )
     assert delivery.status is ResultStatus.SUCCEEDED
@@ -253,8 +285,12 @@ def test_forecast_without_artifact_fails_truthfully_and_creates_no_run(
         )
     result = executor(runtime_url).execute(
         "forecast_sales",
-        {"as_of": datetime.now(UTC).isoformat(), "horizon": 2,
-         "granularity": "DAY", "target_definition": "CONFIRMED_ORDER_UNITS"},
+        {
+            "as_of": datetime.now(UTC).isoformat(),
+            "horizon": 2,
+            "granularity": "DAY",
+            "target_definition": "CONFIRMED_ORDER_UNITS",
+        },
         fixture.context(agent=AgentRole.ANALYTICS),
     )
     assert result.status is ResultStatus.FAILED
@@ -280,21 +316,21 @@ def test_support_cannot_write_and_foreign_order_has_no_effect(
             (b.business_id, b.run_id),
         )
     forbidden = tools.execute(
-        "create_order", create_payload(b),
+        "create_order",
+        create_payload(b),
         b.context(agent=AgentRole.SUPPORT, operation_key="forbidden-write"),
     )
     assert forbidden.status is ResultStatus.REJECTED
     assert forbidden.error is not None and forbidden.error.code == "FORBIDDEN"
     foreign = tools.execute(
-        "get_order", {"order_id": created.data["order_id"]},
+        "get_order",
+        {"order_id": created.data["order_id"]},
         b.context(agent=AgentRole.SUPPORT),
     )
     assert foreign.status is ResultStatus.REJECTED
     assert foreign.error is not None and foreign.error.code == "NOT_ACCESSIBLE"
     with admin_connection.cursor() as cursor:
-        cursor.execute(
-            "SELECT count(*) FROM orders WHERE business_id=%s", (b.business_id,)
-        )
+        cursor.execute("SELECT count(*) FROM orders WHERE business_id=%s", (b.business_id,))
         assert cursor.fetchone() == (0,)
 
 
@@ -303,9 +339,11 @@ def test_every_tool_rejects_forbidden_specialist_with_durable_evidence(
     admin_connection, runtime_url: str, name: str
 ) -> None:
     fixture = seed_tenant(admin_connection)
-    agent = AgentRole.SALES if name in {
-        "forecast_sales", "get_sales_report", "get_delivery_status"
-    } else AgentRole.ANALYTICS
+    agent = (
+        AgentRole.SALES
+        if name in {"forecast_sales", "get_sales_report", "get_delivery_status"}
+        else AgentRole.ANALYTICS
+    )
     if agent is AgentRole.ANALYTICS:
         with admin_connection.cursor() as cursor:
             cursor.execute(
@@ -320,14 +358,24 @@ def test_every_tool_rejects_forbidden_specialist_with_durable_evidence(
         "get_order": {"order_id": str(uuid4())},
         "create_order": create_payload(fixture),
         "update_order": {"order_id": str(uuid4()), "expected_version": 1, "patch": {}},
-        "reserve_inventory": {"order_id": str(uuid4()), "expected_order_version": 1,
-                              "expected_inventory_versions": {str(fixture.product_id): 1}},
+        "reserve_inventory": {
+            "order_id": str(uuid4()),
+            "expected_order_version": 1,
+            "expected_inventory_versions": {str(fixture.product_id): 1},
+        },
         "get_delivery_status": {"order_id": str(uuid4())},
-        "get_sales_report": {"from_at": "2026-01-01T00:00:00Z",
-                             "to_at": "2026-01-02T00:00:00Z", "granularity": "DAY",
-                             "target_definition": "CONFIRMED_ORDER_UNITS"},
-        "forecast_sales": {"as_of": "2026-01-01T00:00:00Z", "horizon": 1,
-                           "granularity": "DAY", "target_definition": "CONFIRMED_ORDER_UNITS"},
+        "get_sales_report": {
+            "from_at": "2026-01-01T00:00:00Z",
+            "to_at": "2026-01-02T00:00:00Z",
+            "granularity": "DAY",
+            "target_definition": "CONFIRMED_ORDER_UNITS",
+        },
+        "forecast_sales": {
+            "as_of": "2026-01-01T00:00:00Z",
+            "horizon": 1,
+            "granularity": "DAY",
+            "target_definition": "CONFIRMED_ORDER_UNITS",
+        },
     }
     result = executor(runtime_url).execute(name, payloads[name], fixture.context(agent=agent))
     assert result.status is ResultStatus.REJECTED
@@ -348,10 +396,13 @@ def test_every_tool_rejects_forbidden_specialist_with_durable_evidence(
         assert cursor.fetchone() == (0,)
 
 
-@pytest.mark.parametrize("fault,expected_code", [
-    (TimeoutError, "TIMEOUT"),
-    (ConnectionError, "DEPENDENCY_UNAVAILABLE"),
-])
+@pytest.mark.parametrize(
+    "fault,expected_code",
+    [
+        (TimeoutError, "TIMEOUT"),
+        (ConnectionError, "DEPENDENCY_UNAVAILABLE"),
+    ],
+)
 def test_delivery_adapter_timeout_and_dependency_failure_are_typed(
     admin_connection, runtime_url: str, fault: type[Exception], expected_code: str
 ) -> None:
@@ -377,7 +428,8 @@ def test_delivery_adapter_timeout_and_dependency_failure_are_typed(
             raise fault("synthetic adapter fault")
 
     result = executor(runtime_url, delivery=FaultyDelivery()).execute(
-        "get_delivery_status", {"order_id": order.data["order_id"]},
+        "get_delivery_status",
+        {"order_id": order.data["order_id"]},
         fixture.context(agent=AgentRole.SUPPORT),
     )
     assert result.status is ResultStatus.FAILED
@@ -404,7 +456,8 @@ def test_delivery_reference_without_configured_adapter_is_dependency_unavailable
             (fixture.business_id, fixture.run_id),
         )
     result = executor(runtime_url).execute(
-        "get_delivery_status", {"order_id": order.data["order_id"]},
+        "get_delivery_status",
+        {"order_id": order.data["order_id"]},
         fixture.context(agent=AgentRole.SUPPORT),
     )
     assert result.status is ResultStatus.FAILED

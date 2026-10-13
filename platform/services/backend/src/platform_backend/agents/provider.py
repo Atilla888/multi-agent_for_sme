@@ -163,9 +163,7 @@ class GeminiProvider:
             raise ProviderFailure(ProviderErrorKind.AUTHENTICATION)
         body: dict[str, Any] = {
             "systemInstruction": {"parts": [{"text": system_prompt}]},
-            "contents": [
-                {"role": "user", "parts": [{"text": json.dumps(payload, default=str)}]}
-            ],
+            "contents": [{"role": "user", "parts": [{"text": json.dumps(payload, default=str)}]}],
             "generationConfig": {
                 "temperature": self.config.temperature,
                 "topP": self.config.top_p,
@@ -175,11 +173,18 @@ class GeminiProvider:
             },
         }
         if tools:
-            body["tools"] = [{"functionDeclarations": [
-                {"name": name, "description": f"Trusted business tool {name}",
-                 "parametersJsonSchema": tool_schema}
-                for name, tool_schema in tools.items()
-            ]}]
+            body["tools"] = [
+                {
+                    "functionDeclarations": [
+                        {
+                            "name": name,
+                            "description": f"Trusted business tool {name}",
+                            "parametersJsonSchema": tool_schema,
+                        }
+                        for name, tool_schema in tools.items()
+                    ]
+                }
+            ]
         started = time.monotonic()
         url = (
             "https://generativelanguage.googleapis.com/v1beta/models/"
@@ -188,7 +193,9 @@ class GeminiProvider:
         for attempt in range(self.config.max_retries + 1):
             try:
                 response = self._client.post(
-                    url, headers={"x-goog-api-key": self._api_key}, json=body,
+                    url,
+                    headers={"x-goog-api-key": self._api_key},
+                    json=body,
                     timeout=self.config.timeout_seconds,
                 )
             except httpx.TimeoutException as exc:
@@ -244,14 +251,15 @@ class GeminiProvider:
                 raise ProviderFailure(ProviderErrorKind.MALFORMED_TOOL_CALL)
             if calls:
                 call = calls[0]
-                if not isinstance(call.get("name"), str) or not isinstance(
-                    call.get("args"), dict
-                ):
+                if not isinstance(call.get("name"), str) or not isinstance(call.get("args"), dict):
                     raise ProviderFailure(ProviderErrorKind.MALFORMED_TOOL_CALL)
                 proposal: dict[str, Any] = {
-                    "decision": "CALL_TOOL", "confidence": "UNKNOWN",
-                    "reason_code": "MODEL_TOOL_PROPOSAL", "tool_name": call["name"],
-                    "tool_arguments": call["args"], "evidence_refs": [],
+                    "decision": "CALL_TOOL",
+                    "confidence": "UNKNOWN",
+                    "reason_code": "MODEL_TOOL_PROPOSAL",
+                    "tool_name": call["name"],
+                    "tool_arguments": call["args"],
+                    "evidence_refs": [],
                 }
             else:
                 texts = [part["text"] for part in parts if "text" in part]
@@ -276,12 +284,16 @@ class GeminiProvider:
             return ModelReply(
                 proposal,
                 ModelMetadata(
-                    self.config.provider, self.config.model, raw.get("modelVersion"),
-                    raw.get("responseId"), (time.monotonic() - started) * 1000,
-                    usage, len(calls), finish, attempt,
+                    self.config.provider,
+                    self.config.model,
+                    raw.get("modelVersion"),
+                    raw.get("responseId"),
+                    (time.monotonic() - started) * 1000,
+                    usage,
+                    len(calls),
+                    finish,
+                    attempt,
                 ),
             )
         except (KeyError, ValueError, TypeError, json.JSONDecodeError) as exc:
-            raise ProviderFailure(
-                ProviderErrorKind.INVALID_RESPONSE, retry_count=attempt
-            ) from exc
+            raise ProviderFailure(ProviderErrorKind.INVALID_RESPONSE, retry_count=attempt) from exc

@@ -31,8 +31,10 @@ class FakeTestEmbedding:
 
 
 def test_plain_text_utf8_normalization_and_locator() -> None:
-    parsed = PlainTextParser().parse("First\r\nSecond".encode(), "text/plain")
-    chunks = chunk_document(parsed, DevKnowledgeConfig(DEV_CHUNK_MAX_CHARS=6, DEV_CHUNK_OVERLAP_CHARS=0))
+    parsed = PlainTextParser().parse(b"First\r\nSecond", "text/plain")
+    chunks = chunk_document(
+        parsed, DevKnowledgeConfig(DEV_CHUNK_MAX_CHARS=6, DEV_CHUNK_OVERLAP_CHARS=0)
+    )
     assert parsed.text == "First\nSecond"
     assert chunks[0].locator.startswith("line:1-")
     assert chunks[0].sha256 != chunks[1].sha256

@@ -38,17 +38,28 @@ def test_positive_find_check_create_reserve_persists_effect_and_evidence(
     assert inventory.data is not None and inventory.data["items"][0]["available_qty"] == "5.0000"
     created = tools.execute(
         "create_order",
-        {"customer_id": str(fixture.customer_id),
-         "items": [{"product_id": str(fixture.product_id), "quantity": "2.0000",
-                    "quoted_product_version": found.data["products"][0]["version"]}]},
+        {
+            "customer_id": str(fixture.customer_id),
+            "items": [
+                {
+                    "product_id": str(fixture.product_id),
+                    "quantity": "2.0000",
+                    "quoted_product_version": found.data["products"][0]["version"],
+                }
+            ],
+        },
         fixture.context(operation_key="acceptance-create"),
     )
     assert created.status is ResultStatus.SUCCEEDED and created.data is not None
     reserved = tools.execute(
         "reserve_inventory",
-        {"order_id": created.data["order_id"], "expected_order_version": 1,
-         "expected_inventory_versions": {
-             str(fixture.product_id): inventory.data["items"][0]["inventory_version"]}},
+        {
+            "order_id": created.data["order_id"],
+            "expected_order_version": 1,
+            "expected_inventory_versions": {
+                str(fixture.product_id): inventory.data["items"][0]["inventory_version"]
+            },
+        },
         fixture.context(operation_key="acceptance-reserve"),
     )
     assert reserved.status is ResultStatus.SUCCEEDED
@@ -58,8 +69,10 @@ def test_positive_find_check_create_reserve_persists_effect_and_evidence(
         assert order is not None and order.status.value == "CONFIRMED"
         assert stock is not None and str(stock.available_qty) == "3.0000"
         assert str(stock.reserved_qty) == "2.0000"
-        for name, key in [("create_order", "acceptance-create"),
-                          ("reserve_inventory", "acceptance-reserve")]:
+        for name, key in [
+            ("create_order", "acceptance-create"),
+            ("reserve_inventory", "acceptance-reserve"),
+        ]:
             operation = repository.get_operation(name, principal.actor_scope, key)
             assert operation is not None and operation["status"] == "SUCCEEDED"
     with admin_connection.cursor() as cursor:
@@ -83,9 +96,12 @@ def test_negative_foreign_resource_and_forbidden_agent_have_no_business_effect(
     tools = _tools(runtime_url)
     created = tools.execute(
         "create_order",
-        {"customer_id": str(a.customer_id),
-         "items": [{"product_id": str(a.product_id), "quantity": "1.0000",
-                    "quoted_product_version": 1}]},
+        {
+            "customer_id": str(a.customer_id),
+            "items": [
+                {"product_id": str(a.product_id), "quantity": "1.0000", "quoted_product_version": 1}
+            ],
+        },
         a.context(operation_key="negative-source"),
     )
     assert created.data is not None
@@ -96,14 +112,18 @@ def test_negative_foreign_resource_and_forbidden_agent_have_no_business_effect(
             (b.business_id, b.run_id),
         )
     foreign = tools.execute(
-        "get_order", {"order_id": created.data["order_id"]},
+        "get_order",
+        {"order_id": created.data["order_id"]},
         b.context(agent=AgentRole.SUPPORT),
     )
     forbidden = tools.execute(
         "create_order",
-        {"customer_id": str(b.customer_id),
-         "items": [{"product_id": str(b.product_id), "quantity": "1.0000",
-                    "quoted_product_version": 1}]},
+        {
+            "customer_id": str(b.customer_id),
+            "items": [
+                {"product_id": str(b.product_id), "quantity": "1.0000", "quoted_product_version": 1}
+            ],
+        },
         b.context(agent=AgentRole.SUPPORT, operation_key="forbidden-proposal"),
     )
     assert foreign.status is ResultStatus.REJECTED

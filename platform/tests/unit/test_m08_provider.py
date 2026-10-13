@@ -24,7 +24,8 @@ def _reply(parts):
         "modelVersion": "synthetic-version",
         "responseId": "synthetic-request",
         "usageMetadata": {
-            "promptTokenCount": 12, "candidatesTokenCount": 3,
+            "promptTokenCount": 12,
+            "candidatesTokenCount": 3,
             "cachedContentTokenCount": 2,
         },
     }
@@ -52,7 +53,9 @@ def test_native_function_call_remains_unexecuted_proposal():
         )
 
     reply = _provider(handler).invoke_with_tools(
-        system_prompt="safe", payload={}, tools={"find_product": {"type": "object"}},
+        system_prompt="safe",
+        payload={},
+        tools={"find_product": {"type": "object"}},
         schema={"type": "object"},
     )
     assert reply.proposal["decision"] == "CALL_TOOL"
