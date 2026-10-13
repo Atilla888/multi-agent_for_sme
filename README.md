@@ -9,7 +9,7 @@ Development of an Intelligent Adaptive Multi-Agent Platform for Customer Interac
 - [`design/`](design/) — local Figma development plugins and visual-source guidance.
 - [`research/master/release/`](research/master/release/) — development-safe consolidated master release.
 - [`recovery/`](recovery/) — sanitized reconstruction provenance and executable evidence.
-- [`frontend/`](frontend/) — P5A Next.js foundation plus the P5B reusable design system, routing, staff shell, and API/auth boundaries.
+- [`frontend/`](frontend/) — P5A/P5B foundation and design system plus the P5C Conversations + Escalations high-fidelity vertical slice.
 
 ## Current status
 
@@ -21,7 +21,7 @@ Development of an Intelligent Adaptive Multi-Agent Platform for Customer Interac
 - M01, M02, M03, M05, M06 and M07: **PASS**; M04: **PASS WITH APPROVED LIMITATION — E02**.
 - M08: **PARTIAL / BLOCKED / DEFERRED**.
 - M09–M13, Pilot and Final: **NOT STARTED / not re-established**.
-- Frontend track: **IN PROGRESS**; P5A foundation and P5B design system: **COMPLETE**; P5C product-screen implementation: **READY / NOT STARTED**.
+- Frontend track: **IN PROGRESS**; P5A foundation, P5B design system, and P5C Conversations + Escalations: **COMPLETE**; P5D: **READY / NOT STARTED**.
 
 P3 independently froze source/tests, ran milestone-specific gates on fresh isolated volumes, and passed the final M01–M07 regression **114/114** with no failures or skips. P4 then froze M08 without weakening its live-provider acceptance gate and opened the independent frontend track. See the [formal P3 report](recovery/P3_M01_M07_FORMAL_REVALIDATION.md), [test evidence](recovery/P3_TEST_RESULTS.md) and [P4 freeze](recovery/P4_M08_DEFERRED_FREEZE.md).
 
@@ -45,8 +45,8 @@ Recovery evidence distinguishes original/session-evidenced content, documentatio
 
 ## Next step
 
-Primary active track: **P5 — frontend implementation**. P5A established the technical foundation and [P5B](docs/frontend/P5B_DESIGN_SYSTEM_IMPLEMENTATION.md) implemented the approved reusable tokens and accessible primitives. Complete product screens are not yet implemented; **P5C is READY / NOT STARTED**.
+Primary active track: **P5 — frontend implementation**. P5A established the technical foundation, [P5B](docs/frontend/P5B_DESIGN_SYSTEM_IMPLEMENTATION.md) implemented the reusable design system, and [P5C](docs/frontend/P5C_CONVERSATIONS_ESCALATIONS_IMPLEMENTATION.md) completed the truthful Conversations + Escalations vertical slice with isolated fixtures where public backend contracts are absent. **P5D is READY / NOT STARTED**.
 
 Deferred dependency: **M08 external provider/API acceptance**. M08 remains PARTIAL / BLOCKED / DEFERRED and unavailable live capabilities must not be presented as operational.
 
-Parallel future experiment: **Ollama/local-model evaluation** on separate hardware/branch. It does not replace or complete formal M08 acceptance. Recommended next separately authorized step: **P5C — Conversations P0 vertical slice**, beginning with backend-contract and Keycloak/session integration review.
+Parallel future experiment: **Ollama/local-model evaluation** on separate hardware/branch. It does not replace or complete formal M08 acceptance. Recommended next separately authorized step: **P5D**, after P5C PR review and merge.
