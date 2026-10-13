@@ -51,33 +51,55 @@ SpecialistAgent (Sales / Support / Analytics)
 
 ---
 
-## 4. Experimental Results
+## 4. O5 Provider Unit & Smoke Results
 
 ### A. Unit Test Suite (`test_ollama_provider.py`)
-- Mocked HTTP transport verifying:
-  - Protocol implementation conformance
-  - Structured output normalization
-  - Single tool-call proposal mapping
-  - Dict and JSON-string argument handling
-  - Multiple tool-call rejection (`MALFORMED_TOOL_CALL`)
-  - Connection refused mapping (`UNAVAILABLE`)
-  - Read timeout and bounded retry handling (`TIMEOUT`)
-  - Malformed content handling (`INVALID_RESPONSE`)
-  - Markdown code-fence stripping
-  - Cumulative token and request accounting
-  - Absence of tool execution side effects
+- Mocked HTTP transport verifying protocol compliance, structured output, single/multiple tool-call normalization, error taxonomy, retry boundedness, and zero executor invocation.
 - Result: **13/13 passed** (alongside 5/5 frozen M08 provider tests, totaling **18 passed**).
 
-### B. Live Local Smoke Test (`qwen3:1.7b`)
-- Endpoint: `http://localhost:11434/api/chat`
-- Tool provided: `check_inventory` with `sku: string`
-- User prompt: *"Is product SKU-123 currently in stock?"*
-- Model response: Native tool call proposal
-  - `decision`: `CALL_TOOL`
-  - `tool_name`: `check_inventory`
-  - `tool_arguments`: `{"sku": "SKU-123"}`
-  - `confidence`: `UNKNOWN`
-  - `reason_code`: `MODEL_TOOL_PROPOSAL`
-  - `finish_reason`: `stop`
-  - `tool_calls`: 1
-- Verification: Proposal successfully returned without executing `check_inventory`. No business state was mutated.
+### B. Minimal Tool-Call Smoke Test (`qwen3:1.7b`)
+- Prompt: *"Is product SKU-123 currently in stock?"*
+- Model response: `check_inventory` with `{"sku": "SKU-123"}`.
+- Result: Proposal generated without execution; no business state mutated.
+
+---
+
+## 5. O6 Specialist Runtime Experiment
+
+### A. Experiment Harness
+Implemented in [`platform/tests/experimental/test_ollama_specialist_runtime.py`](file:///C:/Users/len/Desktop/diploma-multi-agent-platform/platform/tests/experimental/test_ollama_specialist_runtime.py):
+- Real `SpecialistAgent` with production prompt rendering and admission logic.
+- Real `ROLE_TOOLS` (role-based tool permission boundaries) and `TOOL_INPUTS` (Pydantic schema validation).
+- Safe `RecordingExecutor` tracking admitted tool invocations without connecting to PostgreSQL or mutating state.
+- `StubBrain` assembling deterministic `ContextBundle` projections.
+
+### B. Deterministic Safety Boundaries (7 Tests)
+Scripted negative-path and boundary verification:
+
+1. **Forbidden Tool Rejection:** Support specialist proposing `create_order` is rejected by `SpecialistAgent` before reaching executor (`executor call count = 0`).
+2. **Permission Gate Confirmation:** Even with `write_confirmed=True`, executor checks `ROLE_TOOLS` and denies unpermitted actions (`0 admitted calls`).
+3. **Write Confirmation Gate:** Sales specialist proposing `create_order` with `write_confirmed=False` halts at `CLARIFICATION_REQUIRED` (`executor call count = 0`).
+4. **OUTCOME_UNKNOWN Safety:** A previous write resulting in `OUTCOME_UNKNOWN` immediately halts subsequent mutations without blind repeat (`subsequent mutations = 0`).
+5. **Malformed Tool Arguments:** Invalid arguments for `check_inventory` fail Pydantic schema validation; rejected before execution (`0 admitted calls`).
+6. **Sales Read-Only Admitted:** Valid read proposal (`check_inventory`) successfully admitted and executed against deterministic fixture (`admitted = 1`).
+7. **Zero Direct Authority:** Verifies `OllamaProvider` exposes zero database or execution handles.
+
+Result: **7/7 passed**.
+
+### C. Live Local Qwen3:1.7B Behavior (3 Tests)
+Executed against real local Ollama instance on CPU runtime:
+
+| Case | Agent | User Prompt | Proposed Tool | Arguments | Allowed Role Tool | Admitted to Mock | Correct Tool | Latency | Tokens (In / Out) |
+|---|---|---|---|---|---|---|---|---|---|
+| A. Inventory | Sales | *"Is product SKU-123 currently in stock?"* | `check_inventory` | `{"product_ids": ["SKU-123"]}` | **YES** (`Sales`) | No (UUID string required) | **YES** | ~59.8s | 851 / 187 |
+| B. Order Status | Support | *"Where is order ORD-123?"* | `get_order` | `{"order_id": "ORD-123"}` | **YES** (`Support`) | No (UUID string required) | **YES** | ~26.1s | 512 / 149 |
+| C. Sales Report | Analytics | *"Show me the sales report for this month."* | `get_sales_report` | `{"from_at": "2023-04-01", "to_at": "2023-04-30", "granularity": "MONTH", "target_definition": "CONFIRMED_ORDER_VALUE"}` | **YES** (`Analytics`) | **YES** | **YES** | ~32.6s | 548 / 242 |
+
+*Note: These three live cases represent engineering smoke evidence demonstrating proposal generation and boundary filtering, not a statistically comprehensive benchmark.*
+
+### D. Core Architecture Invariance
+The experiment successfully verified that:
+$$\text{MODEL PROPOSES} \longrightarrow \text{EXECUTOR AUTHORIZES} \longrightarrow \text{DOMAIN ENFORCES} \longrightarrow \text{DATABASE PERSISTS}$$
+1. At no point did `qwen3:1.7b` bypass role permissions or schema validation.
+2. At no point was PostgreSQL, MinIO, or Redis accessed or mutated.
+3. Model outputs remained exclusively untrusted proposals.
