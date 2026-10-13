@@ -17,12 +17,13 @@ No `frontend/` has been created.
 - Design phases 2A–3F: **COMPLETE** as recorded design status.
 - Platform reconstruction P2: **COMPLETE**.
 - Formal revalidation P3: **COMPLETE** against frozen baseline `1cd69e3`.
+- M08 deferred freeze P4: **COMPLETE**.
 - M01, M02, M03, M05, M06 and M07: **PASS**; M04: **PASS WITH APPROVED LIMITATION — E02**.
 - M08: **PARTIAL / BLOCKED / DEFERRED**.
 - M09–M13, Pilot and Final: **NOT STARTED / not re-established**.
-- Frontend: **NOT STARTED**.
+- Frontend track: **OPEN**; implementation: **NOT STARTED**.
 
-P3 independently froze source/tests, ran milestone-specific gates on fresh isolated volumes, and passed the final M01–M07 regression **114/114** with no failures or skips. See the [formal P3 report](recovery/P3_M01_M07_FORMAL_REVALIDATION.md) and [test evidence](recovery/P3_TEST_RESULTS.md).
+P3 independently froze source/tests, ran milestone-specific gates on fresh isolated volumes, and passed the final M01–M07 regression **114/114** with no failures or skips. P4 then froze M08 without weakening its live-provider acceptance gate and opened the independent frontend track. See the [formal P3 report](recovery/P3_M01_M07_FORMAL_REVALIDATION.md), [test evidence](recovery/P3_TEST_RESULTS.md) and [P4 freeze](recovery/P4_M08_DEFERRED_FREEZE.md).
 
 ## Canonical documentation
 
@@ -44,4 +45,8 @@ Recovery evidence distinguishes original/session-evidenced content, documentatio
 
 ## Next step
 
-Recommended next authorized sequence: **P4 — freeze M08 as deferred**, then **P5 — frontend implementation**. Neither has started.
+Primary active track: **P5 — frontend implementation**, ready but not started. Its source authorities are `docs/DESIGN.md`, Figma 03C/03D/03E and the verified backend contracts.
+
+Deferred dependency: **M08 external provider/API acceptance**. M08 remains PARTIAL / BLOCKED / DEFERRED and unavailable live capabilities must not be presented as operational.
+
+Parallel future experiment: **Ollama/local-model evaluation** on separate hardware/branch. It does not replace or complete formal M08 acceptance. Recommended next authorized sequence: **P4.5 — private GitHub publish**, then **P5A — frontend foundation**; neither is started here.

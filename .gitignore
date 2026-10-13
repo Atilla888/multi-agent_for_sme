@@ -49,6 +49,13 @@ TinyTeX/
 chrome-profile*/
 ChromeProfile*/
 
+# Local model artifacts and Ollama runtime state
+*.gguf
+*.safetensors
+*.ckpt
+/models/local/
+/ollama-data/
+
 # TeX temporary artifacts
 *.aux
 *.bbl
