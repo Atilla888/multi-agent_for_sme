@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Diploma High-Fi — Phase 3D</title>
+  <style>
+    :root { font-family: Inter, system-ui, sans-serif; color: var(--figma-color-text, #0f172a); background: var(--figma-color-bg, #fff); }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 18px; font-size: 12px; }
+    h1 { margin: 0 0 6px; font-size: 17px; line-height: 24px; }
+    p { margin: 0 0 14px; color: var(--figma-color-text-secondary, #475569); line-height: 18px; }
+    .group { border: 1px solid var(--figma-color-border, #e2e8f0); border-radius: 8px; padding: 12px; margin-bottom: 12px; }
+    .group h2 { margin: 0 0 9px; font-size: 12px; text-transform: uppercase; letter-spacing: .03em; }
+    button { display: block; width: 100%; padding: 9px 11px; margin: 5px 0; border-radius: 6px; border: 1px solid var(--figma-color-border, #cbd5e1); background: var(--figma-color-bg, #fff); color: var(--figma-color-text, #0f172a); text-align: left; font: inherit; cursor: pointer; }
+    button:hover { background: var(--figma-color-bg-hover, #f1f5f9); }
+    button:focus-visible { outline: 2px solid #1d4ed8; outline-offset: 2px; }
+    button.primary { background: #123d69; color: #fff; border-color: #123d69; font-weight: 600; }
+    button.primary:hover { background: #174a7e; }
+    button:disabled { opacity: .55; cursor: progress; }
+    .hint { margin: 8px 0 0; font-size: 11px; line-height: 16px; }
+    pre { overflow: auto; white-space: pre-wrap; word-break: break-word; background: var(--figma-color-bg-secondary, #f8fafc); border: 1px solid var(--figma-color-border, #e2e8f0); border-radius: 6px; padding: 10px; min-height: 92px; max-height: 180px; line-height: 17px; }
+    #status { font-size: 11px; color: var(--figma-color-text-secondary, #475569); }
+  </style>
+</head>
+<body>
+  <h1>Diploma High-Fi — Phase 3D</h1>
+  <p>Local Figma Desktop plugin · writes only to 03D. Review each section before building the next.</p>
+  <div class="group">
+    <h2>1 · Inspect inputs</h2>
+    <button data-action="inspect-3d">Inspect Phase 3D</button>
+    <button data-action="inspect-3c">Inspect Phase 3C Components</button>
+  </div>
+  <div class="group">
+    <h2>2 · Build and manually review</h2>
+    <button class="primary" data-action="build-shell">Build Shared Staff Shell</button>
+    <button class="primary" data-action="build-conversations">Build Conversations High-Fi</button>
+    <button class="primary" data-action="build-escalations">Build Escalations High-Fi</button>
+    <button class="primary" data-action="build-orders">Build Orders High-Fi</button>
+    <button class="primary" data-action="build-web-chat">Build Customer Web Chat High-Fi</button>
+    <button class="primary" data-action="build-analytics">Build Analytics High-Fi</button>
+    <button class="primary" data-action="build-forecasts">Build Forecasts High-Fi</button>
+    <p class="hint">Rerun replaces only the exact frames owned by that builder. Manual and unrelated nodes remain.</p>
+  </div>
+  <div class="group">
+    <h2>3 · Validate</h2>
+    <button data-action="validate-shell">Validate Shared Shell</button>
+    <button data-action="validate-conversations">Validate Conversations</button>
+    <button data-action="validate-escalations">Validate Escalations</button>
+    <button data-action="validate-orders">Validate Orders</button>
+    <button data-action="validate-web-chat">Validate Customer Web Chat</button>
+    <button data-action="validate-analytics">Validate Analytics</button>
+    <button data-action="validate-forecasts">Validate Forecasts</button>
+    <button data-action="validate-3d">Validate Phase 3D</button>
+    <button data-action="copy-report">Copy Validation Report</button>
+  </div>
+  <div id="status" role="status" aria-live="polite">Ready. Open the canonical file, then inspect Phase 3D.</div>
+  <pre id="report" aria-label="Plugin report">No report yet.</pre>
+  <script>
+    const buttons = [...document.querySelectorAll('button[data-action]')];
+    const report = document.getElementById('report');
+    const status = document.getElementById('status');
+    buttons.forEach(button => button.addEventListener('click', () => {
+      parent.postMessage({ pluginMessage: { type: 'action', action: button.dataset.action } }, '*');
+    }));
+    async function copyReport(value) {
+      try { await navigator.clipboard.writeText(value); status.textContent = 'Validation report copied.'; }
+      catch (_) {
+        const field = document.createElement('textarea');
+        field.value = value; document.body.appendChild(field); field.select();
+        const copied = document.execCommand('copy'); field.remove();
+        status.textContent = copied ? 'Validation report copied.' : 'Clipboard unavailable. Select and copy the report below.';
+      }
+    }
+    window.onmessage = ({ data }) => {
+      const message = data.pluginMessage;
+      if (!message) return;
+      if (message.type === 'busy') { buttons.forEach(b => b.disabled = true); status.textContent = `Running ${message.action}…`; }
+      if (message.type === 'ready') { buttons.forEach(b => b.disabled = false); if (status.textContent.startsWith('Running')) status.textContent = 'Ready.'; }
+      if (message.type === 'report') {
+        report.textContent = message.report;
+        status.textContent = message.report.startsWith('ERROR') ? 'Action failed. See report.' : 'Report ready.';
+        if (message.copy) copyReport(message.report);
+      }
+    };
+  </script>
+</body>
+</html>

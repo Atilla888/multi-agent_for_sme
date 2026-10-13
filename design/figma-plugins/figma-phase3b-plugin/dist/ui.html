@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Diploma UX — Phase 3B</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 18px; font: 13px/1.45 Inter, Arial, sans-serif; color: #262626; background: #fff; }
+    h1 { margin: 0 0 4px; font-size: 19px; }
+    p { margin: 0 0 14px; color: #555; }
+    .warning { padding: 10px; margin: 0 0 14px; background: #eee; border: 1px solid #aaa; }
+    .buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+    button { min-height: 34px; padding: 7px 9px; border: 1px solid #777; background: #f5f5f5; color: #222; cursor: pointer; text-align: left; font: inherit; }
+    button:hover { background: #e5e5e5; }
+    button:disabled { opacity: .55; cursor: wait; }
+    button.primary { background: #dedede; font-weight: 700; }
+    #status { min-height: 38px; margin: 12px 0 8px; padding: 8px; border: 1px solid #aaa; white-space: pre-wrap; }
+    #status.error { background: #eee; border-color: #555; }
+    label { display: block; margin: 9px 0 5px; font-weight: 700; }
+    textarea { display: block; width: 100%; height: 230px; resize: vertical; padding: 9px; font: 12px/1.4 Consolas, monospace; border: 1px solid #aaa; color: #222; background: #fff; }
+    .full { grid-column: 1 / -1; }
+  </style>
+</head>
+<body>
+  <h1>Diploma UX — Phase 3B</h1>
+  <p>Local low-fi Figma development plugin. Work on 03B only.</p>
+  <div class="warning">Before first write: manually duplicate <strong>03B — UX Review &amp; Revisions</strong> as <strong>03B — Backup before Local Plugin</strong>. Run Inspect first, then one builder at a time and review the canvas.</div>
+  <div class="buttons" id="buttons">
+    <button class="primary full" data-action="inspect">Inspect 03B</button>
+    <button data-action="escalations">Complete Escalations</button>
+    <button data-action="orders">Complete Orders</button>
+    <button data-action="webChat">Build Web Chat</button>
+    <button data-action="analytics">Build Analytics</button>
+    <button data-action="forecasts">Build Forecasts</button>
+    <button data-action="walkthroughs">Build Scenario Walkthroughs</button>
+    <button class="primary full" data-action="validate">Validate Phase 3B</button>
+    <button class="full" id="copy">Copy Validation Report</button>
+  </div>
+  <div id="status" role="status">Ready. Inspect 03B before running a builder.</div>
+  <label for="report">Inspection / validation report</label>
+  <textarea id="report" readonly spellcheck="false"></textarea>
+  <script>
+    const status = document.getElementById('status');
+    const report = document.getElementById('report');
+    const buttons = [...document.querySelectorAll('button[data-action]')];
+    let validationReport = '';
+    let busy = false;
+
+    for (const button of buttons) {
+      button.addEventListener('click', () => {
+        if (busy) return;
+        busy = true;
+        buttons.forEach(item => item.disabled = true);
+        status.classList.remove('error');
+        status.textContent = `Working: ${button.textContent}…`;
+        parent.postMessage({ pluginMessage: { action: button.dataset.action } }, '*');
+      });
+    }
+
+    window.onmessage = event => {
+      const message = event.data && event.data.pluginMessage;
+      if (!message || message.kind !== 'result') return;
+      busy = false;
+      buttons.forEach(item => item.disabled = false);
+      status.classList.toggle('error', !message.ok);
+      status.textContent = message.message;
+      if (message.report) report.value = message.report;
+      if (message.ok && message.action === 'validate') validationReport = message.report || '';
+      if (message.action !== 'validate' && message.action !== 'inspect') validationReport = '';
+    };
+
+    document.getElementById('copy').addEventListener('click', async () => {
+      if (!validationReport) {
+        status.classList.add('error');
+        status.textContent = 'Run Validate Phase 3B first; there is no current validation report to copy.';
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(validationReport);
+      } catch (_) {
+        report.value = validationReport;
+        report.focus();
+        report.select();
+        if (!document.execCommand('copy')) {
+          status.classList.add('error');
+          status.textContent = 'Automatic copy is unavailable. The report is selected; use Ctrl+C.';
+          return;
+        }
+      }
+      status.classList.remove('error');
+      status.textContent = 'Validation report copied to clipboard.';
+    });
+  </script>
+</body>
+</html>
