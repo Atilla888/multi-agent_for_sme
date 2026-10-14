@@ -1993,3 +1993,41 @@ textarea.field__control {
 @media (max-width: 560px) {
   .forecast-current-banner { align-items: flex-start; flex-direction: column; }
 }
+
+/* P5G Customer Web Chat */
+.customer-chat-page { min-height: 100vh; overflow-x: hidden; padding: var(--space-6) var(--space-4); background: var(--surface-muted); }
+.customer-chat-shell { width: min(100%, 720px); min-width: 0; margin: 0 auto; overflow: hidden; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); }
+.webchat-header { min-height: 72px; display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); padding: var(--space-4) var(--space-5); border-bottom: 1px solid var(--border); }
+.webchat-header h1, .webchat-header p, .webchat-footer, .webchat-fixture-note span, .webchat-message p, .webchat-message footer, .webchat-state-card p { margin: 0; }
+.webchat-header h1 { font-size: var(--type-section-size); line-height: var(--type-section-line); }
+.webchat-header__status { color: var(--foreground-muted); font-size: var(--type-caption-size); text-align: right; }
+.webchat-fixture-note { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-3); padding: var(--space-3) var(--space-5); color: var(--foreground-muted); background: var(--status-info-bg); border-bottom: 1px solid var(--border); font-size: var(--type-caption-size); }
+.webchat-fixture-note strong { color: var(--status-info); letter-spacing: 0.03em; }
+.webchat-timeline { min-width: 0; display: grid; gap: var(--space-4); margin: 0; padding: var(--space-5); list-style: none; background: var(--surface-muted); }
+.webchat-message { min-width: 0; display: flex; }
+.webchat-message--customer { justify-content: flex-end; }
+.webchat-message article { width: min(86%, 480px); min-width: 0; display: grid; gap: var(--space-2); padding: var(--space-3) var(--space-4); overflow-wrap: anywhere; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); }
+.webchat-message--customer article { background: var(--surface-selected); border-color: var(--border-interactive); }
+.webchat-message header { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--space-2); }
+.webchat-message header span, .webchat-message footer { color: var(--foreground-muted); font-size: var(--type-caption-size); }
+.webchat-state { min-width: 0; padding: var(--space-5); }
+.webchat-state-card .card__content { display: grid; gap: var(--space-4); }
+.webchat-order-summary, .webchat-facts { display: grid; gap: var(--space-3); margin: 0; }
+.webchat-order-summary > div, .webchat-fact { min-width: 0; display: grid; grid-template-columns: minmax(90px, 0.35fr) minmax(0, 1fr) auto; align-items: center; gap: var(--space-3); padding: var(--space-3); background: var(--surface-muted); border: 1px solid var(--border); border-radius: var(--radius-md); }
+.webchat-order-summary dt, .webchat-fact > span { color: var(--foreground-muted); font-size: var(--type-caption-size); text-transform: uppercase; letter-spacing: 0.04em; }
+.webchat-order-summary dd { margin: 0; font-weight: 700; overflow-wrap: anywhere; }
+.webchat-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
+.webchat-composer { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: var(--space-3); padding: var(--space-4) var(--space-5); border-top: 1px solid var(--border); }
+.webchat-composer .button { margin-bottom: 25px; }
+.webchat-footer { padding: var(--space-3) var(--space-5); color: var(--foreground-muted); background: var(--surface-muted); border-top: 1px solid var(--border); font-size: var(--type-caption-size); }
+@media (max-width: 560px) {
+  .customer-chat-page { padding: 0; background: var(--surface); }
+  .customer-chat-shell { min-height: 100vh; border: 0; border-radius: 0; box-shadow: none; }
+  .webchat-header { align-items: flex-start; flex-direction: column; padding: var(--space-4); }
+  .webchat-header__status { text-align: left; }
+  .webchat-fixture-note, .webchat-timeline, .webchat-state, .webchat-composer, .webchat-footer { padding-inline: var(--space-4); }
+  .webchat-message article { width: 92%; }
+  .webchat-order-summary > div, .webchat-fact { grid-template-columns: minmax(0, 1fr); align-items: start; }
+  .webchat-actions, .webchat-composer { grid-template-columns: minmax(0, 1fr); }
+  .webchat-actions .button, .webchat-composer .button { width: 100%; min-height: 44px; margin-bottom: 0; }
+}
