@@ -86,6 +86,7 @@ try {
   report.authentication.cookie = "Opaque / HttpOnly / SameSite=Lax";
   await capture("products-desktop.png");
   await navigate(`/inventory?product=${seed.product_id}`, "5.0000");
+  assert(!await evaluate("document.body.innerText.includes('Pending')"), "Known observed Inventory was labelled as a pending operation");
   report.reads.push("Products + Inventory: REAL data PASS");
   await capture("inventory-mobile.png", 390, 1100);
   report.mobile = await evaluate("({width:innerWidth,documentWidth:document.documentElement.scrollWidth})");

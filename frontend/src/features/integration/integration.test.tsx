@@ -30,6 +30,7 @@ describe("real feature adapters", () => {
     const markup = renderToStaticMarkup(<RealInventoryScreen model={model} />);
     expect(markup).toContain("0.0000"); expect(markup).toContain("2.0000");
     expect(markup).toContain("not a live-stock promise");
+    expect(markup).not.toContain('>Pending<');
   });
   it("rejects incomplete inventory instead of inventing zero or using fixtures", async () => {
     const api = apiMock(); vi.mocked(api.inventory).mockResolvedValue([]);
