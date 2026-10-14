@@ -1954,3 +1954,42 @@ textarea.field__control {
   .analytics-metric-grid { grid-template-columns: minmax(0, 1fr); }
   .analytics-controls .button { width: 100%; margin-bottom: 0; }
 }
+
+/* P5F Forecasts */
+.forecasts-screen { align-content: start; }
+.forecast-current-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  color: var(--foreground);
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--foreground-muted);
+  border-radius: var(--radius-md);
+  font-size: var(--type-small-size);
+}
+.forecast-current-banner strong { flex: 0 0 auto; letter-spacing: 0.04em; }
+.forecast-readiness-grid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.65fr); gap: var(--space-4); align-items: start; }
+.forecast-readiness-card .card__header,
+.forecast-target-boundary .card__header { align-items: flex-start; justify-content: space-between; flex-wrap: wrap; }
+.forecast-readiness-card .card__content,
+.forecast-request-card .card__content,
+.forecast-target-boundary .card__content,
+.forecast-return-card .card__content { display: grid; gap: var(--space-4); }
+.forecast-request-card { border-color: var(--status-neutral, var(--border)); }
+.forecast-request-card p,
+.forecast-target-boundary p,
+.forecast-return-card p { margin: 0; }
+.forecast-request-card .button { width: 100%; }
+.forecast-target-boundary { border-style: dashed; }
+.forecast-requirements { display: grid; gap: var(--space-3); margin: 0; padding-left: var(--space-6); }
+.forecast-return-card { border-color: var(--border-interactive); }
+
+@media (max-width: 900px) {
+  .forecast-readiness-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 560px) {
+  .forecast-current-banner { align-items: flex-start; flex-direction: column; }
+}
