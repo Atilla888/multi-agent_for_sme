@@ -1877,3 +1877,80 @@ textarea.field__control {
     gap: var(--space-1);
   }
 }
+
+/* P5F Analytics */
+.analytics-screen { align-content: start; }
+.analytics-controls {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(190px, 1fr)) auto;
+  align-items: end;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+.analytics-controls .button { margin-bottom: 25px; }
+.analytics-control-note,
+.analytics-chart-note { margin: 0; color: var(--foreground-muted); font-size: var(--type-caption-size); }
+.analytics-loading,
+.analytics-metric-grid,
+.analytics-visual-grid { display: grid; gap: var(--space-4); }
+.analytics-loading {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  padding: var(--space-6);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+.analytics-metric-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.analytics-metric-grid .card__header,
+.analytics-chart-card .card__header { align-items: flex-start; justify-content: space-between; flex-wrap: wrap; }
+.analytics-metric-grid .card__content,
+.analytics-chart-card .card__content,
+.analytics-provenance .card__content,
+.analytics-forecast-link .card__content { display: grid; gap: var(--space-3); }
+.analytics-metric-grid p,
+.analytics-chart-card p,
+.analytics-forecast-link p { margin: 0; }
+.analytics-metric-value {
+  color: var(--foreground);
+  font-size: var(--type-metric-size);
+  font-weight: 700;
+  line-height: var(--type-metric-line);
+  font-variant-numeric: tabular-nums;
+}
+.analytics-visual-grid { grid-template-columns: minmax(0, 1.55fr) minmax(320px, 0.65fr); align-items: start; }
+.analytics-chart {
+  min-width: 0;
+  overflow-x: auto;
+  padding: var(--space-3);
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+.analytics-chart svg { display: block; width: 100%; min-width: 580px; height: auto; }
+.analytics-chart__legend { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); color: var(--foreground-muted); font-size: var(--type-caption-size); }
+.actual-line-sample { width: 34px; border-top: 3px solid var(--foreground); }
+.analytics-chart__grid { stroke: var(--border); stroke-width: 1; }
+.analytics-chart__series { stroke: var(--foreground); stroke-width: 3; stroke-linecap: round; }
+.analytics-chart__point { fill: var(--surface); stroke: var(--foreground); stroke-width: 3; }
+.analytics-chart__gap { stroke: var(--status-warning); stroke-width: 2; stroke-dasharray: 5 5; }
+.analytics-chart__gap-label,
+.analytics-chart__axis-label { fill: var(--foreground-muted); font-size: 11px; }
+.analytics-chart__gap-label { fill: var(--status-warning); font-weight: 700; }
+.analytics-table { min-width: 760px; }
+.analytics-forecast-link { border-color: var(--border-interactive); }
+
+@media (max-width: 1120px) {
+  .analytics-controls,
+  .analytics-metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .analytics-visual-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 760px) {
+  .analytics-controls,
+  .analytics-loading,
+  .analytics-metric-grid { grid-template-columns: minmax(0, 1fr); }
+  .analytics-controls .button { width: 100%; margin-bottom: 0; }
+}
