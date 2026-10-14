@@ -1,2 +1,5 @@
-import { FoundationPage } from "@/components/domain/FoundationPage";
-export default function AgentRunsPage() { return <FoundationPage page="agent-runs" />; }
+import { AgentRunsScreen, getAgentRunsFixtureScreen } from "@/features/administration";
+
+export default async function AgentRunsPage({ searchParams }: { readonly searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  return <AgentRunsScreen model={getAgentRunsFixtureScreen(await searchParams)} />;
+}

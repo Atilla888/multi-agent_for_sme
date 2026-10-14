@@ -1,2 +1,5 @@
-import { FoundationPage } from "@/components/domain/FoundationPage";
-export default function AuditPage() { return <FoundationPage page="audit" />; }
+import { AuditScreen, getAuditFixtureScreen } from "@/features/administration";
+
+export default async function AuditPage({ searchParams }: { readonly searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  return <AuditScreen model={getAuditFixtureScreen(await searchParams)} />;
+}
