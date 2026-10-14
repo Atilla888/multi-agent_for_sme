@@ -1,7 +1,9 @@
 # P5E — Backend / RAG Contract Audit
 
-**Status:** COMPLETE  
-**Audit type:** read-only backend and test evidence review  
+**Status:** COMPLETE
+
+**Audit type:** read-only backend and test evidence review
+
 **Frontend integration decision:** typed local fixtures behind an interface-ready adapter; no fake API
 
 ## Executive finding
@@ -104,18 +106,18 @@ The user-facing UI may show safe provenance. Storage coordinates, bucket/object 
 
 ## Capability matrix
 
-| Capability | Backend implementation | Public browser contract | P5E mode |
-|---|---|---|---|
-| List documents | Internal repository/service evidence exists | MISSING | Typed fixture adapter |
-| Document/version detail | Internal repository/service evidence exists | MISSING | Typed fixture adapter |
-| Local search/filter of loaded rows | Frontend concern | Not required | Real local UI behavior |
-| Upload/stage text file | Internal Owner service exists | MISSING | Visible but disabled/unavailable |
-| Processing/index status | Internal lifecycle exists | MISSING | Fixture state only |
-| Publish READY version | Internal Owner/CAS service exists | MISSING | Visible but disabled/unavailable |
-| Revoke current version | Internal Owner/CAS service exists | MISSING | Visible but disabled/unavailable |
-| Retrieval | Internal constrained service exists | No staff-facing endpoint | Explain state; do not simulate retrieval |
-| Citation provenance | Internal evidence contract exists | No staff-facing resolver | Safe fixture metadata only |
-| Session/business/permissions | Internal policy evidence exists | No frontend contract | Existing shell context plus restricted fixture states |
+| Capability | Design requires? | Backend/domain contract exists? | Public frontend endpoint exists? | Read/write | Authorization required? | Current evidence | Frontend implementation mode |
+|---|---|---|---|---|---|---|---|
+| List documents | Yes | Internal repository/service evidence | No | Read | Business access | Business-scoped document repository | LOCAL UI FIXTURE ONLY |
+| Document/version detail | Yes | Internal document/version evidence | No | Read | Business access | Version records and current published pointer | LOCAL UI FIXTURE ONLY |
+| Search/filter loaded rows | Yes | Not a required backend capability for fixtures | Not required | Read | Same as visible records | Approved list/filter interaction | LOCAL UI FIXTURE ONLY |
+| Upload/stage text file | Yes | `stage_version` internal service | No | Write | Owner | Plain-text validation and staged lifecycle | UNAVAILABLE |
+| Processing/index status | Yes | Internal lifecycle evidence | No | Read | Business access | STAGED, READY and FAILED plus object safety state | LOCAL UI FIXTURE ONLY |
+| Publish READY version | Yes | Owner-authorized version-aware CAS | No | Write | Owner | READY/CLEAN/complete-index preconditions | UNAVAILABLE |
+| Revoke current version | Yes | Owner-authorized version-aware CAS | No | Write | Owner | Published-pointer clearing and revocation time | UNAVAILABLE |
+| Knowledge retrieval | Contextual only | Internal constrained retrieval service | No staff endpoint | Read | Business plus scope ACL | Tenant/current/revocation/scope filters precede result | UNAVAILABLE |
+| Safe provenance | Yes | Internal evidence contract | No staff resolver | Read | Same as source record | Source/version/business/time/scope concepts | LOCAL UI FIXTURE ONLY |
+| Session/business capabilities | Yes | Internal membership and policy evidence | No frontend contract | Read | Authenticated membership | Database-backed Owner/business checks | UNAVAILABLE |
 
 ## Required future public contracts
 

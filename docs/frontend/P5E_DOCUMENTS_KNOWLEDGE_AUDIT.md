@@ -1,7 +1,9 @@
 # P5E — Documents / Knowledge Design Audit
 
-**Status:** COMPLETE  
-**Scope:** `/documents` and the explicitly supported document version/detail route  
+**Status:** COMPLETE
+
+**Scope:** `/documents` and the explicitly supported document version/detail route
+
 **Authority:** `docs/DESIGN.md`, Phase 2D/2E UX artifacts, Phase 3C shared components, Phase 3D shared staff shell
 
 ## Decision
@@ -44,7 +46,7 @@ The detail route `/documents/[id]` is supported by the canonical information arc
 | Failure/unavailable | CONFIRMED | Use a non-destructive unavailable state and preserve existing data claims. |
 | Restricted | CONFIRMED | Hide document data and state that visible navigation does not grant backend access. |
 | Responsive behavior | CONFIRMED | Desktop is the reference; the page must remain usable at 390 px without hiding lifecycle meaning. |
-| Pagination | INFERRED | Not required for the bounded fixture set; avoid inert pagination. |
+| Pagination | INFERRED FROM APPROVED VISUAL | Not required for the bounded fixture set; avoid inert pagination. |
 | Drag-and-drop upload | NOT SPECIFIED | Do not implement. |
 | File preview/editor | NOT SPECIFIED | Do not implement. |
 | Bulk publish/revoke | NOT SPECIFIED | Do not implement. |
