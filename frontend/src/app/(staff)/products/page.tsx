@@ -1,2 +1,2 @@
-import { FoundationPage } from "@/components/domain/FoundationPage";
-export default function ProductsPage() { return <FoundationPage page="products" />; }
+import { getProductsFixtureScreen, ProductsScreen } from "@/features/products";
+export default async function ProductsPage({ searchParams }: { readonly searchParams: Promise<Record<string, string | string[] | undefined>> }) { return <ProductsScreen model={getProductsFixtureScreen(await searchParams)} />; }

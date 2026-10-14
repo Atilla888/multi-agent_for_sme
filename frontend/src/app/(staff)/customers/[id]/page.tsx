@@ -1,2 +1,2 @@
-import { FoundationPage } from "@/components/domain/FoundationPage";
-export default function CustomerDetailPage() { return <FoundationPage page="customer-detail" />; }
+import { CustomerDetailScreen, getCustomerDetailFixture } from "@/features/customers";
+export default async function CustomerDetailPage({ params, searchParams }: { readonly params: Promise<{ readonly id: string }>; readonly searchParams: Promise<Record<string, string | string[] | undefined>> }) { const [{ id }, query] = await Promise.all([params, searchParams]); return <CustomerDetailScreen model={getCustomerDetailFixture(id, query.state)} />; }
