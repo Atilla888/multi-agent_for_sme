@@ -6,4 +6,5 @@ export interface AuthenticatedSession {
   readonly roles: readonly StaffRole[];
   readonly activeBusinessId: string | null;
   readonly expiresAt: string;
+  readonly businessName?: string | null;
 }

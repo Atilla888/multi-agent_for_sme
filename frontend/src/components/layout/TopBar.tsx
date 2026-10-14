@@ -2,8 +2,9 @@
 
 import { usePathname } from "next/navigation";
 import { findNavigationLabel } from "@/lib/navigation";
+import type { AuthenticatedSession } from "@/types/auth";
 
-export function TopBar() {
+export function TopBar({ session }: { readonly session?: AuthenticatedSession }) {
   const pathname = usePathname();
   const title = findNavigationLabel(pathname);
 
@@ -16,9 +17,9 @@ export function TopBar() {
       <div className="topbar__context" aria-label="Current context">
         <span>
           <small>Current business</small>
-          <strong>Not selected</strong>
+          <strong>{session?.businessName ?? session?.activeBusinessId ?? "Not selected"}</strong>
         </span>
-        <span className="session-boundary">Session not connected</span>
+        <span className="session-boundary">{session ? "Authenticated · Keycloak" : "Session not connected"}</span>
       </div>
     </header>
   );

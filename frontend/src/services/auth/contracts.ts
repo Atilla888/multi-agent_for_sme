@@ -8,7 +8,7 @@ export interface AuthAdapter {
 
 export const keycloakBoundary = {
   provider: "Keycloak / OIDC",
-  status: "not-configured",
+  strategy: "authorization-code-pkce",
   tokenStorageRule: "Do not store access tokens in localStorage.",
   authorizationRule: "Backend authorization remains decisive for every read and action.",
 } as const;

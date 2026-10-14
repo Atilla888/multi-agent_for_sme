@@ -3,8 +3,9 @@
 import { usePathname } from "next/navigation";
 import { staffNavigation } from "@/lib/navigation";
 import { SidebarSection } from "./SidebarSection";
+import type { AuthenticatedSession } from "@/types/auth";
 
-export function Sidebar() {
+export function Sidebar({ session }: { readonly session?: AuthenticatedSession }) {
   const pathname = usePathname();
 
   return (
@@ -16,7 +17,7 @@ export function Sidebar() {
 
       <button className="business-context" type="button" disabled aria-describedby="business-context-note">
         <span>Business switch</span>
-        <strong>No active business</strong>
+        <strong>{session?.businessName ?? session?.activeBusinessId ?? "No active business"}</strong>
       </button>
       <p className="sr-only" id="business-context-note">
         Business context will come from an authorized backend session.
@@ -32,7 +33,8 @@ export function Sidebar() {
 
       <div className="account-boundary">
         <strong>Account / session</strong>
-        <span>Keycloak not connected</span>
+        <span>{session ? `${session.displayName} · ${session.roles.join(" / ")}` : "Keycloak not connected"}</span>
+        {session ? <form action="/api/auth/logout" method="post"><button className="context-link" type="submit">Sign out</button></form> : null}
       </div>
     </aside>
   );
