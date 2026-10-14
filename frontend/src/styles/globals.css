@@ -339,6 +339,110 @@
   }
 }
 
+/* P5E Documents / Knowledge */
+.documents-screen {
+  align-content: start;
+}
+
+.document-controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.55fr);
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.document-filter-toolbar {
+  grid-template-columns: minmax(220px, 1.35fr) minmax(200px, 0.75fr) auto;
+}
+
+.document-upload-boundary {
+  display: grid;
+  align-content: start;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--status-restricted);
+  border-radius: var(--radius-lg);
+}
+
+.document-upload-boundary .button {
+  width: 100%;
+}
+
+.document-upload-boundary > p {
+  margin: 0;
+  color: var(--foreground-muted);
+  font-size: var(--type-caption-size);
+}
+
+.documents-loading,
+.document-lifecycle-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.documents-loading {
+  padding: var(--space-6);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.document-lifecycle-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.document-lifecycle-card {
+  min-height: 230px;
+}
+
+.document-lifecycle-card .card__header {
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.document-lifecycle-card .card__content,
+.document-actions-card .card__content {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.document-lifecycle-card p,
+.document-actions-card p {
+  margin: 0;
+}
+
+.document-action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+@media (max-width: 1220px) {
+  .document-controls {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .document-lifecycle-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .document-filter-toolbar,
+  .documents-loading,
+  .document-lifecycle-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .document-action-row,
+  .document-action-row .button {
+    width: 100%;
+  }
+}
+
 @theme inline {
   --color-page: var(--background);
   --color-card: var(--surface);
