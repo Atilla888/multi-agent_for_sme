@@ -1,0 +1,7 @@
+import { BUSINESS_FIXTURE_MODE, parseBusinessValidationState } from "@/features/business";
+import { demoProducts } from "../fixtures/demoProducts";
+import type { ProductDataAdapter } from "./contracts";
+import type { ProductsScreenModel } from "../types";
+export const productFixtureAdapter: ProductDataAdapter = { list(query, status) { const needle = query.trim().toLocaleLowerCase(); return demoProducts.filter((product) => (!needle || `${product.name} ${product.sku} ${product.variant}`.toLocaleLowerCase().includes(needle)) && (status === "all" || product.status === status)); }, detail(id) { return demoProducts.find((product) => product.id === id) ?? null; } };
+function first(value: string | string[] | undefined): string { return Array.isArray(value) ? value[0] ?? "" : value ?? ""; }
+export function getProductsFixtureScreen(query: Record<string, string | string[] | undefined>): ProductsScreenModel { const validationState = parseBusinessValidationState(query.state); const search = first(query.q); const status = first(query.status) || "all"; const items = validationState === "default" ? productFixtureAdapter.list(search, status) : []; const selected = validationState === "default" ? productFixtureAdapter.detail(first(query.product) || items[0]?.id || "") : null; return { mode: BUSINESS_FIXTURE_MODE, validationState: validationState === "default" && items.length === 0 ? "empty" : validationState, items, selected, query: search, status }; }
