@@ -33,6 +33,8 @@ The implementation must not blend actual and predicted values, imply that an una
 | Granularity | CONFIRMED | DAY, WEEK, and MONTH are the only evidenced values. |
 | ACTUAL historical visualization | CONFIRMED | Observed data only; label ACTUAL in text, not by color alone. |
 | Underlying data table | CONFIRMED | The table and visualization must use the same typed series. |
+| Three-card desktop summary composition | INFERRED FROM APPROVED VISUAL | Reuse the approved KPI, completeness, and freshness component treatment; card count is presentation, not extra metrics. |
+| Chart/provenance side-by-side desktop layout | INFERRED FROM APPROVED VISUAL | Reflow to one column when space is limited. |
 | Source, cutoff, observed time | CONFIRMED | Show safe report provenance supplied by the view model. |
 | Freshness and completeness | CONFIRMED | Show each explicitly; stale and incomplete are not equivalent. |
 | Valid result | CONFIRMED | Observed result with metric, unit, scope, period, source, and caveat. |
@@ -43,6 +45,7 @@ The implementation must not blend actual and predicted values, imply that an una
 | Permission denied | CONFIRMED | Hide protected values; visible navigation grants no access. |
 | Loading | CONFIRMED | No new result is claimed while loading. |
 | Filter interaction | CONFIRMED | Deterministic local fixture filtering may demonstrate the approved behavior. |
+| Horizontal chart containment on narrow screens | INFERRED FROM APPROVED VISUAL | Preserve readable labels with local named scrolling instead of shrinking the plot into illegibility. |
 | Export/download | NOT SPECIFIED | Do not implement. |
 | Causal AI explanation | NOT SPECIFIED / unsafe | Do not claim causes from descriptive historical data. |
 | Research experiment dashboard | OUT OF SCOPE | Do not display TSR, FER, H0/H1, SINGLE, STATIC, or ADAPTIVE experiment output. |
