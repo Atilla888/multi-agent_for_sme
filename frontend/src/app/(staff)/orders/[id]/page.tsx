@@ -1,2 +1,2 @@
-import { FoundationPage } from "@/components/domain/FoundationPage";
-export default function OrderDetailPage() { return <FoundationPage page="order-detail" />; }
+import { getOrderDetailFixture, OrderDetailScreen } from "@/features/orders";
+export default async function OrderDetailPage({ params, searchParams }: { readonly params: Promise<{ readonly id: string }>; readonly searchParams: Promise<Record<string, string | string[] | undefined>> }) { const [{ id }, query] = await Promise.all([params, searchParams]); return <OrderDetailScreen model={getOrderDetailFixture(id, query)} />; }
