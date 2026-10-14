@@ -1995,6 +1995,16 @@ textarea.field__control {
 }
 
 /* P5G Customer Web Chat */
+/* P5I transport-backed read controls reuse the approved surfaces/tokens. */
+.business-context strong, .topbar__context strong { overflow-wrap: anywhere; max-width: 32ch; }
+.account-boundary .context-link { color: var(--foreground-inverse); }
+.integration-read-search { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: var(--space-4); }
+.integration-read-search .button { margin-bottom: 25px; }
+.integration-analytics-controls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
+@media (max-width: 560px) {
+  .integration-read-search, .integration-analytics-controls { grid-template-columns: minmax(0, 1fr); }
+  .integration-read-search .button { margin-bottom: 0; min-height: 44px; }
+}
 .customer-chat-page { min-height: 100vh; overflow-x: hidden; padding: var(--space-6) var(--space-4); background: var(--surface-muted); }
 .customer-chat-shell { width: min(100%, 720px); min-width: 0; margin: 0 auto; overflow: hidden; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); }
 .webchat-header { min-height: 72px; display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); padding: var(--space-4) var(--space-5); border-bottom: 1px solid var(--border); }

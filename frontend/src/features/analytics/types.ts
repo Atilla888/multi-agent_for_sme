@@ -7,7 +7,7 @@ export interface AnalyticsPoint {
   readonly period: string;
   readonly label: string;
   readonly value: number | null;
-  readonly currency: "KZT";
+  readonly currency: string;
 }
 
 export interface AnalyticsReport {

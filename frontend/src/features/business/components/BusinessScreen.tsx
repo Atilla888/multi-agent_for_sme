@@ -3,7 +3,7 @@ import { Button, EmptyState, LoadingState, SearchInput, Select, StateNotice } fr
 import type { BusinessValidationState } from "../types";
 
 export function BusinessFixtureBanner({ family }: { readonly family: string }) {
-  return <div className="fixture-banner" role="note"><strong>LOCAL UI FIXTURE ONLY</strong><span>{family} uses deterministic development/demo records · not a live backend session or business source.</span></div>;
+  return <div className="fixture-banner" role="note"><strong>LOCAL UI FIXTURE ONLY</strong><span>{family} uses deterministic development/demo records · not a live business data source.</span></div>;
 }
 
 interface BusinessBoundaryProps {
