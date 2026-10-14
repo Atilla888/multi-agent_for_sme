@@ -86,7 +86,7 @@ P5G/H adds 35 component/adapter tests: 11 for Web Chat and 24 for Administration
 
 ## Visual Validation
 
-Headless Microsoft Edge screenshots were reviewed from the production build at 1440 px desktop and the active ≤560 px mobile breakpoint. Web Chat confirmation, known failure, confirmation pending, delivery failure and unavailable behavior were reviewed. Integrations, Settings, Audit fixture/restricted and Agent Runs fixture/restricted were reviewed. Layout, hierarchy, wrapping, disabled actions, local table overflow and safety copy passed. A 390 px Windows headless capture was excluded because Edge rendered its minimum layout viewport and cropped the bitmap; the complete mobile breakpoint was revalidated at 500 px, with static CSS review covering the 320 px minimum. This is deliberate visual QA, not formal usability or localization certification.
+Headless Microsoft Edge screenshots were reviewed from the production build at 1440 px desktop, the active ≤560 px breakpoint, and an exact 390 px viewport through Chromium DevTools mobile emulation. At 390 px, `window.innerWidth`, document scroll width and body scroll width were all exactly `390`, proving no document-level horizontal overflow. Web Chat confirmation, known failure, confirmation pending, delivery failure and unavailable behavior were reviewed. Integrations, Settings, Audit fixture/restricted and Agent Runs fixture/restricted were reviewed. Layout, hierarchy, wrapping, disabled actions, local table overflow and safety copy passed. This is deliberate visual QA, not formal usability or localization certification.
 
 ## Known Gaps
 
