@@ -1,6 +1,6 @@
 # Frontend
 
-P5A establishes the technical frontend foundation for the diploma multi-agent operations platform. It contains routing, a shared staff shell, semantic tokens, truthful capability placeholders, API/auth boundaries, and lightweight tests. It does **not** implement the complete product screens.
+P5A–P5G/H implement the approved screen coverage. P5I adds real Keycloak authentication and available safe FastAPI reads; unsupported capabilities remain explicitly labelled fixtures or unavailable states. See the [P5I report](../docs/frontend/P5I_FULLSTACK_INTEGRATION_IMPLEMENTATION.md) and [final capability matrix](../docs/frontend/P5I_FINAL_CAPABILITY_MATRIX.md).
 
 ## Requirements
 
@@ -18,7 +18,7 @@ copy .env.example .env.local
 npm run dev
 ```
 
-Open `http://localhost:3000`. The root redirects to `/overview`.
+Open `http://127.0.0.1:3000` to match APP_ORIGIN. The root redirects to protected `/overview`; staff routes require real sign-in. `/chat` remains a separate unconfigured customer preview.
 
 ## Commands
 
@@ -45,20 +45,22 @@ NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:8000
 
 ## Backend and identity boundaries
 
-The only currently evidenced public FastAPI routes used by this foundation are:
+Available health routes are:
 
 - `GET /health/live`
 - `GET /health/ready`
 
-Business endpoints are not invented. `src/services/api` centralizes base URL, bearer-token injection, typed JSON, consistent HTTP errors, and request/correlation IDs where returned.
+P5I adds authenticated `GET /me`, `/products`, `/products/{id}`, `/inventory`, `/customers/{id}`, `/orders/{id}` and `/analytics/sales` over existing services. `src/services/api` centralizes server bearer/business scope, typed DTO validation, timeout, semantic errors and request UUIDs. No generic tool RPC or business mutation is exposed.
 
-Keycloak/OIDC remains the identity authority. `src/services/auth/contracts.ts` defines the future adapter boundary. P5A does not simulate successful login, store passwords, or persist access tokens in `localStorage`. Frontend visibility never replaces backend authorization.
+Keycloak/OIDC remains the identity authority. Configure server-only APP_ORIGIN, API_SERVER_BASE_URL, OIDC_ISSUER, OIDC_CLIENT_ID and APP_BUSINESS_ID in an ignored runtime env; OIDC_CLIENT_SECRET is optional for a confidential client. Register exact `/api/auth/callback` and `/login` post-logout URLs, S256 PKCE and the existing backend audience. Provision the actual issuer/subject application user and business membership. See [the auth decision](../docs/frontend/P5I_AUTH_DECISION.md). Backend transport uses optional `platform/infra/compose/compose.p5i.yaml` with explicit OIDC/CORS settings.
+
+Passwords are collected only by Keycloak. Browser stores only an opaque HttpOnly session ID; tokens stay on the Next.js server. The local MVP uses one Node instance and expires sessions on restart or token expiry. Production requires HTTPS and shared session deployment planning. Frontend visibility never replaces backend authorization. P5I_ENABLE_FIXTURE_REVIEW defaults false; explicit fixture review still requires staff authentication.
 
 ## Design and route status
 
 The implementation follows `docs/DESIGN.md`, Figma `03C` design-system material, the `03D` high-fidelity source, and `03E` interaction semantics. The staff shell is desktop-primary; `/chat` is a separate, mobile-important customer surface. Inter is referenced with system fallbacks because no approved redistributable local font asset is present.
 
-All screen routes are structural placeholders, not completed high-fidelity screens. Current limits stay explicit:
+Screen implementations reuse the approved system; their REAL/FIXTURE/UNAVAILABLE/TARGET status is explicit in the matrix. Current limits stay explicit:
 
 - M08 external channel/provider work is deferred and not configured.
 - E02 keeps `update_order` unavailable.

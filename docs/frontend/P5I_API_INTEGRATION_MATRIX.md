@@ -19,7 +19,7 @@ Pre-implementation decisions. All new endpoints below are thin transport over ex
 | Conversations | Yes | Internal Brain reads, no staff query contract | NONE | Conversation/customer authorization needed | Read/write | KEEP FIXTURE; REAL API NOT AVAILABLE YET |
 | Escalations | Yes | Internal executor state, no authorized queue query | NONE | Assignment/decision contract needed | Read/write | KEEP FIXTURE; REAL API NOT AVAILABLE YET |
 | Integrations | Yes | Storage concepts, no public provider-health query | NONE | Provider/business grant needed | Read/write | DEFERRED / KEEP FIXTURE |
-| Settings | Yes | Configuration name/version only | NONE | Per-setting policy absent | Read/write | KEEP FIXTURE; writes UNAVAILABLE |
+| Settings | Yes | Configuration versions only; no display-name query | NONE | Per-setting policy absent | Read/write | KEEP FIXTURE; writes UNAVAILABLE |
 | Audit | Yes | Durable writes; no authorized/redacted query service | NONE | Restricted field/resource policy needed | Read | KEEP FIXTURE / RESTRICTED |
 | Agent Runs | Yes | Internal trace concepts; no safe public list/detail query | NONE | Contextual/restricted policy needed | Read | KEEP FIXTURE / RESTRICTED; Resume TARGET-ONLY |
 | Customer Web Chat | Yes | M08 transport unaccepted | NONE | Verified customer identity/session absent | Read/write | DEFERRED / NOT_CONFIGURED |

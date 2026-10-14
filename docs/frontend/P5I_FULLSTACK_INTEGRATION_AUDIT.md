@@ -12,7 +12,7 @@ Python 3.12.10 environment: `pip check` PASS; Compose `config --quiet` PASS; Ale
 
 `api/app.py` exposes only `/health/live` and `/health/ready`. `application/queries.py` already provides authorized Product search/detail, Inventory batch lookup, Customer lookup, Order detail and Owner sales reports. All use existing tenant transactions and policy checks. Product search requires a nonempty query; it is not an unrestricted catalog list. Customer and Order lists are absent. Exact decimal values, price currencies, versions and Inventory observation time are supported; live delivery and uncertain-operation reconciliation projections are absent.
 
-`repositories/postgres.py` supports the query services, tenant predicates and RLS. It has internal conversation/run/config reads but no public safe run/audit/list DTO or field authorization. M07 has lifecycle and retrieval services, but no approved document administration list/query DTO. Adding those projections would introduce business query behavior rather than thin transport, so these screens retain explicit fixtures.
+`repositories/postgres.py` supports the query services, tenant predicates and RLS. It has internal conversation/run/config reads but no public safe run/audit/list DTO or field authorization. Its business configuration tuple is **configuration_version + row version**, not a display name; `/me` must leave business_name null and show the verified UUID. M07 has lifecycle and retrieval services, but no approved document administration list/query DTO. Adding those projections would introduce business query behavior rather than thin transport, so these screens retain explicit fixtures.
 
 ## Security and business scope
 
