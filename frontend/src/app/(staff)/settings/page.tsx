@@ -1,2 +1,5 @@
-import { FoundationPage } from "@/components/domain/FoundationPage";
-export default function SettingsPage() { return <FoundationPage page="settings" />; }
+import { getSettingsFixtureScreen, SettingsScreen } from "@/features/administration";
+
+export default async function SettingsPage({ searchParams }: { readonly searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  return <SettingsScreen model={getSettingsFixtureScreen(await searchParams)} />;
+}
