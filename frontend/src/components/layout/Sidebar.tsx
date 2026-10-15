@@ -1,9 +1,10 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { staffNavigation } from "@/lib/navigation";
 import { Icon } from "@/components/ui/Icon";
+import { staffNavigation } from "@/lib/navigation";
 import { SidebarSection } from "./SidebarSection";
+import { businessLabel, initials, roleLabel } from "./sessionDisplay";
 import type { AuthenticatedSession } from "@/types/auth";
 
 export function Sidebar({ session }: { readonly session?: AuthenticatedSession }) {
@@ -12,19 +13,22 @@ export function Sidebar({ session }: { readonly session?: AuthenticatedSession }
   return (
     <aside className="sidebar">
       <div className="sidebar__brand">
-        <span className="sidebar__logo" aria-hidden="true"><Icon name="bot" size={18} /></span>
+        <span className="sidebar__logo" aria-hidden="true">MA</span>
         <span className="sidebar__brand-text">
-          <strong>Diplom / Operations</strong>
-          <span>Staff workspace</span>
+          <strong>Multi-Agent</strong>
+          <span>Retail Ops Platform</span>
         </span>
       </div>
 
       <button className="business-context" type="button" disabled aria-describedby="business-context-note">
-        <span>Business switch</span>
-        <strong>{session?.businessName ?? session?.activeBusinessId ?? "No active business"}</strong>
+        <span className="business-context__text">
+          <span>Business</span>
+          <strong>{businessLabel(session)}</strong>
+        </span>
+        <Icon name="chevronRight" size={16} />
       </button>
       <p className="sr-only" id="business-context-note">
-        Business context will come from an authorized backend session.
+        Business context comes from the authorized backend session; switching is not available yet.
       </p>
 
       <nav aria-label="Staff workspace">
@@ -36,13 +40,15 @@ export function Sidebar({ session }: { readonly session?: AuthenticatedSession }
       </nav>
 
       <div className="account-boundary">
-        <strong>Account / session</strong>
-        <span>{session ? `${session.displayName} · ${session.roles.join(" / ")}` : "Keycloak not connected"}</span>
+        <span className="avatar-initials" aria-hidden="true">{session ? initials(session.displayName) : "?"}</span>
+        <span className="account-boundary__text">
+          <strong>{session?.displayName ?? "Keycloak not connected"}</strong>
+          <span>{roleLabel(session)}</span>
+        </span>
         {session ? (
           <form action="/api/auth/logout" method="post">
-            <button className="context-link sidebar__signout" type="submit" title="Sign out">
+            <button className="sidebar__signout" type="submit" aria-label="Sign out" title="Sign out">
               <Icon name="logout" size={18} />
-              <span className="nav-label">Sign out</span>
             </button>
           </form>
         ) : null}
