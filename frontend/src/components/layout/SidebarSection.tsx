@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Icon } from "@/components/ui/Icon";
 import type { NavArea, NavItem } from "@/lib/navigation";
 import { isRouteActive } from "@/lib/navigation";
 
@@ -19,15 +20,15 @@ function AccessMarker({ item }: { readonly item: NavItem }) {
 }
 
 export function SidebarSection({ area, pathname }: SidebarSectionProps) {
-  const areaActive =
-    isRouteActive(pathname, area.href) ||
-    Boolean(area.children?.some((item) => isRouteActive(pathname, item.href)));
+  const childActive = Boolean(area.children?.some((item) => isRouteActive(pathname, item.href)));
+  const areaCurrent = isRouteActive(pathname, area.href) && !childActive;
+  const areaClass = areaCurrent ? "nav-primary--current" : childActive ? "nav-primary--active" : "";
 
   return (
     <li className="nav-area">
-      <Link className={`nav-primary ${areaActive ? "nav-primary--active" : ""}`} href={area.href}>
-        <span>{area.label}</span>
-        {areaActive ? <span aria-hidden="true">•</span> : null}
+      <Link className={`nav-primary ${areaClass}`.trim()} href={area.href} title={area.label} aria-current={areaCurrent ? "page" : undefined}>
+        {area.icon ? <Icon name={area.icon} /> : null}
+        <span className="nav-label">{area.label}</span>
       </Link>
       {area.children ? (
         <ul className="nav-nested">
@@ -40,8 +41,10 @@ export function SidebarSection({ area, pathname }: SidebarSectionProps) {
                   className={`nav-nested__link ${active ? "nav-nested__link--active" : ""} ${restricted ? "nav-nested__link--restricted" : ""}`}
                   href={item.href}
                   aria-current={active ? "page" : undefined}
+                  title={item.label}
                 >
-                  <span>└ {item.label}</span>
+                  {item.icon ? <Icon name={item.icon} size={18} /> : null}
+                  <span className="nav-label">{item.label}</span>
                   <AccessMarker item={item} />
                 </Link>
               </li>

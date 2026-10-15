@@ -9,7 +9,7 @@ export function StatusBadge({ state, className = "" }: StatusBadgeProps) {
   const presentation = statePresentation[state];
   return (
     <span className={`status-badge status-badge--${presentation.tone} ${className}`.trim()}>
-      <span className="status-badge__marker" aria-hidden="true">{presentation.marker}</span>
+      <span className="status-badge__marker status-badge__dot" aria-hidden="true" />
       <span>{presentation.label}</span>
     </span>
   );

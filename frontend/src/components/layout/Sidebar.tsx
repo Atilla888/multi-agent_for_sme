@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { staffNavigation } from "@/lib/navigation";
+import { Icon } from "@/components/ui/Icon";
 import { SidebarSection } from "./SidebarSection";
 import type { AuthenticatedSession } from "@/types/auth";
 
@@ -11,8 +12,11 @@ export function Sidebar({ session }: { readonly session?: AuthenticatedSession }
   return (
     <aside className="sidebar">
       <div className="sidebar__brand">
-        <strong>Diplom / Operations</strong>
-        <span>Staff workspace</span>
+        <span className="sidebar__logo" aria-hidden="true"><Icon name="bot" size={18} /></span>
+        <span className="sidebar__brand-text">
+          <strong>Diplom / Operations</strong>
+          <span>Staff workspace</span>
+        </span>
       </div>
 
       <button className="business-context" type="button" disabled aria-describedby="business-context-note">
@@ -34,7 +38,14 @@ export function Sidebar({ session }: { readonly session?: AuthenticatedSession }
       <div className="account-boundary">
         <strong>Account / session</strong>
         <span>{session ? `${session.displayName} · ${session.roles.join(" / ")}` : "Keycloak not connected"}</span>
-        {session ? <form action="/api/auth/logout" method="post"><button className="context-link" type="submit">Sign out</button></form> : null}
+        {session ? (
+          <form action="/api/auth/logout" method="post">
+            <button className="context-link sidebar__signout" type="submit" title="Sign out">
+              <Icon name="logout" size={18} />
+              <span className="nav-label">Sign out</span>
+            </button>
+          </form>
+        ) : null}
       </div>
     </aside>
   );

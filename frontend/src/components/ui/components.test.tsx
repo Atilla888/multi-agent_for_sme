@@ -81,6 +81,7 @@ describe("semantic status and feedback", () => {
   it("communicates status with both a marker and explicit text", () => {
     const markup = renderToStaticMarkup(<StatusBadge state="waiting-human" />);
     expect(markup).toContain("status-badge__marker");
+    expect(markup).toContain("status-badge__dot");
     expect(markup).toContain("Waiting human");
   });
 
@@ -184,17 +185,36 @@ describe("approved token contract", () => {
   const cssPath = fileURLToPath(new URL("../../styles/globals.css", import.meta.url));
   const css = readFileSync(cssPath, "utf8");
 
-  it("maps semantic purpose tokens to approved Phase 3C primitives", () => {
-    expect(css).toContain("--primary: var(--color-navy-700)");
+  it("maps semantic purpose tokens to the lab 3 Figma design system", () => {
+    expect(css).toContain("--color-indigo-600: #4f46e5");
+    expect(css).toContain("--color-neutral-50: #f6f7f9");
+    expect(css).toContain("--color-neutral-900: #111827");
+    expect(css).toContain("--primary: var(--color-indigo-600)");
+    expect(css).toContain("--primary-hover: var(--color-indigo-700)");
+    expect(css).toContain("--sidebar: var(--color-neutral-900)");
+    expect(css).toContain("--agent-sales: var(--color-emerald-700)");
+    expect(css).toContain("--agent-analytics: var(--color-violet-700)");
     expect(css).toContain("--status-unknown: var(--color-violet-700)");
     expect(css).toContain("--status-waiting: var(--color-indigo-700)");
-    expect(css).toContain("--chart-actual: var(--color-navy-700)");
+    expect(css).toContain("--chart-actual: var(--color-indigo-600)");
     expect(css).toContain("--chart-predicted: var(--color-violet-700)");
+    expect(css).toContain("--radius-md: 8px");
+    expect(css).toContain("--radius-lg: 12px");
+    expect(css).not.toContain("navy");
+  });
+
+  it("follows the Figma breakpoints for the staff shell", () => {
+    expect(css).toContain("--sidebar-width: 240px");
+    expect(css).toContain("--rail-width: 76px");
+    expect(css).toContain("@media (max-width: 1100px)");
+    expect(css).toContain("@media (max-width: 640px)");
+    expect(css).toContain(".mobile-tabbar");
   });
 
   it("retains typography, focus, and reduced-motion treatment", () => {
     expect(css).toContain("--type-page-size: 28px");
-    expect(css).toContain("--type-body-line: 22px");
+    expect(css).toContain("--type-body-line: 20px");
+    expect(css).toContain("--type-metric-size: 28px");
     expect(css).toContain("outline: 2px solid var(--focus-ring)");
     expect(css).toContain("@media (prefers-reduced-motion: reduce)");
   });

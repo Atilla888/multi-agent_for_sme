@@ -3,9 +3,12 @@ import {
   authenticationRoute,
   customerRoute,
   findNavigationLabel,
+  flatNavigation,
   isRouteActive,
+  mobileTabs,
   staffNavigation,
 } from "./navigation";
+import { matchNavigation } from "@/components/layout/NavigationSearch";
 
 describe("approved information architecture", () => {
   it("keeps exactly the six approved top-level areas", () => {
@@ -56,5 +59,36 @@ describe("route matching", () => {
   it("returns the most specific approved label", () => {
     expect(findNavigationLabel("/forecasts")).toBe("Forecasts");
     expect(findNavigationLabel("/orders/order-1")).toBe("Orders");
+  });
+});
+
+describe("lab 3 Figma shell navigation", () => {
+  it("gives every staff destination an icon for the tablet icon rail", () => {
+    const items = staffNavigation.flatMap((area) => [area, ...(area.children ?? [])]);
+    expect(items.every((item) => Boolean(item.icon))).toBe(true);
+  });
+
+  it("uses the Figma mobile tabs in order", () => {
+    expect(mobileTabs.map((tab) => [tab.label, tab.href])).toEqual([
+      ["Home", "/overview"],
+      ["Chats", "/conversations"],
+      ["Orders", "/orders"],
+      ["Analytics", "/analytics"],
+    ]);
+  });
+
+  it("lists every screen once for search and the More sheet", () => {
+    const hrefs = flatNavigation().map((item) => item.href);
+    expect(new Set(hrefs).size).toBe(hrefs.length);
+    expect(flatNavigation().map((item) => item.label)).toContain("Customers");
+    expect(flatNavigation().map((item) => item.label)).not.toContain("Business");
+  });
+
+  it("matches header search by exact label, then prefix, then substring", () => {
+    expect(matchNavigation("orders")?.href).toBe("/orders");
+    expect(matchNavigation("esc")?.href).toBe("/escalations");
+    expect(matchNavigation("runs")?.href).toBe("/agent-runs");
+    expect(matchNavigation("   ")).toBeUndefined();
+    expect(matchNavigation("payroll")).toBeUndefined();
   });
 });

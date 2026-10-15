@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import { findNavigationLabel } from "@/lib/navigation";
 import type { AuthenticatedSession } from "@/types/auth";
+import { NavigationSearch } from "./NavigationSearch";
 
 export function TopBar({ session }: { readonly session?: AuthenticatedSession }) {
   const pathname = usePathname();
@@ -10,10 +11,11 @@ export function TopBar({ session }: { readonly session?: AuthenticatedSession })
 
   return (
     <header className="topbar">
-      <div>
+      <div className="topbar__heading">
         <p className="topbar__breadcrumb">Staff Workspace / {title}</p>
         <p className="topbar__title">{title}</p>
       </div>
+      <NavigationSearch />
       <div className="topbar__context" aria-label="Current context">
         <span>
           <small>Current business</small>
