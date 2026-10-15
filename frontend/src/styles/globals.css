@@ -3030,3 +3030,168 @@ textarea.field__control {
     flex-wrap: wrap;
   }
 }
+
+/* Conversations — Figma page 02 · Conversations: avatar rows with agent badges, chip filters,
+   customer messages on the left, agent replies on the right in their agent color, system notes centered. */
+.conversation-filters {
+  gap: var(--space-2);
+  margin: var(--space-3) 0;
+}
+
+.conversation-row {
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: var(--space-3);
+}
+
+.conversation-row > :not(.conversation-row__avatar) {
+  grid-column: 2;
+}
+
+.conversation-row__avatar {
+  grid-row: 1 / span 4;
+}
+
+.conversation-row__meta {
+  align-items: center;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.conversation-row__meta .badge {
+  white-space: nowrap;
+}
+
+.conversation-filters .filter-chip {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.message--customer {
+  justify-self: start;
+  flex-direction: row;
+}
+
+.message--customer .message__body {
+  background: var(--surface);
+}
+
+.message--sales-agent,
+.message--support-agent,
+.message--analytics-agent,
+.message--human-operator {
+  justify-self: end;
+  flex-direction: row-reverse;
+}
+
+.message--sales-agent .message__body { background: var(--agent-sales-bg); border-color: transparent; }
+.message--support-agent .message__body { background: var(--agent-support-bg); border-color: transparent; }
+.message--analytics-agent .message__body { background: var(--agent-analytics-bg); border-color: transparent; }
+.message--human-operator .message__body { background: var(--primary-soft); border-color: transparent; }
+
+.message--system {
+  width: 100%;
+  justify-self: center;
+  justify-content: center;
+}
+
+.message--system .avatar {
+  display: none;
+}
+
+.message--system .message__body {
+  max-width: 560px;
+  padding: var(--space-2) var(--space-3);
+  color: var(--foreground-muted);
+  background: transparent;
+  border: 0;
+  font-size: var(--type-caption-size);
+  text-align: center;
+}
+
+.message--system .message__body header {
+  justify-content: center;
+}
+
+.message .avatar {
+  width: 32px;
+  height: 32px;
+  font-size: var(--type-caption-size);
+}
+
+/* Escalations — Figma page 02 · Escalations: queue rows lead with the reason; the decision is a
+   numbered, single-column sequence with accents on why it stopped, the uncertain effect and the human decision. */
+.escalation-row__id {
+  color: var(--foreground-muted);
+  font-size: var(--type-caption-size);
+  font-weight: 500;
+}
+
+.escalation-row .escalation-row__reason {
+  color: var(--foreground);
+  font-size: var(--type-body-size);
+  font-weight: 500;
+  white-space: normal;
+}
+
+ol.decision-sections {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-3);
+  padding: 0;
+  list-style: none;
+}
+
+.decision-step .card__header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--space-3);
+}
+
+.decision-step__number {
+  width: 24px;
+  height: 24px;
+  display: inline-grid;
+  flex: 0 0 auto;
+  place-items: center;
+  color: var(--foreground-muted);
+  background: var(--surface-muted);
+  border-radius: var(--radius-pill);
+  font-size: var(--type-caption-size);
+  font-weight: 600;
+}
+
+.decision-step .card__title {
+  color: var(--foreground-muted);
+  font-size: var(--type-caption-size);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.decision-step ul {
+  display: grid;
+  gap: var(--space-1);
+  padding-left: var(--space-4);
+  list-style: disc;
+}
+
+.decision-step--why-automation-stopped,
+.decision-step--uncertain-effect {
+  border-color: color-mix(in srgb, var(--status-warning) 45%, var(--border));
+}
+
+.decision-step--why-automation-stopped .decision-step__number,
+.decision-step--uncertain-effect .decision-step__number {
+  color: var(--status-warning);
+  background: var(--status-warning-bg);
+}
+
+.decision-step--human-decision {
+  border-color: color-mix(in srgb, var(--primary) 45%, var(--border));
+}
+
+.decision-step--human-decision .decision-step__number {
+  color: var(--primary);
+  background: var(--primary-soft);
+}
