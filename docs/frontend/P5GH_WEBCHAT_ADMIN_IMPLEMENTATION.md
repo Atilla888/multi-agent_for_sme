@@ -14,11 +14,11 @@ Implementation followed `docs/DESIGN.md`, the Phase 2E screen inventory, approve
 
 ## Design Audit
 
-The pre-implementation design audit is recorded in [P5GH_WEBCHAT_ADMIN_AUDIT.md](P5GH_WEBCHAT_ADMIN_AUDIT.md). Customer Web Chat remains outside the staff shell. Administration reuses the existing shell and Calm Operational SaaS system. Audit remains restricted/permissioned and Agent Runs contextual/restricted.
+A pre-implementation design audit came first. Customer Web Chat remains outside the staff shell. Administration reuses the existing shell and Calm Operational SaaS system. Audit remains restricted/permissioned and Agent Runs contextual/restricted.
 
 ## Backend Contract Audit
 
-The pre-implementation contract audit is recorded in [P5GH_BACKEND_CONTRACT_AUDIT.md](P5GH_BACKEND_CONTRACT_AUDIT.md). The public backend still exposes only health endpoints. Internal persistence and domain types are not browser APIs, so all five screen families use deterministic local fixtures behind explicit adapter contracts with `publicEndpoint: null`.
+A pre-implementation contract audit came first. The public backend still exposes only health endpoints. Internal persistence and domain types are not browser APIs, so all five screen families use deterministic local fixtures behind explicit adapter contracts with `publicEndpoint: null`.
 
 ## Capability Matrix
 

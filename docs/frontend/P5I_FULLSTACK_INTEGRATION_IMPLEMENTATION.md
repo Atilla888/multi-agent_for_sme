@@ -16,7 +16,7 @@ Initial frontend baseline: Node 24.12.0, npm 11.6.2, clean install, lint, typech
 
 ## API Audit
 
-The [audit](P5I_FULLSTACK_INTEGRATION_AUDIT.md) preceded implementation. Starting HTTP routes were only `/health/live` and `/health/ready`. Existing QueryService safely supports Product search/detail, bounded Inventory lookup, Customer detail, Order detail and OWNER sales reports. Missing list/administration/messaging contracts remain absent instead of becoming new domain features.
+The audit preceded implementation. Starting HTTP routes were only `/health/live` and `/health/ready`. Existing QueryService safely supports Product search/detail, bounded Inventory lookup, Customer detail, Order detail and OWNER sales reports. Missing list/administration/messaging contracts remain absent instead of becoming new domain features.
 
 ## Integration Matrix
 

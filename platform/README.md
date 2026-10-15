@@ -1,6 +1,6 @@
 # Intelligent Adaptive Multi-Agent Platform
 
-> **Current status: P3 COMPLETE; M01–M07 FORMALLY REVALIDATED.** M01–M03 and M05–M07 are PASS; M04 is PASS WITH APPROVED LIMITATION — E02. Independent fresh-state gates and the final 114/114 regression passed on frozen baseline `1cd69e3` without source/test/configuration changes. M08 remains PARTIAL/BLOCKED/DEFERRED; frontend and later milestones were not started. See [RECOVERY_STATUS.md](RECOVERY_STATUS.md) and [P3 results](../recovery/P3_TEST_RESULTS.md).
+> **Current status: P3 COMPLETE; M01–M07 FORMALLY REVALIDATED.** M01–M03 and M05–M07 are PASS; M04 is PASS WITH APPROVED LIMITATION — E02. Independent fresh-state gates and the final 114/114 regression passed on frozen baseline `1cd69e3` without source/test/configuration changes. M08 remains PARTIAL/BLOCKED/DEFERRED; frontend and later milestones were not started.
 
 The candidate provides PostgreSQL/pgvector and tenant isolation, the tenant-scoped domain/repository core, ten strict business-tool boundaries, identity/authorization, Business Brain and Knowledge/RAG foundations. The `update_order` mutation branch remains policy-blocked under E02; `forecast_sales` returns `MODEL_NOT_READY` before a validated artifact.
 
@@ -13,7 +13,7 @@ The candidate provides PostgreSQL/pgvector and tenant isolation, the tenant-scop
 5. Start an isolated Compose project and wait for ordinary services to become healthy.
 6. Run migrations and the scoped M01–M07 tests. Live/provider M08 tests require a separate authorized gate.
 
-The exact P2 environment, commands, results and boundaries are recorded in [P2 environment and completion evidence](../recovery/P2_ENVIRONMENT_AND_COMPLETION.md). The Windows `py` launcher may require refresh after installing Python; the exact CPython executable or `.venv\Scripts\python.exe` is authoritative.
+The Windows `py` launcher may require refresh after installing Python; the exact CPython executable or `.venv\Scripts\python.exe` is authoritative.
 
 ## Safety boundaries
 
