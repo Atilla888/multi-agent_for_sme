@@ -2,7 +2,7 @@
 
 ## 1. Purpose and authority
 
-This is the **approved UX/UI implementation contract** for the retail/e-commerce frontend handoff. Phase 3F consolidates completed Phases 2A–2E and 3A–3E; it creates no screen, Figma edit or application feature. The canonical design file is [Diplom — Multi-Agent Platform UX/UI](https://www.figma.com/design/OFXTN83nFl3RqukrEYQrFy) (`OFXTN83nFl3RqukrEYQrFy`). Use `03C — Design System` for visual foundations/components, `03D — High-Fidelity Screens` for approved P0 visuals and `03E — Interactive Prototype` for validated interaction semantics. Figma links demonstrate a design, **not** a running backend.
+This is the **approved UX/UI implementation contract** for the retail/e-commerce frontend handoff. Phase 3F consolidates completed Phases 2A–2E and 3A–3E; it creates no screen, Figma edit or application feature. The current design file is [Diplom — Multi-Agent Platform UI (Lab 3)](https://www.figma.com/design/W6XefZbbmZq1YZltBfsry7) (`W6XefZbbmZq1YZltBfsry7`); see §29 for its pages, breakpoints and flows. The design phases 3A–3E were done in the earlier file `OFXTN83nFl3RqukrEYQrFy`, where the pages named below live. Use `03C — Design System` for visual foundations/components, `03D — High-Fidelity Screens` for approved P0 visuals and `03E — Interactive Prototype` for validated interaction semantics. Figma links demonstrate a design, **not** a running backend.
 
 The [consolidated master PDF](../research/master/release/FINAL_MASTER_DEVELOPMENT_SAFE.pdf) is authoritative for architecture, tool contracts and current engineering evidence. [PRD](PRD.md), [Architecture](ARCHITECTURE.md) and [Rules](RULES.md) supply product/engineering context where consistent with that newer master. For UX, the approved [IA](research/PHASE_2C_INFORMATION_ARCHITECTURE.md), [flows](research/PHASE_2D_CORE_USER_FLOWS.md), [screen inventory](research/PHASE_2E_FINAL_SCREEN_INVENTORY.md), [reviewed UX](research/PHASE_3B_UX_REVIEW.md), [Design System](research/PHASE_3C_DESIGN_SYSTEM.md), [high-fi](research/PHASE_3D_HIGH_FIDELITY.md) and [prototype](research/PHASE_3E_INTERACTIVE_PROTOTYPE.md) govern their respective decisions. Earlier [competitor research](research/UX_COMPETITOR_ANALYSIS.md), [Phase 2B validation](research/PHASE_2B_UX_VALIDATION.md) and [low-fi alternatives](research/PHASE_3A_LOW_FI_WIREFRAMES.md) are evidence, not competing navigation or style specifications. Exact route syntax, data DTOs and breakpoint values are not frozen here; do not invent them from mockups.
 
@@ -223,6 +223,8 @@ M08 live-provider/channel acceptance remains incomplete; E02 policy remains rest
 
 ## 28. Figma and design references
 
+The pages below are in the earlier phase 3A–3E file (`OFXTN83nFl3RqukrEYQrFy`). The current lab 3 file is described in §29.
+
 | Figma page | Role in implementation |
 | --- | --- |
 | `03A — Low-Fi Wireframes` | Historical structural baseline and alternative rationale. |
@@ -232,3 +234,31 @@ M08 live-provider/channel acceptance remains incomplete; E02 policy remains rest
 | `03E — Interactive Prototype` | **Validated scenario/interaction semantics** from preserved 03D copies; external demonstration controls are not product UI. |
 
 For detailed evidence and variants, use [Phase 2E screen contracts](research/PHASE_2E_FINAL_SCREEN_INVENTORY.md), [Phase 3C components](research/PHASE_3C_DESIGN_SYSTEM.md), [Phase 3D high-fi validation](research/PHASE_3D_HIGH_FIDELITY.md) and [Phase 3E prototype validation](research/PHASE_3E_INTERACTIVE_PROTOTYPE.md). Implement visuals from 03C/03D and interaction truth from 03E plus trusted backend contracts. Phase 4 remains **READY / NOT STARTED** until separately authorized and accepted.
+
+## 29. Lab 3 clickable prototype (responsive, mock data)
+
+The lab 3 UX/UI deliverable is the Figma file [Diplom — Multi-Agent Platform UI (Lab 3)](https://www.figma.com/design/W6XefZbbmZq1YZltBfsry7) (`W6XefZbbmZq1YZltBfsry7`). It is a self-contained demonstration built on the decisions in §§3–23. All data in it is mock data for a sample store, "Ayala Outdoor" (Almaty, prices in ₸). It does not change the status of any capability in §24.
+
+| Figma page | Contents |
+| --- | --- |
+| `01 — Design System` | Color, spacing and radius variables; text styles (Inter); components: Button (Primary/Secondary/Ghost/Danger × Default/Hover), Badge (status and agent tones), NavItem (Default/Hover/Active), Search input, 26 outline icons. |
+| `02 — Screens & Prototype` | 10 screens × 3 breakpoints = 30 frames, connected by 215 click links (Smart Animate, 300 ms). |
+| `03 — Sitemap & User Flows` | Personas, sitemap (designed vs planned screens) and four step-by-step user flows. |
+
+**Screens:** Sign in · Overview · Conversations (list, thread, context panel) · Escalations (queue + decision detail) · Orders · Order detail (order state separate from reservation state) · Analytics (actual data, gaps not shown as zero) · Forecasts (`MODEL_NOT_READY` with an illustration-only preview) · Customer Web Chat · Web Chat after order confirmation.
+
+**Responsive breakpoints:**
+
+| Breakpoint | Layout |
+| --- | --- |
+| Desktop 1440 × 1024 | Dark 240 px sidebar with labels and business switch; header with search; 4-column KPI grid; 3-pane Conversations; full tables. |
+| Tablet 834 × 1194 | 76 px icon rail; 2-column grids; Conversations shows list + thread with a context summary; tables hide secondary columns. |
+| Mobile 390 × 844 | Top bar + bottom tab bar (Home, Chats, Orders, Analytics, More); single column; tables become cards; full-screen customer chat. |
+
+**Interaction:** buttons and sidebar items animate on hover (While hovering → Hover variant, Smart Animate 150 ms). Content areas scroll inside fixed device frames. The prototype has five starting points: staff workspace on Desktop, Tablet and Mobile, and Customer Web Chat on Desktop and Mobile. To present, open page 02, press Play and pick a flow.
+
+**User flows demonstrated:**
+1. Operator resolves an uncertain reservation: Sign in → Overview → "Needs attention" → Escalation ESC-2041 → human decision → Order detail.
+2. Purchase handled by agents: Conversations → Support → Sales handoff → confirmation card → Order created → Order detail.
+3. Customer buys in Web Chat: product question → in-stock product card → Confirm order → Order confirmed.
+4. Owner checks sales: Analytics → Open forecasts → model not ready → back to Analytics.

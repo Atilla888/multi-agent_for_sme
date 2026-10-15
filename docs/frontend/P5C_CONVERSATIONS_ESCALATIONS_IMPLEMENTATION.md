@@ -20,7 +20,7 @@ native Next.js project rather than copied as absolute-positioned canvas output.
 
 The backend exposes only the health routes publicly. Conversations, messages, context, agent
 outcomes, runs, and escalations have internal domain/persistence contracts but no staff-facing
-FastAPI routes. The complete evidence matrix is in `P5C_BACKEND_CONTRACT_AUDIT.md`.
+FastAPI routes.
 
 ## 4. Capability Matrix
 

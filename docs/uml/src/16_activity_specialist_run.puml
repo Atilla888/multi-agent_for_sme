@@ -1,0 +1,74 @@
+@startuml 16_activity_specialist_run
+!include _style.iuml
+title Activity Diagram (2/3) — SpecialistAgent.run(): bounded decision loop with swimlanes
+
+|SpecialistAgent|
+start
+:deadline = now + timeout;\nbudgets: model calls ≤ 6, tool calls ≤ 4;
+|Business Brain|
+:build ContextBundle (7 parts + provenance);
+if (Brain failed?) then (yes)
+  |SpecialistAgent|
+  :outcome DEPENDENCY_FAILURE;
+  stop
+endif
+|SpecialistAgent|
+:visible tools = allowed_tools ∩ permissions.potential_tools;
+repeat
+  if (deadline passed?) then (yes)
+    :outcome BUDGET_EXHAUSTED;
+    stop
+  endif
+  |LLM provider|
+  :invoke_with_tools(prompt, projection,\nprevious_tool_results);
+  |SpecialistAgent|
+  if (provider error?) then (yes)
+    :outcome DEPENDENCY_FAILURE;
+    stop
+  elseif (AgentDecision invalid?) then (yes)
+    :outcome SAFE_FAILURE;
+    stop
+  endif
+  if (decision = CALL_TOOL?) then (yes)
+    if (write tool and not write_confirmed?) then (yes)
+      :outcome CLARIFICATION_REQUIRED;
+      stop
+    endif
+    |Tool Executor|
+    :execute(tool, args, ExecutionContext);
+    |SpecialistAgent|
+    if (result OUTCOME_UNKNOWN?) then (yes)
+      :outcome OUTCOME_UNKNOWN\n(human reconciliation);
+      stop
+    elseif (result not SUCCEEDED?) then (yes)
+      :outcome SAFE_FAILURE /\nDEPENDENCY_FAILURE;
+      stop
+    endif
+  else (no)
+    break
+  endif
+repeat while (model calls left?) is (yes)
+->no;
+if (loop ended by budget?) then (yes)
+  :outcome BUDGET_EXHAUSTED;
+  stop
+endif
+switch (decision)
+case (CLARIFY)
+  :outcome CLARIFICATION_REQUIRED;
+case (ESCALATE)
+  :outcome CONTROLLED_ESCALATION;
+case (HANDOFF)
+  :outcome SAFE_FAILURE\n+ handoff_proposal;
+case (RESPOND / COMPLETE)
+  if (confidence LOW / UNKNOWN?) then (yes)
+    :outcome CONTROLLED_ESCALATION;
+  elseif (evidence_refs ⊄ known evidence?) then (yes)
+    :outcome CLARIFICATION_REQUIRED;
+  else (grounded)
+    :outcome AUTONOMOUS_SUCCESS;
+  endif
+endswitch
+:prefix response with confirmed write effects;
+stop
+@enduml

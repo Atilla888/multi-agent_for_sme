@@ -16,9 +16,7 @@ routes; no unsupported detail route was invented.
 
 Implementation followed `DESIGN.md`, `PRD.md`, `ARCHITECTURE.md`, `RULES.md`, the Phase 2E
 inventory, the approved Phase 3C business-entity components, the Phase 3D Orders source, relevant
-Phase 3E flows and the established P5A–P5C frontend boundaries. The design and contract findings
-are recorded separately in [the design audit](P5D_BUSINESS_SCREENS_AUDIT.md) and
-[the backend contract audit](P5D_BACKEND_CONTRACT_AUDIT.md). Figma was read only and unchanged.
+Phase 3E flows and the established P5A–P5C frontend boundaries. Figma was read only and unchanged.
 
 ## 3. Backend Contract Audit
 

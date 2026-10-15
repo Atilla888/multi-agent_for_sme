@@ -18,13 +18,13 @@ The implementation follows `docs/DESIGN.md`, `docs/PRD.md`, `docs/ARCHITECTURE.m
 
 ## Design Audit
 
-[P5F_ANALYTICS_FORECASTS_AUDIT.md](P5F_ANALYTICS_FORECASTS_AUDIT.md) records the approved page hierarchy, filters, metric semantics, summary cards, ACTUAL chart/table, source/quality facts, Analytics states, Forecast readiness, current/TARGET separation, accessibility, and responsive rules. It classifies decisions as `CONFIRMED`, `INFERRED FROM APPROVED VISUAL`, or `NOT SPECIFIED`.
+The pre-implementation design audit recorded the approved page hierarchy, filters, metric semantics, summary cards, ACTUAL chart/table, source/quality facts, Analytics states, Forecast readiness, current/TARGET separation, accessibility, and responsive rules. It classifies decisions as `CONFIRMED`, `INFERRED FROM APPROVED VISUAL`, or `NOT SPECIFIED`.
 
 No generic dashboard widgets, arbitrary KPI builder, export workflow, SQL/model console, or causal explanation was added.
 
 ## Backend Contract Audit
 
-[P5F_BACKEND_CONTRACT_AUDIT.md](P5F_BACKEND_CONTRACT_AUDIT.md) confirms that `get_sales_report` and `forecast_sales` are private trusted tool contracts, not browser APIs. The public FastAPI application exposes health routes only.
+The pre-implementation backend audit confirmed that `get_sales_report` and `forecast_sales` are private trusted tool contracts, not browser APIs. The public FastAPI application exposes health routes only.
 
 `get_sales_report` supports timezone-aware ranges, DAY/WEEK/MONTH granularity, optional product scope, and only `CONFIRMED_ORDER_UNITS` or `CONFIRMED_ORDER_VALUE`. Results are confirmed-order facts grouped per currency. `forecast_sales` currently returns `DEPENDENCY_UNAVAILABLE` with detail `MODEL_NOT_READY`; its contract test proves no ForecastRun is created.
 

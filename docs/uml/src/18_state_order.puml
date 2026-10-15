@@ -1,0 +1,21 @@
+@startuml 18_state_order
+!include _style.iuml
+title State Machine Diagram (1/5) — Order (orders.status)
+
+[*] --> CREATED : create_order\n[product versions match,\none currency, customer access]\n/ insert Order v1 + OrderItems,\nAuditLog ORDER_CREATED
+CREATED --> CONFIRMED : reserve_inventory\n[versions match ∧ stock sufficient]\n/ decrement Inventory,\nreserved_qty = quantity
+CREATED --> NEEDS_ATTENTION : reserve_inventory\n[stock insufficient]\n/ Escalation(INSUFFICIENT_INVENTORY),\nAuditLog RESERVATION_REJECTED
+CREATED --> CREATED : reserve_inventory\n[stale version]\n/ STALE_STATE, nothing changes
+CONFIRMED --> CONFIRMED : update_order\n/ POLICY_REJECTED (E02)
+NEEDS_ATTENTION --> NEEDS_ATTENTION : update_order\n/ POLICY_REJECTED (E02)
+
+state CREATED : entry / version = 1
+state CONFIRMED : CONFIRMED is a reservation state,\nnot payment or revenue (E01)
+state NEEDS_ATTENTION : waits for a human operator
+
+note bottom
+  No Payment, Refund or Cancellation states exist:
+  update_order, release and refund are blocked by
+  approved policy E02. Every transition increments version.
+end note
+@enduml

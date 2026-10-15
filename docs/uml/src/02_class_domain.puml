@@ -1,0 +1,181 @@
+@startuml 02_class_domain
+!include _style.iuml
+title Class Diagram (1/3) — Domain model\nplatform_backend.domain + physical schema
+
+package "Tenant & identity" {
+  class Business {
+    +id : UUID
+    +name : str
+    +timezone : str
+    +configuration_version : str
+    +version : int
+  }
+  class AppUser {
+    +id : UUID
+    +issuer : str
+    +subject : str
+    +display_name : str [0..1]
+  }
+  class BusinessMembership {
+    +id : UUID
+    +role : StaffRole
+    +version : int
+  }
+  class Customer {
+    +id : UUID
+    +display_name : str [0..1]
+    +version : int
+  }
+  class CustomerIdentity {
+    +id : UUID
+    +channel : Channel
+    +external_user_id : str
+    +link_method : LinkMethod
+  }
+  enum StaffRole {
+    OWNER
+    OPERATOR
+    PLATFORM_ADMIN
+  }
+  enum Channel {
+    TELEGRAM
+    WHATSAPP
+    INSTAGRAM
+    WEB
+  }
+}
+
+package "Commerce" {
+  class Product {
+    +id : UUID
+    +sku : str
+    +name : str
+    +price : Money
+    +active : bool
+    +version : int
+  }
+  class Inventory {
+    +id : UUID
+    +available_qty : Decimal
+    +reserved_qty : Decimal
+    +version : int
+    +observed_at : datetime
+  }
+  class Order {
+    +id : UUID
+    +status : OrderStatus
+    +currency : str
+    +delivery_reference : str [0..1]
+    +version : int
+    +created_at : datetime
+  }
+  class OrderItem {
+    +id : UUID
+    +quantity : Decimal
+    +reserved_qty : Decimal
+    +price : Money
+    +version : int
+  }
+  class Money <<value object>> {
+    +amount : Decimal
+    +currency : str
+    --
+    -__post_init__() : validates NUMERIC(18,4),\n ISO-4217, amount >= 0
+  }
+  class OrderLineRequest <<value object>> {
+    +product_id : UUID
+    +quantity : Decimal
+    +quoted_product_version : int
+  }
+  enum OrderStatus {
+    CREATED
+    CONFIRMED
+    NEEDS_ATTENTION
+  }
+}
+
+package "Conversation" {
+  class Conversation {
+    +id : UUID
+    +status : OPEN | ESCALATED | CLOSED
+  }
+  class Message {
+    +id : UUID
+    +direction : INBOUND | OUTBOUND
+    +body : str
+    +status : MessageStatus
+    +correlation_id : UUID
+  }
+  class Integration {
+    +id : UUID
+    +channel : Channel
+    +mode : LIVE | MOCK | SANDBOX
+    +secret_reference : str
+    +enabled : bool
+  }
+}
+
+package "Execution context (trusted)" {
+  class PrincipalContext <<frozen>> {
+    +kind : PrincipalKind
+    +subject_id : UUID
+    +business_id : UUID
+    +staff_role : StaffRole [0..1]
+    +customer_id : UUID [0..1]
+    +identity_id : UUID [0..1]
+    --
+    +actor_scope() : str
+  }
+  class ExecutionContext <<frozen>> {
+    +agent_role : AgentRole
+    +run_id : UUID
+    +correlation_id : UUID
+    +policy_version : str
+    +deadline : datetime
+    +operation_key : str [0..1]
+    --
+    +business_id() : UUID
+  }
+  enum PrincipalKind {
+    USER
+    CUSTOMER
+    SERVICE
+  }
+  enum AgentRole {
+    Sales
+    Support
+    Analytics
+  }
+  class DomainFailure <<exception>> {
+    +code : ErrorCode
+    +safe_message : str
+    +detail : str [0..1]
+    +reconciliation_required : bool
+  }
+}
+
+Business "1" *-- "0..*" Customer
+Business "1" *-- "0..*" Product
+Business "1" *-- "0..*" Order
+Business "1" *-- "0..*" Conversation
+Business "1" *-- "0..*" Integration
+Business "1" -- "0..*" BusinessMembership
+AppUser "1" -- "0..*" BusinessMembership
+BusinessMembership --> StaffRole
+Customer "1" *-- "0..*" CustomerIdentity
+CustomerIdentity --> Channel
+Product "1" -- "1" Inventory : stock >
+Customer "1" -- "0..*" Order : places >
+Order "1" *-- "1..50" OrderItem
+OrderItem "0..*" --> "1" Product
+Order --> OrderStatus
+Product *-- Money
+OrderItem *-- Money
+Conversation "1" *-- "0..*" Message
+Conversation "0..*" --> "0..1" Customer
+Message "0..*" --> "0..1" Integration
+ExecutionContext *-- "1" PrincipalContext : principal
+ExecutionContext --> AgentRole
+PrincipalContext --> PrincipalKind
+PrincipalContext ..> Business : scoped to >
+@enduml

@@ -1,0 +1,89 @@
+@startuml 05_object
+!include _style.iuml
+title Object Diagram — snapshot after a successful create_order + reserve_inventory\n(demo tenant "Aru Home Store", values illustrative)
+
+object "shop : Business" as shop {
+  id = 7f1c…a01
+  name = "Aru Home Store"
+  timezone = "Asia/Almaty"
+}
+object "aigerim : Customer" as cust {
+  id = 3b9e…c42
+  display_name = "Aigerim"
+  version = 1
+}
+object "tgId : CustomerIdentity" as ident {
+  channel = TELEGRAM
+  external_user_id = "tg:518220"
+  link_method = FIRST_CONTACT
+}
+object "lamp : Product" as lamp {
+  sku = "LMP-OAK-01"
+  name = "Oak desk lamp"
+  price = Money(24990.0000, "KZT")
+  active = true
+  version = 3
+}
+object "lampStock : Inventory" as inv {
+  available_qty = 11.0000
+  reserved_qty = 1.0000
+  version = 8
+}
+object "order1042 : Order" as ord {
+  status = CONFIRMED
+  currency = "KZT"
+  version = 2
+}
+object "line1 : OrderItem" as item {
+  quantity = 1.0000
+  reserved_qty = 1.0000
+  unit_price = 24990.0000
+}
+object "run77 : AgentRun" as run {
+  mode = ADAPTIVE_MULTI
+  status = SUCCEEDED
+  active_agent = Sales
+  routing_confidence = HIGH
+}
+object "op1 : IdempotencyOperation" as op1 {
+  tool_name = create_order
+  status = SUCCEEDED
+  operation_key = "m08:run77:create_order:…"
+}
+object "op2 : IdempotencyOperation" as op2 {
+  tool_name = reserve_inventory
+  status = SUCCEEDED
+}
+object "call1 : ToolCall" as c1 {
+  tool_name = create_order
+  status = SUCCEEDED
+  attempt = 1
+}
+object "call2 : ToolCall" as c2 {
+  tool_name = reserve_inventory
+  status = SUCCEEDED
+  attempt = 1
+}
+object "audit1 : AuditLog" as a1 {
+  event_type = ORDER_CREATED
+  actor_scope = "CUSTOMER:3b9e…"
+}
+object "audit2 : AuditLog" as a2 {
+  event_type = INVENTORY_RESERVED
+}
+
+shop -- cust
+shop -- lamp
+cust -- ident
+cust -- ord : places
+ord *-- item
+item --> lamp
+lamp -- inv
+run -- c1
+run -- c2
+c1 --> op1
+c2 --> op2
+op1 ..> ord : result.order_id
+a1 ..> ord
+a2 ..> ord
+@enduml

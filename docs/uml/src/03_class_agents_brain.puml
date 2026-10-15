@@ -1,0 +1,189 @@
+@startuml 03_class_agents_brain
+!include _style.iuml
+left to right direction
+title Class Diagram (2/3) — Specialist agents, Business Brain and knowledge (RAG)\nplatform_backend.agents / brain / knowledge
+
+
+package agents {
+  class SpecialistAgent {
+    +role : AgentRole
+    +goal : str
+    +allowed_tools : frozenset[str]
+    -_provider : LLMProvider
+    -_brain : BrainPort
+    -_executor : ExecutorPort
+    --
+    +run(request : SpecialistRequest) : AgentOutcome
+    -_confirmed_effects(names, results) : str
+    -_evidence_refs(bundle) : set[str]
+  }
+  class SpecialistRequest <<frozen>> {
+    +request_id : UUID
+    +run_id : UUID
+    +principal : PrincipalContext
+    +message : str
+    +write_confirmed : bool
+    +max_model_calls : int = 6
+    +max_tool_calls : int = 4
+    +timeout_seconds : int = 60
+  }
+  class AgentDecision <<pydantic, untrusted>> {
+    +decision : DecisionType
+    +confidence : Confidence
+    +reason_code : str
+    +response : str [0..1]
+    +tool_name : str [0..1]
+    +tool_arguments : dict [0..1]
+    +target_agent : AgentRole [0..1]
+    +evidence_refs : tuple[str]
+    --
+    +validate_shape() : AgentDecision
+  }
+  class AgentOutcome <<frozen>> {
+    +run_id : UUID
+    +role : AgentRole
+    +status : OutcomeStatus
+    +response : str
+    +tool_results : tuple[ToolResult]
+    +events : tuple[AgentEvent]
+    +context_digest : str
+    +input_tokens / output_tokens : int
+    +handoff_proposal : AgentRole [0..1]
+  }
+  enum DecisionType {
+    RESPOND
+    CALL_TOOL
+    CLARIFY
+    HANDOFF
+    ESCALATE
+    COMPLETE
+  }
+  enum OutcomeStatus {
+    AUTONOMOUS_SUCCESS
+    CLARIFICATION_REQUIRED
+    CONTROLLED_ESCALATION
+    SAFE_FAILURE
+    DEPENDENCY_FAILURE
+    BUDGET_EXHAUSTED
+    OUTCOME_UNKNOWN
+  }
+  interface LLMProvider <<Protocol>> {
+    +invoke_structured(...) : ModelReply
+    +invoke_with_tools(system_prompt, payload, tools, schema) : ModelReply
+    +model_info() : dict
+    +usage_info() : ModelUsage
+  }
+  class GeminiProvider {
+    -_invoke(...) : ModelReply
+    -_parse(response, started, attempt) : ModelReply
+  }
+  interface BrainPort <<Protocol>> {
+    +build(request : ContextRequest) : ContextBundle
+  }
+  interface ExecutorPort <<Protocol>> {
+    +execute(tool_name, payload, context) : ToolResult
+  }
+}
+
+package brain {
+  class BusinessBrain {
+    +build(request : ContextRequest) : ContextBundle
+    -_bounded_knowledge(...)
+    -_resolve_conflicts(...)
+  }
+  class ContextRequest <<frozen>> {
+    +principal : PrincipalContext
+    +purpose : ContextPurpose
+    +question : str
+    +agent_role : AgentRole
+    +conversation_id : UUID [0..1]
+    +run_id : UUID [0..1]
+    +include_knowledge : bool
+  }
+  class ContextBundle <<frozen>> {
+    +request : RequestContext
+    +conversation : ConversationContext
+    +structured : StructuredContext
+    +retrieved : KnowledgeContext
+    +state : RuntimeStateContext
+    +rules : RulesContext
+    +permissions : PermissionsContext
+    +trace : ContextBuildTrace
+    --
+    +model_projection() : dict
+  }
+  class Provenance <<frozen>> {
+    +source_type : SourceType
+    +source_reference : str
+    +source_version : str
+    +permission_scope : str
+    +content_digest : str [0..1]
+    +conflict : bool
+    +observed_at : datetime
+    +status : ContextStatus
+  }
+  class ConversationProvider
+  class StructuredProvider
+  class RuntimeStateProvider
+  class RulesProvider
+  class PermissionsProvider
+  interface KnowledgeProvider <<Protocol>> {
+    +retrieve(request) : KnowledgeContext
+  }
+}
+
+package knowledge {
+  class KnowledgeService {
+    +create_document(principal, title, access_scope) : UUID
+    +stage_version(...) : IngestionTrace
+    +process_version(principal, version_id) : IngestionTrace
+    +publish(principal, document_id, version_id, expected_version)
+    +revoke(principal, document_id, expected_version) : int
+    +retrieve(request : RetrievalRequest) : RetrievalResult
+  }
+  class KnowledgeContextProvider
+  interface EmbeddingProvider <<Protocol>> {
+    +embed(texts) : vectors
+  }
+  class LocalFastEmbed
+  interface PrivateObjectStore <<Protocol>> {
+    +put(key, data, media_type) : str
+    +read_verified(key, size) : bytes
+  }
+  class MinioPrivateStore
+}
+
+package "tools / repositories (see diagram 3/3)" {
+  class ToolExecutor
+  class ToolResult
+  class PostgresDatabase
+}
+SpecialistAgent ..> SpecialistRequest
+SpecialistAgent ..> AgentDecision : validates
+SpecialistAgent ..> AgentOutcome : creates
+SpecialistAgent o--> LLMProvider
+SpecialistAgent o--> BrainPort
+SpecialistAgent o--> ExecutorPort
+AgentDecision --> DecisionType
+AgentOutcome --> OutcomeStatus
+AgentOutcome o-- "0..*" ToolResult
+LLMProvider <|.. GeminiProvider
+BrainPort <|.. BusinessBrain
+BusinessBrain ..> ContextRequest
+BusinessBrain ..> ContextBundle : creates
+BusinessBrain *-- ConversationProvider
+BusinessBrain *-- StructuredProvider
+BusinessBrain *-- RuntimeStateProvider
+BusinessBrain *-- RulesProvider
+BusinessBrain *-- PermissionsProvider
+BusinessBrain o-- KnowledgeProvider
+ContextBundle ..> Provenance : every fact carries
+KnowledgeProvider <|.. KnowledgeContextProvider
+KnowledgeContextProvider --> KnowledgeService
+KnowledgeService o-- EmbeddingProvider
+KnowledgeService o-- PrivateObjectStore
+EmbeddingProvider <|.. LocalFastEmbed
+PrivateObjectStore <|.. MinioPrivateStore
+ExecutorPort <|.. ToolExecutor
+StructuredProvider ..> PostgresDatabase : reads via RLS-scoped\ntransaction
+@enduml

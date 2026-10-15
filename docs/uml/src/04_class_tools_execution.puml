@@ -1,0 +1,108 @@
+@startuml 04_class_tools_execution
+!include _style.iuml
+title Class Diagram (3/3) — Trusted Tool Executor, application services and repositories\nplatform_backend.tools / application / repositories
+
+interface ExecutorPort <<Protocol>> {
+  +execute(tool_name, payload, context) : ToolResult
+}
+package tools {
+  class ToolExecutor {
+    -_queries : QueryService
+    -_orders : OrderService
+    -_ledger : OperationLedger
+    -_delivery : DeliveryStatusPort
+    -_forecast : ForecastServicePort
+    --
+    +execute(tool_name, payload, context) : ToolResult
+    -_check_run(context)
+    -_dispatch(name, request, context) : dict
+    -_record_terminal(name, payload, context, result)
+  }
+  abstract class StrictInput <<pydantic>> {
+    extra = "forbid", strict = True
+  }
+  class "FindProductInput\nCheckInventoryInput\nFindCustomerInput\nGetOrderInput\nCreateOrderInput\nUpdateOrderInput\nReserveInventoryInput\nGetDeliveryStatusInput\nGetSalesReportInput\nForecastSalesInput" as TenInputs <<10 frozen tool contracts>>
+  class ToolResult <<pydantic>> {
+    +tool_call_id : UUID
+    +status : ResultStatus
+    +data : dict [0..1]
+    +error : ToolError [0..1]
+    +resource_versions : dict[str,int]
+    +source_refs : tuple[str]
+  }
+  enum ResultStatus {
+    SUCCEEDED
+    REJECTED
+    FAILED
+    OUTCOME_UNKNOWN
+  }
+  interface DeliveryStatusPort <<Protocol>>
+  interface ForecastServicePort <<Protocol>>
+  class NoDeliveryAdapter
+  class NoArtifactForecastService
+}
+
+package application {
+  class OrderService {
+    +create_order(context, customer_id, lines) : dict
+    +reserve_inventory(context, order_id,\n expected_order_version, expected_inventory_versions) : dict
+  }
+  class QueryService {
+    +find_products(...)
+    +check_inventory(...)
+    +find_customer(...)
+    +get_order(...)
+    +report(...)
+  }
+  class OperationLedger {
+    +admit(context, tool_name, payload) : OperationTicket
+    +mark_known_failure(...)
+    +mark_unknown(...)
+    +lookup(...)
+  }
+}
+
+package repositories {
+  class PostgresDatabase {
+    +transaction(business_id) : PostgresRepository
+  }
+  class PostgresRepository {
+    +get_order(id, lock)
+    +insert_order(...)
+    +decrement_inventory(...)
+    +set_order_status(...)
+    +append_audit(...)
+    +admit_operation(...)
+    +finish_operation(...)
+    +insert_escalation(...)
+  }
+}
+
+ExecutorPort <|.. ToolExecutor
+
+
+ToolExecutor *-- OrderService
+ToolExecutor *-- QueryService
+ToolExecutor *-- OperationLedger
+ToolExecutor o-- DeliveryStatusPort
+ToolExecutor o-- ForecastServicePort
+DeliveryStatusPort <|.. NoDeliveryAdapter
+ForecastServicePort <|.. NoArtifactForecastService
+StrictInput <|-- TenInputs
+ToolExecutor ..> TenInputs : validates
+ToolExecutor ..> ToolResult : creates
+ToolResult --> ResultStatus
+OrderService --> OperationLedger
+OrderService --> PostgresDatabase
+QueryService --> PostgresDatabase
+PostgresDatabase ..> PostgresRepository : yields
+note top of ToolExecutor
+  ROLE_TOOLS allowlist:
+  Sales = find_product, check_inventory, find_customer,
+          get_order, create_order, update_order, reserve_inventory
+  Support = check_inventory, find_customer, get_order,
+            get_delivery_status
+  Analytics = get_sales_report, forecast_sales
+  WRITE_TOOLS = create_order, update_order, reserve_inventory
+end note
+@enduml

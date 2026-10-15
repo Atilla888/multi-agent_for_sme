@@ -1,0 +1,41 @@
+@startuml 25_interaction_overview
+!include _style.iuml
+title Interaction Overview Diagram — end-to-end customer request\n(activity frame whose nodes reference the sequence diagrams)
+
+start
+partition "ref: Sequence 1/4 — ingestion" {
+  :verify, dedupe, store Message(RECEIVED);
+}
+if (duplicate or invalid event?) then (yes)
+  stop
+endif
+partition "ref: orchestration (planned) — route by mode" {
+  :SINGLE / STATIC_MULTI / ADAPTIVE_MULTI picks a specialist;
+}
+switch (intent)
+case (buy)
+  partition "ref: Sequence 2/4 — create_order + reserve_inventory" {
+    :Sales agent proposes tools;
+  }
+case (order question)
+  partition "ref: Sequence 3/4 — Support → Sales handoff" {
+    :Support verifies order, may hand off;
+  }
+case (owner analytics)
+  partition "ref: Activity 3/3 — forecast" {
+    :Analytics: get_sales_report / forecast_sales;
+  }
+endswitch
+if (outcome?) then (CONTROLLED_ESCALATION /\nOUTCOME_UNKNOWN)
+  partition "ref: State 3/5 — escalation" {
+    :Escalation OPEN → CLAIMED → RESOLVED;
+  }
+elseif (CLARIFICATION_REQUIRED) then
+  :ask the customer one question;
+else (AUTONOMOUS_SUCCESS)
+endif
+partition "ref: Sequence 1/4 — delivery" {
+  :Finalize AgentRun; deliver OUTBOUND message;
+}
+stop
+@enduml

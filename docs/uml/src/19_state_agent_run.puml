@@ -1,0 +1,37 @@
+@startuml 19_state_agent_run
+!include _style.iuml
+title State Machine Diagram (2/5) — AgentRun lifecycle (agent_runs.status) with orchestration sub-states (§10.2)
+
+[*] --> RUNNING : RunRequest accepted\n/ resume_revision = 0
+
+state RUNNING {
+  [*] --> LoadContext
+  LoadContext --> InterpretRoute : identity, policy and\ncheckpoint consistent
+  LoadContext --> [*] : controlled failure
+  InterpretRoute --> Agent : agent selected
+  InterpretRoute --> Clarify : missing fields
+  Agent --> GuardExecute : proposes tool
+  Agent --> Finalize : grounded answer
+  GuardExecute --> ValidateResult : executor checked schema,\npermission, state, replay
+  ValidateResult --> InterpretRoute : refresh / route
+  ValidateResult --> Finalize
+  Agent --> Handoff : HANDOFF proposal
+  Handoff --> LoadContext : target allowed,\ncounters kept
+  Clarify --> Finalize
+  Finalize --> [*]
+}
+
+RUNNING --> WAITING_HUMAN : escalate\n[LOW/UNKNOWN confidence ∨ E02 ∨\nbudget ∨ OUTCOME_UNKNOWN ∨ handoff loop]\n/ Escalation OPEN
+WAITING_HUMAN --> RUNNING : authorized resume\n[expected_resume_revision matches]\n/ resume_revision++
+WAITING_HUMAN --> FAILED : explicit close / reject
+RUNNING --> SUCCEEDED : Finalize [outcome completed\nor clarification sent]
+RUNNING --> FAILED : Finalize [safe / dependency failure,\nbudget exhausted]
+SUCCEEDED --> [*]
+FAILED --> [*]
+
+note right of WAITING_HUMAN
+  No hidden autonomous work while waiting.
+  Durable resume (M12) is designed,
+  not executed yet (D11).
+end note
+@enduml

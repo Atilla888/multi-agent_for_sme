@@ -4,11 +4,11 @@ Development of an Intelligent Adaptive Multi-Agent Platform for Customer Interac
 
 ## Repository structure
 
-- [`platform/`](platform/) — reconstructed backend/infrastructure candidate and [current recovery status](platform/RECOVERY_STATUS.md).
+- [`platform/`](platform/) — reconstructed backend/infrastructure candidate.
 - [`docs/`](docs/) — approved product, architecture, design and research documents.
+- [`docs/uml/`](docs/uml/) — UML 2.5 diagrams (all 14 types) and ER diagrams as PlantUML sources, PNG renders and one combined PDF.
 - [`design/`](design/) — local Figma development plugins and visual-source guidance.
 - [`research/master/release/`](research/master/release/) — development-safe consolidated master release.
-- [`recovery/`](recovery/) — sanitized reconstruction provenance and executable evidence.
 - [`frontend/`](frontend/) — P5A/P5B foundation and design system plus the completed P5C Conversations + Escalations, P5D Business Screens, P5E Documents / Knowledge, P5F Analytics + Forecasts, and P5G/H Web Chat + Administration slices.
 
 ## Current status
@@ -23,7 +23,7 @@ Development of an Intelligent Adaptive Multi-Agent Platform for Customer Interac
 - M09–M13, Pilot and Final: **NOT STARTED / not re-established**.
 - Frontend track: **IN PROGRESS**; P5A–P5I are **COMPLETE** in their recorded scopes; P5J/K are **READY / NOT STARTED**.
 
-P3 independently froze source/tests, ran milestone-specific gates on fresh isolated volumes, and passed the final M01–M07 regression **114/114** with no failures or skips. P4 then froze M08 without weakening its live-provider acceptance gate and opened the independent frontend track. See the [formal P3 report](recovery/P3_M01_M07_FORMAL_REVALIDATION.md), [test evidence](recovery/P3_TEST_RESULTS.md) and [P4 freeze](recovery/P4_M08_DEFERRED_FREEZE.md).
+P3 independently froze source/tests, ran milestone-specific gates on fresh isolated volumes, and passed the final M01–M07 regression **114/114** with no failures or skips. P4 then froze M08 without weakening its live-provider acceptance gate and opened the independent frontend track.
 
 ## Canonical documentation
 
@@ -31,11 +31,11 @@ Start with [PRD](docs/PRD.md), [architecture](docs/ARCHITECTURE.md), [rules](doc
 
 ## Platform entry point
 
-Read [`platform/RECOVERY_STATUS.md`](platform/RECOVERY_STATUS.md) and [`platform/README.md`](platform/README.md). Reproducible P2 setup uses official Python 3.12, `platform/.venv`, the project dependency pins and isolated Docker Compose resources. Local `.env` files and credentials are not committed.
+Read [`platform/README.md`](platform/README.md). Reproducible P2 setup uses official Python 3.12, `platform/.venv`, the project dependency pins and isolated Docker Compose resources. Local `.env` files and credentials are not committed.
 
 ## UX / design
 
-The Figma cloud file is the visual source of truth. See [`design/README.md`](design/README.md). Four local development plugins are under [`design/figma-plugins/`](design/figma-plugins/), with existing `dist/` bundles retained and `node_modules/` omitted.
+The Figma cloud file is the visual source of truth: [Diplom — Multi-Agent Platform UI (Lab 3)](https://www.figma.com/design/W6XefZbbmZq1YZltBfsry7) (`W6XefZbbmZq1YZltBfsry7`), a clickable prototype with desktop, tablet and mobile layouts on mock data (see [`docs/DESIGN.md` §29](docs/DESIGN.md#29-lab-3-clickable-prototype-responsive-mock-data)). See also [`design/README.md`](design/README.md).
 
 ## Research master and provenance
 

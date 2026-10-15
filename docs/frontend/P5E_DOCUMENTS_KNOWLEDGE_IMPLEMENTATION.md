@@ -22,13 +22,13 @@ There is no document-specific 03D high-fidelity composition. Documents therefore
 
 ## 3. Design Audit
 
-The pre-implementation audit is recorded in [P5E_DOCUMENTS_KNOWLEDGE_AUDIT.md](P5E_DOCUMENTS_KNOWLEDGE_AUDIT.md). It classifies list/detail structure, lifecycle, business context, search/filter, provenance, upload treatment, states and responsive behavior as `CONFIRMED`, `INFERRED FROM APPROVED VISUAL`, or `NOT SPECIFIED`.
+A pre-implementation design audit came first. It classifies list/detail structure, lifecycle, business context, search/filter, provenance, upload treatment, states and responsive behavior as `CONFIRMED`, `INFERRED FROM APPROVED VISUAL`, or `NOT SPECIFIED`.
 
 Not-specified Drive/Notion-style features—drag/drop, editor, full document preview, bulk actions and automatic categories—were not invented.
 
 ## 4. M07 Backend Contract Audit
 
-The pre-implementation backend audit is recorded in [P5E_BACKEND_CONTRACT_AUDIT.md](P5E_BACKEND_CONTRACT_AUDIT.md). M07 implements a private lifecycle and constrained retrieval service, while the public FastAPI surface exposes health routes only. Internal service methods are not treated as browser APIs.
+A pre-implementation backend audit came first. M07 implements a private lifecycle and constrained retrieval service, while the public FastAPI surface exposes health routes only. Internal service methods are not treated as browser APIs.
 
 Verified constraints include Owner-authorized lifecycle changes, business scope, `text/plain` strict UTF-8 input, a 1 MiB development limit, private storage, version-aware publication, revocation, and tenant/current-version/access-scope filtering before retrieval.
 

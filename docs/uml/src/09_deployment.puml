@@ -1,0 +1,60 @@
+@startuml 09_deployment
+!include _style.iuml
+title Deployment Diagram — single-host Docker Compose MVP\n(platform/infra/compose/compose.yaml)
+
+node "Customer device" as CustDev {
+  artifact "Messenger app\n(Telegram / WhatsApp / Instagram)" as Msg
+  artifact "Browser: Web Chat" as WCB
+}
+node "Staff workstation" as StaffDev {
+  artifact "Browser: staff dashboard" as SB
+}
+cloud "Channel providers\n(webhooks)" as Providers
+cloud "Google Gemini API" as GeminiCloud
+
+node "Next.js server\n(npm run dev / start,\nnot part of Compose)" as FE <<Next.js 16 / React 19>>
+
+node "Docker host (single machine)" as Host {
+  frame "network: edge" {
+    node "backend\n<<python:3.12-slim, FastAPI>>\n127.0.0.1:8000" as BE {
+      artifact "platform_backend" as PB
+    }
+    node "keycloak\n<<quay.io/keycloak 26.3.3>>\n127.0.0.1:8080" as KCN
+  }
+  frame "network: data (internal)" {
+    node "postgres\n<<pgvector 0.8.1-pg17>>" as PGN {
+      database "postgres-data volume" as PGV
+    }
+    node "redis\n<<redis 8.2.1-alpine>>" as RDN {
+      database "redis-data volume" as RDV
+    }
+    node "minio\n<<chainguard minio>>" as MN
+    node "migration (one-shot)\n<<bootstrap + alembic upgrade head>>" as MIG
+    node "object-init / object-policy-init /\nobject-user-init / object-attach-init\n(one-shot mc jobs)" as OINIT
+  }
+  frame "network: identity (internal)" {
+    node "keycloak-db\n<<postgres 17.6-alpine>>" as KCDB
+  }
+}
+
+Msg --> Providers
+Providers --> BE : HTTPS webhook\n(planned adapters)
+WCB --> FE : HTTPS
+SB --> FE : HTTPS
+FE --> BE : REST / JSON + OIDC token
+SB --> KCN : OIDC login
+BE --> PGN : SQL (runtime role, RLS)
+BE --> RDN : RESP
+BE --> MN : S3 API
+BE --> KCN : JWKS
+KCN --> KCDB : JDBC
+MIG --> PGN : migrator role
+OINIT --> MN
+BE --> GeminiCloud : HTTPS (dev LLM)
+
+note bottom of Host
+  depends_on: backend waits for migration and object-attach-init
+  to complete and for redis to be healthy. Only backend and keycloak
+  publish ports, bound to 127.0.0.1. Not Kubernetes, not HA (D12).
+end note
+@enduml
