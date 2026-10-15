@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icon } from "@/components/ui/Icon";
-import { findNavigationLabel } from "@/lib/navigation";
+import { findNavigationLabel, findNavigationTrail } from "@/lib/navigation";
 import type { AuthenticatedSession } from "@/types/auth";
 import { NavigationSearch } from "./NavigationSearch";
 import { businessLabel, headerDate, initials } from "./sessionDisplay";
@@ -16,7 +16,9 @@ export function TopBar({ session }: { readonly session?: AuthenticatedSession })
   return (
     <header className="topbar">
       <div className="topbar__heading">
-        <p className="topbar__breadcrumb" suppressHydrationWarning>{headerDate()} · {business}</p>
+        <p className="topbar__breadcrumb" suppressHydrationWarning>
+          {pathname === "/overview" ? `${headerDate()} · ${business}` : findNavigationTrail(pathname).join(" / ")}
+        </p>
         <p className="topbar__title">{title}</p>
       </div>
       <NavigationSearch />

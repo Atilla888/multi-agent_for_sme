@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
-import { Button, EmptyState, LoadingState, SearchInput, Select, StateNotice } from "@/components/ui";
+import Link from "next/link";
+import { EmptyState, LoadingState, StateNotice } from "@/components/ui";
+import { Icon } from "@/components/ui/Icon";
 import type { BusinessValidationState } from "../types";
 
 export function BusinessFixtureBanner({ family }: { readonly family: string }) {
@@ -29,16 +31,41 @@ interface EntityToolbarProps {
   readonly status: string;
   readonly statusLabel: string;
   readonly options: readonly { readonly value: string; readonly label: string }[];
+  /** Row count per option value, shown inside each filter chip. */
+  readonly counts?: Readonly<Record<string, number>>;
+  /** Extra controls on the right of the toolbar, such as Export CSV. */
+  readonly actions?: ReactNode;
 }
 
-export function EntityToolbar({ action, query, searchLabel, searchPlaceholder, status, statusLabel, options }: EntityToolbarProps) {
-  return <form className="entity-toolbar" action={action} method="get">
-    <SearchInput id={`${action.replaceAll("/", "") || "business"}-search`} label={searchLabel} name="q" defaultValue={query} placeholder={searchPlaceholder} description="Filters deterministic fixture rows only; no server search is claimed." />
-    <Select id={`${action.replaceAll("/", "") || "business"}-status`} label={statusLabel} name="status" defaultValue={status}>
-      {options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-    </Select>
-    <Button type="submit">Apply filters</Button>
-  </form>;
+function filterHref(action: string, query: string, status: string): string {
+  const params = new URLSearchParams();
+  if (query) params.set("q", query);
+  if (status !== "all") params.set("status", status);
+  const search = params.toString();
+  return search ? `${action}?${search}` : action;
+}
+
+/** Figma list toolbar: search field, filter chips with counts, and optional actions. */
+export function EntityToolbar({ action, query, searchLabel, searchPlaceholder, status, statusLabel, options, counts, actions }: EntityToolbarProps) {
+  const id = action.replaceAll("/", "") || "business";
+  return <div className="entity-toolbar">
+    <form className="toolbar-search" action={action} method="get" role="search">
+      <label className="sr-only" htmlFor={`${id}-search`}>{searchLabel}</label>
+      <Icon name="search" size={18} />
+      <input id={`${id}-search`} type="search" name="q" defaultValue={query} placeholder={searchPlaceholder} aria-describedby={`${id}-search-note`} />
+      {status !== "all" ? <input type="hidden" name="status" value={status} /> : null}
+      <span className="sr-only" id={`${id}-search-note`}>Filters deterministic fixture rows only; no server search is claimed. Press Enter to search.</span>
+    </form>
+    <nav className="filter-chips" aria-label={statusLabel}>
+      {options.map((option) => {
+        const active = option.value === status;
+        return <Link className={`filter-chip ${active ? "filter-chip--active" : ""}`.trim()} key={option.value} href={filterHref(action, query, option.value)} aria-current={active ? "true" : undefined}>
+          {option.label}{counts?.[option.value] !== undefined ? <span className="filter-chip__count">{counts[option.value]}</span> : null}
+        </Link>;
+      })}
+    </nav>
+    {actions ? <div className="entity-toolbar__actions">{actions}</div> : null}
+  </div>;
 }
 
 export interface BusinessFact { readonly label: string; readonly value: string; readonly note?: string; }

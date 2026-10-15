@@ -50,7 +50,7 @@ export function OverviewScreen({ model }: { readonly model: OverviewModel }) {
           <h2 className="type-card-title" id="overview-orders-title">Recent orders</h2>
           <Link className="button button--ghost" href="/orders">View all</Link>
         </header>
-        <Table scrollLabel="Recent orders" className="overview-orders">
+        <Table scrollLabel="Recent orders" className="overview-orders responsive-table">
           <TableHeader>
             <TableRow>
               <TableHead>Order</TableHead>

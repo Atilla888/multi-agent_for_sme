@@ -3,6 +3,7 @@ import {
   authenticationRoute,
   customerRoute,
   findNavigationLabel,
+  findNavigationTrail,
   flatNavigation,
   isRouteActive,
   mobileTabs,
@@ -90,5 +91,14 @@ describe("lab 3 Figma shell navigation", () => {
     expect(matchNavigation("runs")?.href).toBe("/agent-runs");
     expect(matchNavigation("   ")).toBeUndefined();
     expect(matchNavigation("payroll")).toBeUndefined();
+  });
+});
+
+describe("header breadcrumb", () => {
+  it("names the area and screen like the Figma header", () => {
+    expect(findNavigationTrail("/orders/ORD-1042")).toEqual(["Business", "Orders"]);
+    expect(findNavigationTrail("/escalations")).toEqual(["Conversations", "Escalations"]);
+    expect(findNavigationTrail("/conversations")).toEqual(["Conversations"]);
+    expect(findNavigationTrail("/forecasts")).toEqual(["Analytics", "Forecasts"]);
   });
 });

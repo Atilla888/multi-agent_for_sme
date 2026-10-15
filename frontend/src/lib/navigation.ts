@@ -95,3 +95,15 @@ export function findNavigationLabel(pathname: string): string {
       .sort((a, b) => b.href.length - a.href.length)[0]?.label ?? "Staff Workspace"
   );
 }
+
+/** Breadcrumb trail for the header, e.g. "/orders/ORD-1" → ["Business", "Orders"]. */
+export function findNavigationTrail(pathname: string): readonly string[] {
+  for (const area of staffNavigation) {
+    const child = [...(area.children ?? [])]
+      .sort((a, b) => b.href.length - a.href.length)
+      .find((item) => isRouteActive(pathname, item.href));
+    if (child) return child.label === area.label ? [area.label] : [area.label, child.label];
+    if (isRouteActive(pathname, area.href)) return [area.label];
+  }
+  return ["Staff Workspace"];
+}
