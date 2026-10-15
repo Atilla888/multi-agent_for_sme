@@ -14,6 +14,7 @@ from platform_backend.domain.context import StaffRole
 from platform_backend.domain.errors import DomainFailure, ErrorCode
 from platform_backend.repositories.postgres import PostgresDatabase
 from platform_backend.security.oidc import OidcConfig, OidcVerifier, StaffIdentityService
+from tests.keycloak_admin import KeycloakTestAdmin
 from tests.support import seed_tenant
 
 pytestmark = [pytest.mark.postgres, pytest.mark.integration]
@@ -27,6 +28,8 @@ def _http(
     body: dict | None = None,
     bearer: str | None = None,
     form: bool = False,
+    timeout: float = 10,
+    allowed_statuses: tuple[int, ...] = (),
 ) -> tuple[int, dict, str | None]:
     headers = {"Accept": "application/json"}
     data = None
@@ -41,10 +44,13 @@ def _http(
         headers["Authorization"] = f"Bearer {bearer}"
     request = Request(BASE + path, data=data, headers=headers, method=method)  # noqa: S310
     try:
-        with urlopen(request, timeout=10) as response:  # noqa: S310
+        with urlopen(request, timeout=timeout) as response:  # noqa: S310
             raw = response.read()
             return response.status, json.loads(raw) if raw else {}, response.headers.get("Location")
     except HTTPError as exc:
+        if exc.code in allowed_statuses:
+            exc.close()
+            return exc.code, {}, exc.headers.get("Location")
         try:
             error = json.loads(exc.read())
             code = error.get("error", "unspecified")
@@ -74,22 +80,16 @@ def test_live_keycloak_token_jwks_membership_and_wrong_audience(
         },
     )
     admin_token = admin_grant["access_token"]
+    admin = KeycloakTestAdmin(_http, admin_token)
     realm = f"m05-smoke-{uuid4().hex}"
     issuer = f"{BASE}/realms/{realm}"
     created = False
     try:
-        status, _, _ = _http(
-            "/admin/realms",
-            method="POST",
-            bearer=admin_token,
-            body={"realm": realm, "enabled": True},
-        )
-        assert status == 201
+        admin.create_realm(realm)
         created = True
-        status, _, _ = _http(
+        status, _, _ = admin.request(
             f"/admin/realms/{realm}/clients",
             method="POST",
-            bearer=admin_token,
             body={
                 "clientId": "business-api",
                 "enabled": True,
@@ -114,10 +114,9 @@ def test_live_keycloak_token_jwks_membership_and_wrong_audience(
         assert status == 201
         password = secrets.token_urlsafe(32)
         username = f"smoke-{uuid4().hex}"
-        status, _, location = _http(
+        status, _, location = admin.request(
             f"/admin/realms/{realm}/users",
             method="POST",
-            bearer=admin_token,
             body={
                 "username": username,
                 "enabled": True,
@@ -179,5 +178,4 @@ def test_live_keycloak_token_jwks_membership_and_wrong_audience(
         assert rejected.value.code is ErrorCode.UNAUTHENTICATED
     finally:
         if created:
-            status, _, _ = _http(f"/admin/realms/{realm}", method="DELETE", bearer=admin_token)
-            assert status == 204
+            admin.delete_realm(realm)
