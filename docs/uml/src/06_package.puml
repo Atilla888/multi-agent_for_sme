@@ -1,0 +1,75 @@
+@startuml 06_package
+!include _style.iuml
+title Package Diagram — backend packages and their real import dependencies\nplatform/services/backend/src/platform_backend
+
+package platform_backend {
+  package api <<FastAPI>> {
+  }
+  package security <<Keycloak OIDC>> {
+  }
+  package agents <<M08 specialists>> {
+  }
+  package orchestration <<planned: LangGraph, M09-M11>> {
+  }
+  package brain <<Business Brain>> {
+  }
+  package knowledge <<RAG>> {
+  }
+  package rag <<placeholder>> {
+  }
+  package tools <<trusted executor>> {
+  }
+  package application <<use-case services>> {
+  }
+  package domain <<pure values>> {
+  }
+  package repositories <<PostgreSQL>> {
+  }
+  package infrastructure <<settings, tenant, bootstrap>> {
+  }
+  package observability <<placeholder>> {
+  }
+}
+
+agents ..> brain : <<import>>
+agents ..> domain : <<import>>
+agents ..> tools : <<import>>
+api ..> application : <<import>>
+api ..> domain : <<import>>
+api ..> infrastructure : <<import>>
+api ..> repositories : <<import>>
+api ..> security : <<import>>
+application ..> domain : <<import>>
+application ..> repositories : <<import>>
+application ..> security : <<import>>
+brain ..> application : <<import>>
+brain ..> domain : <<import>>
+brain ..> repositories : <<import>>
+brain ..> security : <<import>>
+brain ..> tools : <<import>>
+knowledge ..> brain : <<import>>
+knowledge ..> domain : <<import>>
+knowledge ..> repositories : <<import>>
+knowledge ..> security : <<import>>
+repositories ..> domain : <<import>>
+repositories ..> knowledge : <<import>>
+security ..> domain : <<import>>
+security ..> repositories : <<import>>
+tools ..> application : <<import>>
+tools ..> domain : <<import>>
+tools ..> repositories : <<import>>
+tools ..> security : <<import>>
+orchestration ..> agents : <<planned>>
+
+note right of domain
+  domain has no framework imports:
+  dataclasses, Decimal, enums only.
+end note
+note right of agents
+  agents never import repositories:
+  every business effect goes through
+  tools.ToolExecutor (P-D1).
+  Edges extracted from the source
+  "from platform_backend.X" imports.
+end note
+@enduml

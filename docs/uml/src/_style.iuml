@@ -1,0 +1,35 @@
+' Shared look for every diagram in this folder.
+skinparam dpi 110
+skinparam shadowing false
+skinparam roundCorner 6
+skinparam defaultFontName "DejaVu Sans"
+skinparam defaultFontSize 12
+skinparam ArrowColor #44546A
+skinparam ArrowFontSize 11
+skinparam NoteBackgroundColor #FFF8DC
+skinparam NoteBorderColor #C9B458
+skinparam TitleFontSize 16
+skinparam TitleFontStyle bold
+skinparam PackageBorderColor #7F8C9A
+skinparam BackgroundColor #FFFFFF
+skinparam ClassBackgroundColor #F5F9FF
+skinparam ClassBorderColor #4A6FA5
+skinparam ClassAttributeIconSize 0
+skinparam ComponentBackgroundColor #F5F9FF
+skinparam ComponentBorderColor #4A6FA5
+skinparam ActorBorderColor #2F4F6F
+skinparam UsecaseBackgroundColor #F5F9FF
+skinparam UsecaseBorderColor #4A6FA5
+skinparam ParticipantBackgroundColor #F5F9FF
+skinparam ParticipantBorderColor #4A6FA5
+skinparam SequenceLifeLineBorderColor #8A9BB0
+skinparam SequenceGroupBorderColor #7F8C9A
+skinparam ActivityBackgroundColor #F5F9FF
+skinparam ActivityBorderColor #4A6FA5
+skinparam ActivityDiamondBackgroundColor #FFF3E0
+skinparam StateBackgroundColor #F5F9FF
+skinparam StateBorderColor #4A6FA5
+skinparam NodeBackgroundColor #F2F2F2
+skinparam DatabaseBackgroundColor #EAF4EA
+skinparam stereotypeCBackgroundColor #D6E4F5
+hide empty members

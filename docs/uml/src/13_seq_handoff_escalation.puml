@@ -1,0 +1,40 @@
+@startuml 13_seq_handoff_escalation
+!include _style.iuml
+title Sequence Diagram (3/4) — Support → Sales handoff and E02 escalation (D05)\n(handoff routing belongs to the planned orchestrator; agents only propose it)
+autonumber
+
+actor Customer
+participant "Support agent" as Sup
+participant "Business Brain" as Brain
+participant "Tool Executor" as TE
+database "PostgreSQL" as PG
+control "Orchestrator\n<<planned>>" as Orch
+participant "Sales agent" as Sales
+actor "Human Operator" as Op
+
+Customer -> Sup : "Can I exchange the lamp in order #1042?"
+Sup -> Brain : build(purpose = SUPPORT)
+Brain --> Sup : scoped order + policy context
+Sup -> TE : get_order(order_id)
+TE -> PG : principal / tenant / ownership check
+PG --> TE : order row
+TE --> Sup : ToolResult(SUCCEEDED, verified order ref)
+Sup --> Orch : AgentOutcome(handoff_proposal = Sales,\nevidence refs)
+Orch -> Orch : guard: target allowed? handoff_count < limit?
+Orch -> Sales : scoped handoff envelope\n(principal, business, evidence, remaining task, budget)
+note right of Sales : no extra permissions travel\nwith the handoff
+Sales -> Brain : refresh facts and permissions
+Sales -> TE : update_order(order_id, expected_version, patch)
+TE --> Sales : ToolResult(REJECTED, POLICY_REJECTED,\nBLOCKED_BY_APPROVED_POLICY)
+Sales --> Orch : AgentOutcome(CONTROLLED_ESCALATION)
+Orch -> PG : Escalation(OPEN, reason, expected_resume_revision)\nAgentRun → WAITING_HUMAN; Conversation → ESCALATED
+Orch --> Customer : truthful status: "a person will review this";\nno refund or exchange effect
+Op -> PG : claim escalation (OPEN → CLAIMED)
+Op -> Orch : decision + expected resume revision
+Orch -> PG : CAS on resume_revision; refresh policy
+alt revision matches
+  Orch -> PG : Escalation → RESOLVED; run resumes or closes
+else stale revision
+  Orch --> Op : conflict, reload and review again
+end
+@enduml

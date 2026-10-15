@@ -1,0 +1,35 @@
+@startuml 14_seq_knowledge
+!include _style.iuml
+title Sequence Diagram (4/4) — Knowledge document upload, indexing, publish and retrieval (D09)
+autonumber
+
+actor "Business Owner" as Owner
+participant "KnowledgeService" as KS
+participant "MinioPrivateStore" as S3
+participant "LocalFastEmbed" as Emb
+database "PostgreSQL\n+ pgvector" as PG
+participant "BusinessBrain" as Brain
+
+Owner -> KS : create_document(title, access_scope)
+KS -> PG : Document(version = 1, published_version_id = null)
+Owner -> KS : stage_version(document_id, bytes)
+KS -> KS : check type, signature, size, not empty
+KS -> S3 : put(key, bytes)
+KS -> PG : ObjectRecord(QUARANTINED, sha256)\nDocumentVersion(STAGED); audit DOCUMENT_VERSION_STAGED
+Owner -> KS : process_version(version_id)
+KS -> S3 : read_verified(key, size)
+KS -> KS : verify sha256, parse, chunk
+KS -> Emb : embed(chunks)
+Emb --> KS : vectors (dimension checked)
+KS -> PG : Embeddings; ObjectRecord → CLEAN;\nDocumentVersion → READY
+note right of KS : any failure → DocumentVersion FAILED;\nthe published V1 stays active
+Owner -> KS : publish(document_id, version_id, expected_version)
+KS -> PG : CAS: published_version_id = version_id
+PG --> KS : ok / publication race
+...later, during a customer conversation...
+Brain -> KS : retrieve(RetrievalRequest(principal, query))
+KS -> PG : filter: tenant, ACL scope, published READY, CLEAN\nthen vector rank
+PG --> KS : candidate chunks
+KS -> KS : final recheck of current pointer + chunk hash
+KS --> Brain : KnowledgeEvidence (text is data, not instructions)
+@enduml

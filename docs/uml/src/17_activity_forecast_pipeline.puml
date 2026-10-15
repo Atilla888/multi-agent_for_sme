@@ -1,0 +1,37 @@
+@startuml 17_activity_forecast_pipeline
+!include _style.iuml
+title Activity Diagram (3/3) — Operational forecasting pipeline (D10, chapter 18)\n<<designed; artifact not trained yet>>
+
+|Data preparation|
+start
+:extract authorized immutable snapshot\n(scope, cutoff, hash);
+:validate uniqueness, timezone,\ncurrency, units, completeness;
+:aggregate to DAY / WEEK / MONTH;
+note right: missing intervals stay unknown,\nnot zero
+:build lag and shifted rolling features\n(no target leakage);
+:chronological split train → validation → test;
+|Training & validation|
+fork
+  :naive baseline;
+fork again
+  :seasonal-naive / moving average;
+fork again
+  :XGBoost candidate;
+fork again
+  :LSTM (optional);
+end fork
+:time-aware error metrics on same periods;
+if (candidate beats baselines\nand passes gate?) then (yes)
+  :store ModelArtifact(VALIDATED,\nmodel + data hash);
+else (no)
+  :ModelArtifact stays CANDIDATE\nor RETIRED;
+  |Inference|
+  :forecast_sales returns MODEL_NOT_READY;
+  stop
+endif
+|Inference|
+:Analytics agent calls forecast_sales\n(owner only, horizon ≤ limit);
+:ForecastRun(PENDING → SUCCEEDED / FAILED)\nwith provenance;
+:grounded report: predicted ≠ actual,\nno guarantee wording;
+stop
+@enduml

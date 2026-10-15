@@ -1,0 +1,49 @@
+@startuml 15_activity_tool_execution
+!include _style.iuml
+title Activity Diagram (1/3) — ToolExecutor.execute(tool_name, payload, context)\n"model proposes → executor authorizes → domain enforces → database persists" (D07)
+
+start
+:receive tool_name, payload,\nExecutionContext (trusted);
+:call_id = uuid4();
+if (_check_run: run active, not past deadline?) then (no)
+  :record admission rejection\n(ToolCall + AuditLog);
+  :return ToolResult(REJECTED);
+  stop
+endif
+:INSERT ToolCall(STARTED);
+if (tool_name in TOOL_INPUTS (10 tools)?) then (no)
+  :DomainFailure(VALIDATION_ERROR, "Unknown tool");
+elseif (tool_name in ROLE_TOOLS[agent_role]?) then (no)
+  :DomainFailure(FORBIDDEN);
+elseif (strict Pydantic validation passes?) then (no)
+  :DomainFailure(VALIDATION_ERROR,\n"Invalid tool arguments");
+else (yes)
+  :_dispatch(tool_name, request, context);
+  switch (tool)
+  case (find_product\ncheck_inventory\nfind_customer\nget_order)
+    :QueryService read\n(tenant transaction + access policy);
+  case (create_order\nreserve_inventory)
+    :OrderService write\n(OperationLedger.admit → idempotency);
+  case (update_order)
+    :DomainFailure(POLICY_REJECTED,\nBLOCKED_BY_APPROVED_POLICY) (E02);
+  case (get_delivery_status)
+    :delivery port lookup\nor availability = UNAVAILABLE;
+  case (get_sales_report)
+    :QueryService.report;
+  case (forecast_sales)
+    :require_owner + horizon limit;\n:ForecastServicePort.forecast\n(today: MODEL_NOT_READY);
+  endswitch
+endif
+if (outcome?) then (data)
+  :ToolResult(SUCCEEDED, data,\nresource_versions, source_refs);
+elseif (DomainFailure) then
+  :ToolResult(REJECTED / FAILED,\nsafe error);
+elseif (DB error during a write tool) then
+  :ToolResult(OUTCOME_UNKNOWN,\nreconciliation_required);
+else (timeout / connection / DB read error)
+  :ToolResult(FAILED,\nTIMEOUT or DEPENDENCY_UNAVAILABLE);
+endif
+:_record_terminal: finish ToolCall,\nlink IdempotencyOperation,\nappend AuditLog (argument digest, no secrets);
+:return ToolResult;
+stop
+@enduml

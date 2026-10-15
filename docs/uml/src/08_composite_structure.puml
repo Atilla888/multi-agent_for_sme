@@ -1,0 +1,54 @@
+@startuml 08_composite_structure
+!include _style.iuml
+title Composite Structure Diagram — internal parts of a SpecialistAgent and the ToolExecutor\n(PlantUML has no native composite-structure type: parts are drawn as nested components with ports)
+
+component "SpecialistAgent : role = Sales" as SA {
+  portin "request" as pReq
+  portout "outcome" as pOut
+  portout "llm" as pLlm
+  portout "context" as pCtx
+  portout "tools" as pTools
+
+  component "goal : str" as Goal
+  component "allowed_tools :\nROLE_TOOLS[Sales]" as Allowed
+  component "decision loop\n(max_model_calls = 6,\nmax_tool_calls = 4,\ndeadline 60 s)" as Loop
+  component "grounding guard\n(evidence_refs ⊆ bundle refs)" as Guard
+  component "write guard\n(write_confirmed,\nno write after UNKNOWN)" as WGuard
+}
+
+component "ToolExecutor" as TE {
+  portin "execute" as pExec
+  portout "db" as pDb
+  component "admission\n(_check_run)" as Adm
+  component "registry + role allowlist\n(TOOL_INPUTS, ROLE_TOOLS)" as Reg
+  component "strict schema validation\n(Pydantic, extra=forbid)" as Val
+  component "dispatcher\n(_dispatch)" as Disp
+  component "OrderService" as OS
+  component "QueryService" as QS
+  component "OperationLedger\n(idempotency)" as OL
+  component "terminal recorder\n(ToolCall + AuditLog)" as Rec
+}
+
+pReq --> Loop
+Loop --> pLlm
+Loop --> pCtx
+Loop --> WGuard
+WGuard --> pTools
+Loop --> Guard
+Guard --> pOut
+Allowed ..> Loop
+Goal ..> Loop
+
+pTools --> pExec : ExecutorPort
+pExec --> Adm
+Adm --> Reg
+Reg --> Val
+Val --> Disp
+Disp --> OS
+Disp --> QS
+OS --> OL
+Disp --> Rec
+OS --> pDb
+QS --> pDb
+Rec --> pDb
+@enduml

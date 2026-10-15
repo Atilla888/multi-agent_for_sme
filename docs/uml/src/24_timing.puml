@@ -1,0 +1,60 @@
+@startuml 24_timing
+!include _style.iuml
+title Timing Diagram — one Sales run with a confirmed order (seconds; illustrative timings)\nbudgets: deadline 60 s, ≤ 6 model calls, ≤ 4 tool calls
+
+scale 1 as 90 pixels
+robust "Inbound Message" as MSG
+robust "AgentRun" as RUN
+robust "SpecialistAgent" as SA
+robust "Order" as ORD
+concise "Tool budget used" as TB
+
+@0
+MSG is RECEIVED
+RUN is "{-}"
+SA is Idle
+ORD is "{-}"
+TB is "0 / 4"
+
+@1
+MSG is PROCESSING
+RUN is RUNNING
+SA is BuildContext
+
+@2
+SA is AwaitLLM
+
+@4
+SA is AwaitTool
+TB is "1 / 4"
+
+@5
+SA is AwaitLLM
+
+@7
+SA is AwaitTool
+ORD is CREATED
+TB is "2 / 4"
+
+@8
+SA is AwaitLLM
+
+@10
+SA is AwaitTool
+ORD is CONFIRMED
+TB is "3 / 4"
+
+@11
+SA is AwaitLLM
+
+@13
+SA is Done
+RUN is SUCCEEDED
+MSG is PROCESSED
+
+@15
+SA is Idle
+
+RUN@1 <-> @13 : run took 12 s of the 60 s deadline
+SA@2 <-> @4 : model call 1
+@enduml

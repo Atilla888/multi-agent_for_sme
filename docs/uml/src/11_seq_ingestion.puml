@@ -1,0 +1,49 @@
+@startuml 11_seq_ingestion
+!include _style.iuml
+title Sequence Diagram (1/4) — Channel message ingestion and safe delivery (D03)
+autonumber
+
+actor Customer
+participant "Channel\nprovider" as Prov
+boundary "Gateway /\nchannel adapter" as GW
+control "Identity &\nsecurity" as Sec
+database "PostgreSQL" as PG
+control "Orchestrator\n<<planned>>" as Orch
+participant "Specialist agent\n+ Business Brain\n+ ToolExecutor" as Agent
+boundary "Delivery" as Del
+
+Customer -> Prov : writes message
+Prov -> GW : signed provider event
+GW -> Sec : verify signature + normalize
+alt invalid signature or auth
+  Sec --> GW : reject
+  GW --> Prov : 401 / 403 (nothing stored)
+else valid
+  Sec -> PG : dedupe on provider_message_id;\nresolve CustomerIdentity → Customer
+  alt duplicate event
+    PG --> GW : existing Message reference
+    GW --> Prov : 200 (no second run)
+  else new event
+    PG -> PG : INSERT Message(status = RECEIVED,\ncorrelation_id)
+    GW --> Prov : 200 accepted (receipt is durable)
+    GW ->> Orch : RunRequest(message ref,\nPrincipalContext) — not raw authority
+    activate Orch
+    Orch -> PG : AgentRun(status = RUNNING)\nMessage → PROCESSING
+    Orch -> Agent : SpecialistRequest
+    activate Agent
+    Agent --> Orch : AgentOutcome + evidence refs
+    deactivate Agent
+    Orch -> PG : AgentRun → SUCCEEDED / FAILED / WAITING_HUMAN\nMessage → PROCESSED; OUTBOUND Message(PENDING_DELIVERY)
+    Orch ->> Del : outbound response reference
+    deactivate Orch
+    Del -> Prov : send reply
+    alt provider accepted
+      Del -> PG : OUTBOUND → DELIVERED
+      Prov -> Customer : reply shown
+    else timeout / unknown
+      Del -> PG : OUTBOUND → DELIVERY_UNKNOWN
+      note right of Del : retry delivery only;\nnever replays the business command
+    end
+  end
+end
+@enduml

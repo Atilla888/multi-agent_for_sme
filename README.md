@@ -6,6 +6,7 @@ Development of an Intelligent Adaptive Multi-Agent Platform for Customer Interac
 
 - [`platform/`](platform/) — reconstructed backend/infrastructure candidate and [current recovery status](platform/RECOVERY_STATUS.md).
 - [`docs/`](docs/) — approved product, architecture, design and research documents.
+- [`docs/uml/`](docs/uml/) — UML 2.5 diagrams (all 14 types) and ER diagrams as PlantUML sources, PNG renders and one combined PDF.
 - [`design/`](design/) — local Figma development plugins and visual-source guidance.
 - [`research/master/release/`](research/master/release/) — development-safe consolidated master release.
 - [`recovery/`](recovery/) — sanitized reconstruction provenance and executable evidence.
@@ -35,7 +36,7 @@ Read [`platform/RECOVERY_STATUS.md`](platform/RECOVERY_STATUS.md) and [`platform
 
 ## UX / design
 
-The Figma cloud file is the visual source of truth. See [`design/README.md`](design/README.md). Four local development plugins are under [`design/figma-plugins/`](design/figma-plugins/), with existing `dist/` bundles retained and `node_modules/` omitted.
+The Figma cloud file is the visual source of truth: [Diplom — Multi-Agent Platform UI (Lab 3)](https://www.figma.com/design/W6XefZbbmZq1YZltBfsry7) (`W6XefZbbmZq1YZltBfsry7`), a clickable prototype with desktop, tablet and mobile layouts on mock data (see [`docs/DESIGN.md` §29](docs/DESIGN.md#29-lab-3-clickable-prototype-responsive-mock-data)). See also [`design/README.md`](design/README.md). Four local development plugins are under [`design/figma-plugins/`](design/figma-plugins/), with existing `dist/` bundles retained and `node_modules/` omitted.
 
 ## Research master and provenance
 

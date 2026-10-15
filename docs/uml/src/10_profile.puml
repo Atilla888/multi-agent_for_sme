@@ -1,0 +1,51 @@
+@startuml 10_profile
+!include _style.iuml
+title Profile Diagram — «MultiAgentPlatform» UML profile used in these diagrams\n(drawn as a class diagram: PlantUML has no native profile type)
+
+package "«profile» MultiAgentPlatform" as Prof {
+  class "Class" as MClass <<metaclass>>
+  class "Component" as MComp <<metaclass>>
+  class "Operation" as MOp <<metaclass>>
+
+  class TenantScoped <<stereotype>> {
+    business_id : UUID
+    rls : Boolean = true
+  }
+  class Versioned <<stereotype>> {
+    version : Integer {>= 1}
+  }
+  class AppendOnly <<stereotype>>
+  class Agent <<stereotype>> {
+    role : AgentRole
+    allowedTools : String[*]
+  }
+  class Tool <<stereotype>> {
+    name : String
+    isWrite : Boolean
+    requiresConfirmation : Boolean
+  }
+  class Untrusted <<stereotype>>
+  class Planned <<stereotype>> {
+    milestone : String
+  }
+  class Port <<stereotype>>
+}
+
+TenantScoped -up-> MClass : <<extension>>
+Versioned -up-> MClass : <<extension>>
+AppendOnly -up-> MClass : <<extension>>
+Agent -up-> MComp : <<extension>>
+Tool -up-> MOp : <<extension>>
+Untrusted -up-> MClass : <<extension>>
+Planned -up-> MComp : <<extension>>
+Port -up-> MClass : <<extension>>
+
+note bottom of Prof
+  TenantScoped: every table except businesses and app_users
+  (composite FK + forced RLS). Versioned: optimistic locking
+  for mutable rows. AppendOnly: audit_logs, agent_steps, embeddings.
+  Untrusted: AgentDecision and document text.
+  Planned: orchestrator (M09–M11), channel adapters, forecast model.
+  Port: typing.Protocol interfaces (BrainPort, ExecutorPort, LLMProvider…).
+end note
+@enduml

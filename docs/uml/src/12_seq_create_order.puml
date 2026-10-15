@@ -1,0 +1,62 @@
+@startuml 12_seq_create_order
+!include _style.iuml
+title Sequence Diagram (2/4) — Sales agent: create_order, then separate reserve_inventory (D04)\nas implemented in agents.runtime, tools.executor and application.orders
+autonumber
+
+actor Customer
+participant "SpecialistAgent\n(Sales)" as SA
+participant "BusinessBrain" as Brain
+participant "GeminiProvider" as LLM
+participant "ToolExecutor" as TE
+participant "OrderService" as OS
+participant "OperationLedger" as OL
+database "PostgreSQL\n(RLS, tenant tx)" as PG
+
+Customer -> SA : "I want the oak lamp, 1 pc" (write_confirmed = true)
+SA -> Brain : build(ContextRequest(purpose = SALES))
+Brain -> PG : structured facts, rules, permissions
+Brain --> SA : ContextBundle + context_digest
+SA -> LLM : invoke_with_tools(prompt, projection, tool schemas)
+LLM --> SA : AgentDecision(CALL_TOOL, find_product)
+SA -> TE : execute("find_product", args, ExecutionContext)
+TE -> PG : search products
+TE --> SA : ToolResult(SUCCEEDED, product + version)
+SA -> LLM : invoke_with_tools(+ previous_tool_results)
+LLM --> SA : AgentDecision(CALL_TOOL, create_order)
+note over SA : write guard: write_confirmed,\nno earlier OUTCOME_UNKNOWN,\noperation_key = m08:run:tool:sha256
+SA -> TE : execute("create_order", {customer_id, items[]}, ctx + operation_key)
+TE -> TE : role allowlist (Sales) + strict schema
+TE -> OS : create_order(ctx, customer_id, lines)
+OS -> OL : admit(ctx, "create_order", payload)
+alt same key already SUCCEEDED
+  OL --> OS : prior_result (replay, no new write)
+else new operation
+  OL -> PG : IdempotencyOperation(STARTED)
+  OS -> PG : lock products; check quoted_product_version,\nsingle currency, customer access
+  OS -> PG : INSERT Order(CREATED) + OrderItems (price snapshot)\nOperation → SUCCEEDED; AuditLog ORDER_CREATED
+  PG --> OS : commit
+end
+OS --> TE : {order_id, status: CREATED, order_version: 1}
+TE -> PG : ToolCall SUCCEEDED + AuditLog TOOL_SUCCEEDED
+TE --> SA : ToolResult(SUCCEEDED)
+
+SA -> LLM : next decision
+LLM --> SA : AgentDecision(CALL_TOOL, reserve_inventory)
+SA -> TE : execute("reserve_inventory", {order_id, expected versions})
+TE -> OS : reserve_inventory(...)
+OS -> OL : admit(...)
+OS -> PG : lock Order + Inventory rows, compare versions
+alt enough stock
+  OS -> PG : decrement inventory; OrderItem.reserved_qty;\nOrder → CONFIRMED; AuditLog INVENTORY_RESERVED
+  OS --> TE : {status: CONFIRMED, reservations}
+else shortage
+  OS -> PG : Order → NEEDS_ATTENTION; Escalation(INSUFFICIENT_INVENTORY);\nOperation FAILED; AuditLog RESERVATION_REJECTED
+  OS --> TE : DomainFailure(INSUFFICIENT_INVENTORY)
+else commit acknowledgement lost
+  OS -> OL : mark_unknown
+  OS --> TE : DomainFailure(OUTCOME_UNKNOWN, reconciliation_required)
+end
+TE --> SA : ToolResult
+SA -> SA : _confirmed_effects(): text built only\nfrom SUCCEEDED write results
+SA --> Customer : "Order … was created. Inventory reservation … succeeded."\n(or truthful shortage / unknown status)
+@enduml

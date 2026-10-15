@@ -1,0 +1,18 @@
+@startuml 20_state_escalation
+!include _style.iuml
+title State Machine Diagram (3/5) — Escalation (escalations.status)
+
+[*] --> OPEN : trigger: low confidence, E02 policy,\ninsufficient inventory, budget,\nOUTCOME_UNKNOWN / record reason_code
+OPEN --> CLAIMED : operator claims\n[member of business ∧ assignment allowed]\n/ assigned_user_id = operator
+CLAIMED --> OPEN : operator releases
+CLAIMED --> RESOLVED : decision approve / reject / clarify\n[expected_resume_revision matches]\n/ store resolution, resume or close run
+CLAIMED --> CLAIMED : stale revision\n/ conflict, reload facts
+RESOLVED --> [*]
+
+state CLAIMED {
+  [*] --> Reviewing
+  Reviewing --> Reconciling : pending OUTCOME_UNKNOWN
+  Reconciling --> Reviewing : operation log checked
+  Reviewing --> Deciding
+}
+@enduml
