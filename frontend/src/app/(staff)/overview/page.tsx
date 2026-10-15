@@ -1,2 +1,5 @@
-import { FoundationPage } from "@/components/domain/FoundationPage";
-export default function OverviewPage() { return <FoundationPage page="overview" />; }
+import { getOverviewFixture, OverviewScreen } from "@/features/overview";
+
+export default function OverviewPage() {
+  return <OverviewScreen model={getOverviewFixture()} />;
+}

@@ -1,6 +1,15 @@
 import type { ComponentPropsWithoutRef } from "react";
 
-export type BadgeTone = "neutral" | "information";
+/** Badge tones from the Figma design system: status tones plus one tone per agent. */
+export type BadgeTone =
+  | "neutral"
+  | "information"
+  | "success"
+  | "warning"
+  | "danger"
+  | "sales"
+  | "support"
+  | "analytics";
 
 interface BadgeProps extends ComponentPropsWithoutRef<"span"> {
   readonly tone?: BadgeTone;

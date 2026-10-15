@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Icon } from "@/components/ui/Icon";
 import type { NavArea, NavItem } from "@/lib/navigation";
 import { isRouteActive } from "@/lib/navigation";
 
@@ -13,42 +14,59 @@ function AccessMarker({ item }: { readonly item: NavItem }) {
   if (!item.access) return null;
   return (
     <span className="nav-access-marker">
-      {item.access === "restricted" ? "Restricted · permissioned" : "Contextual · restricted"}
+      {item.access === "restricted" ? "Restricted" : "Contextual"}
     </span>
   );
 }
 
+function NavLink({ item, pathname, active }: { readonly item: NavItem; readonly pathname: string; readonly active?: boolean }) {
+  const current = active ?? isRouteActive(pathname, item.href);
+  return (
+    <Link
+      className={`nav-item ${current ? "nav-item--active" : ""} ${item.access ? "nav-item--restricted" : ""}`.replace(/\s+/g, " ").trim()}
+      href={item.href}
+      aria-current={current ? "page" : undefined}
+      title={item.label}
+    >
+      {item.icon ? <Icon name={item.icon} /> : null}
+      <span className="nav-label">{item.label}</span>
+      <AccessMarker item={item} />
+    </Link>
+  );
+}
+
+/**
+ * One area of the approved IA. Areas with children render as a Figma sidebar section:
+ * an uppercase heading followed by flat NavItems. The area's own route is listed first
+ * when it is not already one of its children (Conversations, Analytics).
+ */
 export function SidebarSection({ area, pathname }: SidebarSectionProps) {
-  const areaActive =
-    isRouteActive(pathname, area.href) ||
-    Boolean(area.children?.some((item) => isRouteActive(pathname, item.href)));
+  if (!area.children) {
+    return (
+      <li className="nav-area">
+        <NavLink item={area} pathname={pathname} />
+      </li>
+    );
+  }
+
+  const children = area.children;
+  const items = children.some((item) => item.href === area.href) ? children : [area, ...children];
+  const anyChildActive = children.some((item) => isRouteActive(pathname, item.href));
 
   return (
-    <li className="nav-area">
-      <Link className={`nav-primary ${areaActive ? "nav-primary--active" : ""}`} href={area.href}>
-        <span>{area.label}</span>
-        {areaActive ? <span aria-hidden="true">•</span> : null}
-      </Link>
-      {area.children ? (
-        <ul className="nav-nested">
-          {area.children.map((item) => {
-            const active = isRouteActive(pathname, item.href);
-            const restricted = Boolean(item.access);
-            return (
-              <li key={item.href}>
-                <Link
-                  className={`nav-nested__link ${active ? "nav-nested__link--active" : ""} ${restricted ? "nav-nested__link--restricted" : ""}`}
-                  href={item.href}
-                  aria-current={active ? "page" : undefined}
-                >
-                  <span>└ {item.label}</span>
-                  <AccessMarker item={item} />
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      ) : null}
+    <li className="nav-area nav-section">
+      <p className="nav-section__label">{area.label}</p>
+      <ul className="nav-nested">
+        {items.map((item) => (
+          <li key={item.href}>
+            <NavLink
+              item={item}
+              pathname={pathname}
+              active={item === area ? isRouteActive(pathname, area.href) && !anyChildActive : undefined}
+            />
+          </li>
+        ))}
+      </ul>
     </li>
   );
 }

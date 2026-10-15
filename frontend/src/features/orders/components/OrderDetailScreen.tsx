@@ -1,6 +1,116 @@
 import Link from "next/link";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { Button, Card, CardContent, CardHeader, CardTitle, StateNotice, StatusBadge, Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui";
-import { BusinessBoundary, BusinessFactList, BusinessFixtureBanner } from "@/features/business";
-import type { OrderDetailModel } from "../types";
-export function OrderDetailScreen({ model }: { readonly model: OrderDetailModel }) { const order = model.order; return <div className="feature-page business-screen"><PageHeader eyebrow="Business / Orders / Detail" title={order?.id ?? "Order detail"} description="Authoritative Order facts and separate Reservation evidence." /><BusinessFixtureBanner family="Order detail" /><BusinessBoundary state={model.validationState} family="Order detail" emptyDescription="No matching Order exists in the deterministic fixture set.">{order ? <><div className="entity-detail-heading"><Link className="context-link" href="/orders">← Back to Orders</Link><span>{order.observedAt} · version {order.version}</span></div>{order.notice ? <StateNotice state={order.notice.state} title={order.notice.title} description={order.notice.description} /> : null}<div className="state-pair"><Card className="business-state-card"><CardHeader><div><p className="section-kicker">Order state · Order record</p><CardTitle>{order.orderLabel}</CardTitle></div><StatusBadge state={order.orderState} /></CardHeader><CardContent><p>{order.createEvidence}</p><p className="muted-copy">Creating an Order does not confirm inventory reservation.</p></CardContent></Card><Card className="business-state-card"><CardHeader><div><p className="section-kicker">Reservation state · Stock hold</p><CardTitle>{order.reservationLabel}</CardTitle></div><StatusBadge state={order.reservationState} /></CardHeader><CardContent><p>{order.reservationEvidence}</p><p className="muted-copy">Reservation is a separate trusted effect with its own evidence.</p></CardContent></Card></div><div className="entity-detail-grid"><Card><CardHeader><CardTitle>Customer and version</CardTitle></CardHeader><CardContent><BusinessFactList facts={[{ label: "Customer", value: order.customer }, { label: "Business", value: "North Shop · fixture scope" }, { label: "Order version", value: String(order.version), note: order.observedAt }, { label: "Currency", value: order.currency }]} /><Link className="context-link" href={`/customers/${order.customerId}`}>Open scoped Customer</Link></CardContent></Card><Card><CardHeader><CardTitle>Order delivery</CardTitle></CardHeader><CardContent><p>{order.orderDelivery}</p><p className="muted-copy">Logistics/fulfilment only. Unavailable is not “not shipped”.</p></CardContent></Card><Card><CardHeader><CardTitle>Message delivery</CardTitle></CardHeader><CardContent><p>{order.messageDelivery}</p><p className="muted-copy">Communication never changes the Order or Reservation effect.</p></CardContent></Card></div><Table scrollLabel={`Items for ${order.id}`}><TableCaption>Order items and independently recorded reserved quantity.</TableCaption><TableHeader><TableRow><TableHead>Product</TableHead><TableHead>SKU</TableHead><TableHead>Ordered</TableHead><TableHead>Reserved</TableHead><TableHead>Price snapshot</TableHead><TableHead>Context</TableHead></TableRow></TableHeader><TableBody>{order.lines.map((line) => <TableRow key={line.productId}><TableCell>{line.product}</TableCell><TableCell>{line.sku}</TableCell><TableCell>{line.quantity}</TableCell><TableCell>{line.reservedQuantity}</TableCell><TableCell>{line.unitPrice}</TableCell><TableCell><Link className="context-link" href={`/products?product=${line.productId}`}>Product</Link> · <Link className="context-link" href={`/inventory?product=${line.productId}`}>Inventory</Link></TableCell></TableRow>)}</TableBody></Table><Card className="safe-step-card"><CardHeader><div><p className="section-kicker">Next safe step</p><CardTitle>{order.nextStep}</CardTitle></div>{order.scenario === "e02" ? <Button disabled>Update order · restricted</Button> : null}</CardHeader><CardContent><p>{order.nextDetail}</p><div className="related-actions"><Link className="context-link" href="/conversations/c-42">Open related Conversation</Link>{["outcome-unknown", "attention", "e02"].includes(order.scenario) ? <Link className="context-link" href={`/escalations?scenario=${order.scenario === "outcome-unknown" ? "outcome-unknown" : order.scenario === "e02" ? "e02" : "waiting-human"}`}>Open related Escalation</Link> : null}</div></CardContent></Card></> : null}</BusinessBoundary></div>; }
+import { initials } from "@/components/layout/sessionDisplay";
+import { Button, Card, CardContent, CardHeader, CardTitle, StateNotice, StatusBadge } from "@/components/ui";
+import { Icon } from "@/components/ui/Icon";
+import { BusinessBoundary, BusinessFixtureBanner } from "@/features/business";
+import type { ProductState } from "@/types/states";
+import type { OrderDetailModel, OrderDetailView } from "../types";
+
+interface TimelineStep {
+  readonly title: string;
+  readonly detail: string;
+  readonly state: ProductState;
+}
+
+function timeline(order: OrderDetailView): readonly TimelineStep[] {
+  return [
+    { title: "create_order", detail: order.createEvidence, state: order.orderState },
+    { title: "reserve_inventory", detail: order.reservationEvidence, state: order.reservationState },
+    { title: "Order delivery", detail: `${order.orderDelivery} · logistics only; unavailable is not “not shipped”.`, state: "not-available" },
+    { title: "Message delivery", detail: `${order.messageDelivery} · communication never changes the Order or Reservation.`, state: order.messageDelivery.startsWith("Delivery failed") ? "message-delivery-failed" : "not-available" },
+  ];
+}
+
+/** Order detail — Figma page 02 · Order Detail: main column (state, items, timeline) and side column (customer, next steps). */
+export function OrderDetailScreen({ model }: { readonly model: OrderDetailModel }) {
+  const order = model.order;
+  return <div className="feature-page business-screen order-detail">
+    <PageHeader eyebrow="Business / Orders / Detail" title={order?.id ?? "Order detail"} description="Authoritative Order facts and separate Reservation evidence." />
+    <BusinessFixtureBanner family="Order detail" />
+    <BusinessBoundary state={model.validationState} family="Order detail" emptyDescription="No matching Order exists in the deterministic fixture set.">{order ? <>
+      <Link className="back-link" href="/orders"><Icon name="chevronLeft" size={16} />Back to orders</Link>
+      <header className="order-detail__title">
+        <h2 className="type-h1">Order #{order.id}</h2>
+        <StatusBadge state={order.orderState} />
+        <StatusBadge state={order.reservationState} />
+        <p>{order.observedAt} · {order.channel} · version {order.version}</p>
+      </header>
+      {order.notice ? <StateNotice state={order.notice.state} title={order.notice.title} description={order.notice.description} /> : null}
+      <div className="detail-layout">
+        <div className="detail-layout__main">
+          <Card>
+            <CardHeader><CardTitle>Order and reservation</CardTitle></CardHeader>
+            <CardContent className="state-pair">
+              <div className="state-box">
+                <div className="state-box__head"><span>Order state</span><StatusBadge state={order.orderState} /></div>
+                <strong>{order.orderLabel}</strong>
+                <p>{order.createEvidence}</p>
+              </div>
+              <div className="state-box">
+                <div className="state-box__head"><span>Reservation state</span><StatusBadge state={order.reservationState} /></div>
+                <strong>{order.reservationLabel}</strong>
+                <p>{order.reservationEvidence}</p>
+              </div>
+              <p className="muted-copy state-pair__note">Creating an Order does not confirm inventory reservation. Reservation is a separate trusted effect with its own evidence.</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader><CardTitle>Items</CardTitle></CardHeader>
+            <CardContent>
+              <ul className="order-items" aria-label={`Items for ${order.id}`}>
+                {order.lines.map((line) => <li key={line.productId}>
+                  <span className="order-items__icon"><Icon name="box" size={18} /></span>
+                  <span className="order-items__text">
+                    <strong>{line.product}</strong>
+                    <span>{line.sku} · ordered {line.quantity} · reserved {line.reservedQuantity}</span>
+                    <span><Link className="context-link" href={`/products?product=${line.productId}`}>Product</Link> · <Link className="context-link" href={`/inventory?product=${line.productId}`}>Inventory</Link></span>
+                  </span>
+                  <strong className="cell-number">{line.unitPrice}</strong>
+                </li>)}
+              </ul>
+              <dl className="order-totals">
+                <div><dt>Total</dt><dd>{order.total}</dd></div>
+                <div><dt>Currency</dt><dd>{order.currency}</dd></div>
+              </dl>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader><CardTitle>What happened</CardTitle></CardHeader>
+            <CardContent>
+              <ol className="timeline">
+                {timeline(order).map((step) => <li key={step.title}>
+                  <span className="timeline__dot" aria-hidden="true" />
+                  <span className="timeline__text"><strong>{step.title}</strong><span>{step.detail}</span></span>
+                  <StatusBadge state={step.state} />
+                </li>)}
+              </ol>
+            </CardContent>
+          </Card>
+        </div>
+        <aside className="detail-layout__side">
+          <Card>
+            <CardHeader><CardTitle>Customer</CardTitle></CardHeader>
+            <CardContent className="customer-card">
+              <div className="customer-card__who">
+                <span className="avatar-initials avatar-initials--soft" aria-hidden="true">{initials(order.customer.replace(" · demo", ""))}</span>
+                <span><strong>{order.customer}</strong><span>{order.phone}</span></span>
+              </div>
+              <p className="muted-copy">North Shop · fixture scope</p>
+              <Link className="button button--secondary" href={`/customers/${order.customerId}`}>Open customer</Link>
+              <Link className="button button--secondary" href="/conversations/c-42">Open related Conversation</Link>
+            </CardContent>
+          </Card>
+          <Card className="safe-step-card">
+            <CardHeader><div><p className="section-kicker">Next safe step</p><CardTitle>{order.nextStep}</CardTitle></div></CardHeader>
+            <CardContent className="next-steps">
+              <p>{order.nextDetail}</p>
+              {order.scenario === "e02" ? <Button disabled>Update order · restricted</Button> : null}
+              {["outcome-unknown", "attention", "e02"].includes(order.scenario) ? <Link className="button button--primary" href={`/escalations?scenario=${order.scenario === "outcome-unknown" ? "outcome-unknown" : order.scenario === "e02" ? "e02" : "waiting-human"}`}>Open related Escalation</Link> : null}
+            </CardContent>
+          </Card>
+        </aside>
+      </div>
+    </> : null}</BusinessBoundary>
+  </div>;
+}
