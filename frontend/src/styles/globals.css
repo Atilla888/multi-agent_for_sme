@@ -81,6 +81,8 @@
   --status-waiting-bg: var(--color-indigo-50);
   --status-information: var(--color-blue-700);
   --status-information-bg: var(--color-blue-50);
+  --status-info: var(--status-information);
+  --status-info-bg: var(--status-information-bg);
   --chart-actual: var(--color-indigo-600);
   --chart-predicted: var(--color-violet-700);
   --chart-grid: var(--color-neutral-200);
@@ -100,6 +102,7 @@
   --space-2: 8px;
   --space-3: 12px;
   --space-4: 16px;
+  --space-5: 20px;
   --space-6: 24px;
   --space-8: 32px;
   --space-12: 48px;
@@ -130,6 +133,7 @@
   --type-metric-line: 34px;
 
   --shadow-base: none;
+  --shadow-sm: 0 1px 2px rgb(17 24 39 / 0.06);
   --shadow-floating: 0 1px 2px rgb(17 24 39 / 0.06), 0 4px 12px rgb(17 24 39 / 0.06);
   --sidebar-width: 240px;
   --rail-width: 76px;
@@ -2333,19 +2337,21 @@ textarea.field__control {
 
 /* P5F Forecasts */
 .forecasts-screen { align-content: start; }
+/* Figma Forecasts: warning banner with the reason, the MODEL_NOT_READY badge and a way back to Analytics. */
 .forecast-current-banner {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
+  padding: var(--space-4) var(--space-6);
   color: var(--foreground);
-  background: var(--surface-muted);
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--foreground-muted);
-  border-radius: var(--radius-md);
-  font-size: var(--type-small-size);
+  background: var(--status-warning-bg);
+  border: 1px solid color-mix(in srgb, var(--status-warning) 35%, transparent);
+  border-radius: var(--radius-lg);
 }
-.forecast-current-banner strong { flex: 0 0 auto; letter-spacing: 0.04em; }
+.forecast-current-banner > div { display: grid; flex: 1 1 auto; gap: var(--space-2); }
+.forecast-current-banner h2 { margin: 0; font-size: var(--type-card-size); font-weight: 600; line-height: var(--type-card-line); }
+.forecast-current-banner p { margin: 0; font-size: var(--type-small-size); line-height: var(--type-small-line); }
+.forecast-current-banner__icon { width: 24px; height: 24px; display: inline-grid; flex: 0 0 auto; place-items: center; color: var(--foreground-inverse); background: var(--status-warning); border-radius: var(--radius-pill); font-weight: 700; }
 .forecast-readiness-grid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.65fr); gap: var(--space-4); align-items: start; }
 .forecast-readiness-card .card__header,
 .forecast-target-boundary .card__header { align-items: flex-start; justify-content: space-between; flex-wrap: wrap; }
@@ -3194,4 +3200,204 @@ ol.decision-sections {
 .decision-step--human-decision .decision-step__number {
   color: var(--primary);
   background: var(--primary-soft);
+}
+
+/* Sign in — Figma page 02 · Sign in: indigo brand panel and a sign-in card. */
+.signin {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  background: var(--background);
+}
+
+.signin__brand {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--space-8);
+  padding: var(--space-12);
+  color: var(--foreground-inverse);
+  background: var(--primary);
+}
+
+.signin__logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0;
+  font-weight: 600;
+}
+
+.signin__brand .sidebar__logo {
+  color: var(--primary);
+  background: var(--surface);
+}
+
+.signin__pitch {
+  max-width: 480px;
+  display: grid;
+  gap: var(--space-4);
+}
+
+.signin__pitch h2 {
+  margin: 0;
+  font-size: var(--type-h1-size);
+  font-weight: 700;
+  line-height: var(--type-h1-line);
+}
+
+.signin__pitch p,
+.signin__footnote {
+  margin: 0;
+  color: color-mix(in srgb, var(--foreground-inverse) 80%, transparent);
+  font-size: var(--type-small-size);
+}
+
+.signin__pitch ul {
+  display: grid;
+  gap: var(--space-3);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  font-size: var(--type-small-size);
+}
+
+.signin__pitch li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.signin__pitch li span {
+  width: 20px;
+  height: 20px;
+  display: inline-grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--foreground-inverse) 18%, transparent);
+  border-radius: var(--radius-pill);
+  font-size: var(--type-caption-size);
+}
+
+.signin__panel {
+  display: grid;
+  place-items: center;
+  padding: var(--space-8) var(--space-4);
+}
+
+.signin__card {
+  width: min(400px, 100%);
+  gap: var(--space-4);
+  box-shadow: var(--shadow-floating);
+}
+
+.signin__card h1 {
+  margin: 0 0 var(--space-1);
+}
+
+.signin__card p {
+  margin: 0;
+}
+
+.signin__card .button {
+  width: 100%;
+}
+
+@media (max-width: 1100px) {
+  .signin {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .signin__brand {
+    padding: var(--space-8) var(--space-6);
+  }
+}
+
+@media (max-width: 640px) {
+  .signin__pitch p,
+  .signin__pitch ul,
+  .signin__footnote {
+    display: none;
+  }
+
+  .signin__brand {
+    gap: var(--space-4);
+    padding: var(--space-6) var(--space-4);
+  }
+}
+
+/* Customer Web Chat — Figma page 02 · Web Chat: compact widget, customer bubbles on the right in the
+   primary color, store replies on the left in gray, rounded composer. */
+.customer-chat-shell {
+  width: min(100%, 480px);
+  box-shadow: var(--shadow-floating);
+}
+
+.webchat-header {
+  color: var(--foreground-inverse);
+  background: var(--primary);
+  border-bottom: 0;
+}
+
+.webchat-header .card__label,
+.webchat-header__status,
+.webchat-header p {
+  color: color-mix(in srgb, var(--foreground-inverse) 80%, transparent);
+}
+
+.webchat-timeline {
+  background: var(--surface);
+}
+
+.webchat-message article {
+  width: min(86%, 360px);
+  background: var(--surface-muted);
+  border: 0;
+  border-radius: var(--radius-lg) var(--radius-lg) var(--radius-lg) var(--radius-sm);
+}
+
+.webchat-message--customer article {
+  color: var(--foreground-inverse);
+  background: var(--primary);
+  border-radius: var(--radius-lg) var(--radius-lg) var(--radius-sm) var(--radius-lg);
+}
+
+.webchat-message--customer header span,
+.webchat-message--customer footer {
+  color: color-mix(in srgb, var(--foreground-inverse) 75%, transparent);
+}
+
+.webchat-composer .field__control {
+  border-radius: var(--radius-lg);
+}
+
+@media (max-width: 640px) {
+  .customer-chat-page {
+    padding: 0;
+  }
+
+  .customer-chat-shell {
+    width: 100%;
+    min-height: 100vh;
+    border: 0;
+    border-radius: 0;
+  }
+}
+
+.forecast-current-banner > .button {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .filter-chips {
+    flex: 1 1 100%;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+
+  .filter-chip {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
 }

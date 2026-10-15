@@ -10,7 +10,8 @@ describe("P5F Forecasts", () => {
     const markup = renderToStaticMarkup(<ForecastsScreen model={model} />);
     expect(model.capability?.status).toBe("MODEL_NOT_READY");
     expect(model.capability?.errorCode).toBe("DEPENDENCY_UNAVAILABLE");
-    expect(markup).toContain("CURRENT ENGINEERING STATE");
+    expect(markup).toContain("The forecast model is not ready yet");
+    expect(markup).toContain("No validated model artifact or forecast result exists");
     expect(markup).toContain("MODEL_NOT_READY");
     expect(markup).toContain("No prediction has been produced");
   });
