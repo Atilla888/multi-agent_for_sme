@@ -11,6 +11,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from platform_backend.api.configuration import HttpServices, trusted_url
 from platform_backend.api.reads import router
+from platform_backend.channels.routes import router as channel_router
 from platform_backend.domain.errors import DomainFailure, ErrorCode
 from platform_backend.infrastructure.settings import Settings
 
@@ -95,6 +96,7 @@ def create_app(http_services: HttpServices | None = None) -> FastAPI:
         )
 
     application.include_router(router)
+    application.include_router(channel_router)
     application.add_api_route("/health/live", liveness, methods=["GET"])
     application.add_api_route("/health/ready", readiness, methods=["GET"])
     return application

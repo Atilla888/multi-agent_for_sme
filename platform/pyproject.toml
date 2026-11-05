@@ -9,6 +9,7 @@ description = "Tenant-safe SME platform implementation with M08 development agen
 requires-python = ">=3.11,<3.14"
 dependencies = [
   "alembic==1.20.0",
+  "anthropic==1.15.0",
   "fastapi==0.116.1",
   "fastembed==0.8.1",
   "httpx==0.28.1",
