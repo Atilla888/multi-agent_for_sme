@@ -6,34 +6,32 @@ import { IntegrationsScreen } from "./components/IntegrationsScreen";
 
 function render(state = "fixture") { return renderToStaticMarkup(<IntegrationsScreen model={getIntegrationsFixtureScreen({ state })} />); }
 
-describe("P5H Integrations", () => {
-  it("renders only the approved channel categories", () => {
+describe("Channels", () => {
+  it("renders only the approved channels", () => {
     const model = getIntegrationsFixtureScreen({});
     expect(model.items.map((item) => item.channel)).toEqual(["Instagram", "WhatsApp", "Telegram", "Web Chat"]);
     const markup = render();
     for (const channel of ["Instagram", "WhatsApp", "Telegram", "Web Chat"]) expect(markup).toContain(channel);
   });
 
-  it("keeps M08 provider state truthful", () => {
+  it("says plainly that nothing is connected", () => {
     const markup = render();
-    expect(markup).toContain("M08 live channels are not accepted");
-    expect(markup).toContain("NOT CONFIGURED");
-    expect(markup).toContain("DEFERRED");
-    expect(markup).not.toMatch(/Connected|Healthy|Active LIVE/);
+    expect(markup).toContain("No channels are connected yet");
+    expect(markup).toContain("Not connected");
+    expect(markup).toContain("Not set up");
+    expect(markup).not.toMatch(/Connected<|Healthy|Active LIVE|M08|DEFERRED|fixture/);
   });
 
-  it("does not claim LIVE, MOCK, or SANDBOX mode", () => {
+  it("claims no operating mode and no verification", () => {
     const model = getIntegrationsFixtureScreen({});
     expect(model.items.every((item) => item.mode === null)).toBe(true);
-    const markup = render();
-    expect(markup).toContain("No LIVE, MOCK, or SANDBOX state is claimed");
-    expect(markup).toContain("No live verification");
+    expect(render()).toContain("No connection has been tested yet");
   });
 
-  it("keeps configuration and validation actions disabled", () => {
+  it("keeps connect and test actions disabled", () => {
     const markup = render();
-    expect(markup).toContain("Configure · unavailable");
-    expect(markup).toContain("Validate · unavailable");
+    expect(markup).toMatch(/<button[^>]*disabled=""[^>]*><span>Connect<\/span>/);
+    expect(markup).toMatch(/<button[^>]*disabled=""[^>]*><span>Test connection<\/span>/);
     expect(markup.match(/disabled=""/g)?.length).toBe(8);
   });
 
@@ -47,10 +45,10 @@ describe("P5H Integrations", () => {
     vi.unstubAllGlobals();
   });
 
-  it("keeps restricted, unavailable, empty, and loading states distinct", () => {
-    expect(render("restricted")).toContain("Integration access is restricted");
-    expect(render("unavailable")).toContain("Integration status is unavailable");
-    expect(render("empty")).toContain("No supported integration records");
-    expect(render("loading")).toContain("Loading integration status");
+  it("keeps no-access, unavailable, empty and loading distinct", () => {
+    expect(render("restricted")).toContain("don&#x27;t have access to channels");
+    expect(render("unavailable")).toContain("can&#x27;t be loaded right now");
+    expect(render("empty")).toContain("No channels yet");
+    expect(render("loading")).toContain("Loading channels");
   });
 });

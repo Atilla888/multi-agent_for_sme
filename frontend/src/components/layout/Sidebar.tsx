@@ -9,29 +9,19 @@ import type { AuthenticatedSession } from "@/types/auth";
 
 export function Sidebar({ session }: { readonly session?: AuthenticatedSession }) {
   const pathname = usePathname();
+  const business = businessLabel(session);
 
   return (
     <aside className="sidebar">
       <div className="sidebar__brand">
-        <span className="sidebar__logo" aria-hidden="true">MA</span>
+        <span className="sidebar__logo" aria-hidden="true">{initials(business)}</span>
         <span className="sidebar__brand-text">
-          <strong>Multi-Agent</strong>
-          <span>Retail Ops Platform</span>
+          <strong>{business}</strong>
+          <span>Retail Ops workspace</span>
         </span>
       </div>
 
-      <button className="business-context" type="button" disabled aria-describedby="business-context-note">
-        <span className="business-context__text">
-          <span>Business</span>
-          <strong>{businessLabel(session)}</strong>
-        </span>
-        <Icon name="chevronRight" size={16} />
-      </button>
-      <p className="sr-only" id="business-context-note">
-        Business context comes from the authorized backend session; switching is not available yet.
-      </p>
-
-      <nav aria-label="Staff workspace">
+      <nav aria-label="Main">
         <ul className="nav-list">
           {staffNavigation.map((area) => (
             <SidebarSection area={area} pathname={pathname} key={area.label} />
@@ -42,7 +32,7 @@ export function Sidebar({ session }: { readonly session?: AuthenticatedSession }
       <div className="account-boundary">
         <span className="avatar-initials" aria-hidden="true">{session ? initials(session.displayName) : "?"}</span>
         <span className="account-boundary__text">
-          <strong>{session?.displayName ?? "Keycloak not connected"}</strong>
+          <strong>{session?.displayName ?? "Not signed in"}</strong>
           <span>{roleLabel(session)}</span>
         </span>
         {session ? (

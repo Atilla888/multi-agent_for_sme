@@ -11,5 +11,5 @@ export interface CustomerDetailView extends CustomerListItem {
   readonly version: number; readonly channelIdentities: readonly string[]; readonly relatedConversations: readonly CustomerRelation[];
   readonly relatedOrders: readonly CustomerRelation[]; readonly provenance: string;
 }
-export interface CustomerScreenModel { readonly mode: "LOCAL UI FIXTURE ONLY"; readonly validationState: BusinessValidationState; readonly items: readonly CustomerListItem[]; readonly query: string; readonly status: string; }
-export interface CustomerDetailModel { readonly mode: "LOCAL UI FIXTURE ONLY"; readonly validationState: BusinessValidationState; readonly customer: CustomerDetailView | null; }
+export interface CustomerScreenModel { readonly mode: "sample"; readonly validationState: BusinessValidationState; readonly items: readonly CustomerListItem[]; readonly query: string; readonly status: string; }
+export interface CustomerDetailModel { readonly mode: "sample"; readonly validationState: BusinessValidationState; readonly customer: CustomerDetailView | null; }

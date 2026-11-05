@@ -16,7 +16,7 @@ export function matchNavigation(query: string, items: readonly NavItem[] = flatN
   );
 }
 
-/** Header search (Figma Input / Search). It searches screens only; record search lives on each screen. */
+/** Header search: type a screen name and press Enter to jump there. Record search lives on each screen. */
 export function NavigationSearch() {
   const router = useRouter();
   const id = useId();
@@ -36,12 +36,12 @@ export function NavigationSearch() {
   return (
     <form className="header-search" role="search" onSubmit={submit}>
       <label className="sr-only" htmlFor={`${id}-input`}>Go to a screen</label>
-      <Icon name="search" size={18} />
+      <Icon name="search" size={16} />
       <input
         id={`${id}-input`}
         type="search"
         list={`${id}-screens`}
-        placeholder="Search screens…"
+        placeholder="Go to…"
         value={query}
         aria-describedby={notFound ? `${id}-status` : undefined}
         onChange={(event) => { setQuery(event.target.value); setNotFound(false); }}

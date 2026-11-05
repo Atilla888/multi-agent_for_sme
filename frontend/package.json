@@ -13,7 +13,8 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "preview": "vitest run --config scripts/preview/vitest.config.ts"
   },
   "dependencies": {
     "next": "16.4.0",

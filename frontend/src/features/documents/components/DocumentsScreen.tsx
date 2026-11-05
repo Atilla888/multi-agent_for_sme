@@ -1,50 +1,48 @@
 import Link from "next/link";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { Button, Input, SearchInput, Select, StateNotice, StatusBadge, Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui";
-import { BusinessFixtureBanner } from "@/features/business";
+import { Button, Input, SearchInput, Select, StatusBadge, Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui";
 import type { DocumentsScreenModel } from "../types";
 import { DocumentBoundary } from "./DocumentBoundary";
 
 const statusOptions = [
-  { value: "all", label: "All lifecycle states" },
-  { value: "published-current", label: "Published / current" },
-  { value: "ready-unpublished", label: "READY / unpublished" },
+  { value: "all", label: "All" },
+  { value: "published-current", label: "Published" },
+  { value: "ready-unpublished", label: "Ready to publish" },
   { value: "processing", label: "Processing" },
-  { value: "failed", label: "Failed attempt" },
-  { value: "revoked", label: "Revoked" },
+  { value: "failed", label: "Failed" },
+  { value: "revoked", label: "Removed" },
 ] as const;
 
+/** Documents: the reference material agents use when answering customers. */
 export function DocumentsScreen({ model }: { readonly model: DocumentsScreenModel }) {
   return <div className="feature-page business-screen documents-screen">
-    <PageHeader eyebrow="Knowledge / Documents" title="Documents" description="Inspect business-scoped sources, version processing and the separate current publication pointer." />
-    <BusinessFixtureBanner family="Documents" />
-    <StateNotice state="pending" title="Lifecycle facts stay separate" description="Stored does not mean READY. READY does not mean published/current. Published/current still requires request authorization before retrieval." />
-    <section className="document-controls" aria-label="Document fixture controls">
+    <PageHeader title="Documents" description="Policies and guides your AI agents can use when answering customers. A document can have several versions; only the published one is used." source="sample" />
+    <section className="document-controls" aria-label="Find and add documents">
       <form className="entity-toolbar document-filter-toolbar" action="/documents" method="get">
-        <SearchInput id="documents-search" label="Search documents" name="q" defaultValue={model.query} placeholder="Title, version or scope" description="Filters deterministic fixture rows only; no server search is claimed." />
-        <Select id="documents-status" label="Lifecycle state" name="status" defaultValue={model.status}>
+        <SearchInput id="documents-search" label="Search documents" name="q" defaultValue={model.query} placeholder="Title or version" />
+        <Select id="documents-status" label="Status" name="status" defaultValue={model.status}>
           {statusOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
         </Select>
-        <Button type="submit">Apply filters</Button>
+        <Button type="submit" variant="secondary">Apply</Button>
       </form>
-      <div className="document-upload-boundary" aria-label="Upload capability unavailable">
-        <Input id="document-upload" label="Add document version" type="file" accept=".txt,text/plain" disabled description="Plain text · UTF-8 · maximum 1 MiB. Selection is unavailable because no authenticated public upload endpoint exists." />
-        <Button disabled>Add text document · unavailable</Button>
-        <p>No file is sent and no stored, indexed or published result is claimed.</p>
+      <div className="document-upload-boundary" aria-label="Add a document">
+        <Input id="document-upload" label="Add a document" type="file" accept=".txt,text/plain" disabled description="Plain text (.txt) up to 1 MB." />
+        <Button disabled>Upload</Button>
+        <p>Uploading is not available yet. Nothing is sent from this screen.</p>
       </div>
     </section>
     <DocumentBoundary state={model.validationState}>
-      <Table scrollLabel="Document fixture records" className="documents-table">
-        <TableCaption>Local document fixtures. Lifecycle and retrieval eligibility are shown as separate facts.</TableCaption>
-        <TableHeader><TableRow><TableHead>Document</TableHead><TableHead>Scope</TableHead><TableHead>Stored version</TableHead><TableHead>Processing</TableHead><TableHead>Publication / retrieval</TableHead><TableHead>Updated</TableHead><TableHead>Action</TableHead></TableRow></TableHeader>
+      <Table scrollLabel="Documents" className="documents-table responsive-table">
+        <TableCaption className="sr-only">Documents with their processing and publishing status.</TableCaption>
+        <TableHeader><TableRow><TableHead>Document</TableHead><TableHead className="col-secondary">Who can use it</TableHead><TableHead>Latest version</TableHead><TableHead>Processing</TableHead><TableHead>Published</TableHead><TableHead className="col-secondary">Updated</TableHead><TableHead><span className="sr-only">Open</span></TableHead></TableRow></TableHeader>
         <TableBody>{model.items.map((document) => <TableRow key={document.id}>
-          <TableCell><strong>{document.title}</strong><span className="table-cell-note">{document.business} · private business scope</span></TableCell>
-          <TableCell>{document.accessLabel}</TableCell>
-          <TableCell><strong>{document.latestVersion}</strong><span className="table-cell-note">Stored source record</span></TableCell>
-          <TableCell><StatusBadge state={document.processingBadge} /><span className="table-cell-note">{document.processingLabel}</span></TableCell>
-          <TableCell><StatusBadge state={document.availabilityBadge} /><span className="table-cell-note">{document.availabilityLabel}</span><span className="table-cell-note">{document.retrievabilityLabel}</span></TableCell>
-          <TableCell>{document.updatedAt}</TableCell>
-          <TableCell><Link className="context-link" href={`/documents/${document.id}`}>Inspect versions</Link></TableCell>
+          <TableCell data-label="Document"><Link className="row-link" href={`/documents/${document.id}`}>{document.title}</Link><span className="table-cell-note">{document.business}</span></TableCell>
+          <TableCell data-label="Who can use it" className="col-secondary">{document.accessLabel}</TableCell>
+          <TableCell data-label="Latest version"><strong>{document.latestVersion}</strong></TableCell>
+          <TableCell data-label="Processing"><StatusBadge state={document.processingBadge} /><span className="table-cell-note">{document.processingLabel}</span></TableCell>
+          <TableCell data-label="Published"><StatusBadge state={document.availabilityBadge} /><span className="table-cell-note">{document.availabilityLabel}</span><span className="table-cell-note">{document.retrievabilityLabel}</span></TableCell>
+          <TableCell data-label="Updated" className="col-secondary">{document.updatedAt}</TableCell>
+          <TableCell data-label=""><Link className="context-link" href={`/documents/${document.id}`}>View</Link></TableCell>
         </TableRow>)}</TableBody>
       </Table>
     </DocumentBoundary>

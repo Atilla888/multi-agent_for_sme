@@ -29,6 +29,7 @@ npm run start      # serve a completed production build
 npm run lint       # ESLint, including Next.js and TypeScript rules
 npm run typecheck  # strict TypeScript check without output
 npm test           # Vitest unit/component smoke tests
+npm run preview    # render every screen with sample data to .preview/*.html for design review
 ```
 
 Vitest was selected because the foundation needs fast TypeScript unit and server-rendered component checks, not a heavyweight browser/E2E stack. No Redux, forms framework, chart library, or API-codegen tool is installed in P5A.
@@ -50,7 +51,7 @@ Available health routes are:
 - `GET /health/live`
 - `GET /health/ready`
 
-P5I adds authenticated `GET /me`, `/products`, `/products/{id}`, `/inventory`, `/customers/{id}`, `/orders/{id}` and `/analytics/sales` over existing services. `src/services/api` centralizes server bearer/business scope, typed DTO validation, timeout, semantic errors and request UUIDs. No generic tool RPC or business mutation is exposed.
+P5I adds authenticated `GET /me`, `/products`, `/products/{id}`, `/inventory`, `/customers/{id}`, `/orders/{id}` and `/analytics/sales` over existing services. The WhatsApp demo adds `GET /conversations` and `GET /conversations/{id}`, which the Inbox reads when a staff member is signed in (see [the WhatsApp demo guide](../docs/WHATSAPP_DEMO.md)). `src/services/api` centralizes server bearer/business scope, typed DTO validation, timeout, semantic errors and request UUIDs. No generic tool RPC or business mutation is exposed.
 
 Keycloak/OIDC remains the identity authority. Configure server-only APP_ORIGIN, API_SERVER_BASE_URL, OIDC_ISSUER, OIDC_CLIENT_ID and APP_BUSINESS_ID in an ignored runtime env; OIDC_CLIENT_SECRET is optional for a confidential client. Register exact `/api/auth/callback` and `/login` post-logout URLs, S256 PKCE and the existing backend audience. Provision the actual issuer/subject application user and business membership. See [the auth decision](../docs/frontend/P5I_AUTH_DECISION.md). Backend transport uses optional `platform/infra/compose/compose.p5i.yaml` with explicit OIDC/CORS settings.
 
@@ -58,7 +59,14 @@ Passwords are collected only by Keycloak. Browser stores only an opaque HttpOnly
 
 ## Design and route status
 
-The implementation follows `docs/DESIGN.md`, Figma `03C` design-system material, the `03D` high-fidelity source, and `03E` interaction semantics. The staff shell is desktop-primary; `/chat` is a separate, mobile-important customer surface. Inter is referenced with system fallbacks because no approved redistributable local font asset is present.
+The UI is written for shop owners and operators, not engineers. Design rules, all in `src/styles/globals.css` and the shared components:
+
+- One accent colour, hairline borders, translucent sidebar and toolbar, the system font stack, and a dark variant that follows the OS. Reduced motion, reduced transparency and high contrast are respected.
+- Every screen starts with the same header: title, one-sentence purpose, and a **Sample data** or **Live data** tag instead of a banner. Status badges use plain words (`Needs checking`, `Needs a person`, `Not ready yet`) that map one-to-one onto the backend states in `src/types/states.ts`; the meaning of each state is unchanged, only the wording.
+- Sidebar labels are plain language (Inbox, Needs review, Reports, Channels, Activity log, AI activity); the routes behind them are unchanged. Screens that need an extra permission show a lock instead of a text marker.
+- Controls that are not available yet are shown disabled with a short note next to them. Nothing is labelled with internal phase or milestone codes.
+
+`npm run preview` renders every screen with sample data into `.preview/` (git-ignored) so the design can be reviewed in a browser without Keycloak or the backend; `PREVIEW_THEME=dark npm run preview` renders the dark variant. The staff shell is desktop-primary with a tablet icon rail and a phone tab bar; `/chat` is a separate, mobile-first customer surface.
 
 Screen implementations reuse the approved system; their REAL/FIXTURE/UNAVAILABLE/TARGET status is explicit in the matrix. Current limits stay explicit:
 

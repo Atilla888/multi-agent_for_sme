@@ -11,7 +11,7 @@ export interface ForecastCapability {
 }
 
 export interface ForecastScreenModel {
-  readonly mode: "LOCAL CURRENT-STATE REPRESENTATION";
+  readonly mode: "sample";
   readonly state: ForecastViewState;
   readonly capability: ForecastCapability | null;
 }

@@ -4,32 +4,31 @@ import { getCustomerDetailFixture, getCustomerFixtureScreen } from "./adapters/f
 import { CustomerDetailScreen } from "./components/CustomerDetailScreen";
 import { CustomersScreen } from "./components/CustomersScreen";
 
-describe("P5D Customers fixture boundary", () => {
-  it("renders a scoped customer list with accessible detail links", () => {
+describe("Customers", () => {
+  it("renders the list with sample-data labelling and detail links", () => {
     const markup = renderToStaticMarkup(<CustomersScreen model={getCustomerFixtureScreen({})} />);
-    expect(markup).toContain("LOCAL UI FIXTURE ONLY");
-    expect(markup).toContain("Customer fixture records");
+    expect(markup).toContain("Sample data");
     expect(markup).toContain("/customers/cust-1042");
-    expect(markup).not.toContain("no unrestricted PII");
+    expect(markup).not.toMatch(/fixture|PII/);
   });
 
-  it("filters deterministic fixtures without a network contract", () => {
+  it("filters the sample records without a network call", () => {
     const model = getCustomerFixtureScreen({ q: "C-1043", status: "waiting-human" });
     expect(model.items).toHaveLength(1);
     expect(model.items[0]?.reference).toBe("C-1043");
   });
 
-  it("keeps valid empty and permission denial distinct", () => {
-    expect(renderToStaticMarkup(<CustomersScreen model={getCustomerFixtureScreen({ state: "empty" })} />)).toContain("No customers in this fixture view");
+  it("keeps an empty result and no access distinct", () => {
+    expect(renderToStaticMarkup(<CustomersScreen model={getCustomerFixtureScreen({ state: "empty" })} />)).toContain("No customers found");
     const restricted = renderToStaticMarkup(<CustomersScreen model={getCustomerFixtureScreen({ state: "restricted" })} />);
-    expect(restricted).toContain("Permission denied");
+    expect(restricted).toContain("don&#x27;t have access");
     expect(restricted).not.toContain("Amina S.");
   });
 
-  it("renders permitted Customer to Order relationships without unrestricted PII", () => {
+  it("links a customer to their orders and keeps the details minimal", () => {
     const markup = renderToStaticMarkup(<CustomerDetailScreen model={getCustomerDetailFixture("cust-1042", undefined)} />);
-    expect(markup).toContain("Related orders");
+    expect(markup).toContain("Orders");
     expect(markup).toContain("/orders/ORD-1042");
-    expect(markup).toContain("no unrestricted PII");
+    expect(markup).toContain("Only the details needed for support are shown");
   });
 });

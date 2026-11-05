@@ -70,7 +70,7 @@ export type ConversationScenario =
   | "delivery-failure";
 
 export interface ConversationScreenModel {
-  readonly mode: "LOCAL UI FIXTURE ONLY";
+  readonly mode: "sample";
   readonly items: readonly ConversationListItem[];
   readonly selected: ConversationWorkspace | null;
   readonly validationState: ConversationValidationState;

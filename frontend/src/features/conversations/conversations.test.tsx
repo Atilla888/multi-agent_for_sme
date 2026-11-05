@@ -5,8 +5,8 @@ import { ConversationsScreen } from "./components/ConversationsScreen";
 import { demoConversationItems, demoConversationWorkspace } from "./fixtures/demoConversations";
 import { getConversationFixtureScreen, parseConversationScenario, parseConversationValidationState } from "./adapters/fixtureAdapter";
 
-describe("P5C conversation fixture boundary", () => {
-  it("renders the deterministic list and route-based selected state", () => {
+describe("Inbox", () => {
+  it("renders the list and the selected conversation", () => {
     const markup = renderToStaticMarkup(<ConversationList items={demoConversationItems} selectedId="c-42" />);
     expect(markup).toContain("Amina S.");
     expect(markup).toContain('href="/conversations/c-42"');
@@ -14,14 +14,14 @@ describe("P5C conversation fixture boundary", () => {
     expect(markup).toContain("Unread");
   });
 
-  it("keeps fixture and parser behavior deterministic", () => {
+  it("parses scenarios and states deterministically", () => {
     expect(parseConversationScenario("handoff")).toBe("handoff");
     expect(parseConversationScenario("invented")).toBe("default");
     expect(parseConversationValidationState("loading")).toBe("loading");
     expect(getConversationFixtureScreen("default", "default", "missing").selected).toBeNull();
   });
 
-  it("renders explicit actor identities without a fourth orchestrator agent", () => {
+  it("names every actor and never a fourth orchestrator agent", () => {
     const markup = renderToStaticMarkup(<ConversationsScreen model={getConversationFixtureScreen("default", "default")} />);
     expect(markup).toContain("Customer");
     expect(markup).toContain("Support Agent");
@@ -29,33 +29,39 @@ describe("P5C conversation fixture boundary", () => {
     expect(markup).not.toContain("Orchestrator Agent");
   });
 
-  it("renders loading and valid empty states without pretending backend proof", () => {
+  it("keeps loading and empty distinct", () => {
     const loading = renderToStaticMarkup(<ConversationsScreen model={getConversationFixtureScreen("loading", "default")} />);
     const empty = renderToStaticMarkup(<ConversationsScreen model={getConversationFixtureScreen("empty", "default")} />);
-    expect(loading).toContain("Loading selected conversation");
-    expect(empty).toContain("No conversations in this fixture view");
-    expect(empty).toContain("does not prove");
+    expect(loading).toContain("Loading the open conversation");
+    expect(empty).toContain("No conversations yet");
   });
 
-  it("marks the unavailable M08 boundary and disables message sending", () => {
+  it("explains that messaging is not connected and disables sending", () => {
     const markup = renderToStaticMarkup(<ConversationsScreen model={getConversationFixtureScreen("m08-unavailable", "default")} />);
-    expect(markup).toContain("M08 external provider/channel delivery remains PARTIAL / BLOCKED / DEFERRED");
+    expect(markup).toContain("Live messaging is not connected yet");
     expect(markup).toMatch(/<button[^>]*disabled[^>]*><span>Send message<\/span><\/button>/);
-    expect(markup).toContain("not a live backend session or channel");
+    expect(markup).not.toMatch(/M08|fixture|backend/);
   });
 
-  it("represents Support to Sales handoff without transferring permission", () => {
+  it("hands over from Support to Sales without transferring access", () => {
     const workspace = demoConversationWorkspace("handoff");
     const text = workspace.messages.map((message) => message.body).join(" ");
     expect(workspace.handler).toBe("Sales Agent");
-    expect(text).toContain("permissions did not transfer");
-    expect(workspace.notice?.description).toContain("not live adaptive orchestration");
+    expect(text).toContain("access rights were not");
+    expect(workspace.notice?.description).toContain("do not transfer");
   });
 
-  it("keeps message delivery failure separate from a confirmed business effect", () => {
+  it("keeps a failed message separate from a confirmed reservation", () => {
     const markup = renderToStaticMarkup(<ConversationsScreen model={getConversationFixtureScreen("default", "delivery-failure")} />);
-    expect(markup).toContain("The reservation remains confirmed");
-    expect(markup).toContain("Retry communication only");
-    expect(markup).toContain("do not replay reserve_inventory");
+    expect(markup).toContain("The stock reservation is done");
+    expect(markup).toContain("Resend the message only");
+    expect(markup).toContain("must not be repeated");
+  });
+
+  it("asks for a check instead of a retry when the reservation outcome is unknown", () => {
+    const markup = renderToStaticMarkup(<ConversationsScreen model={getConversationFixtureScreen("default", "outcome-unknown")} />);
+    expect(markup).toContain("may have gone through");
+    expect(markup).toContain("do not try to reserve again");
+    expect(markup).not.toContain("OUTCOME_UNKNOWN");
   });
 });

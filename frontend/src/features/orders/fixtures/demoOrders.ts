@@ -1,21 +1,73 @@
 import type { OrderDetailView, OrderListItem, OrderScenario } from "../types";
+
+/** Sample orders. Each one shows a different situation a shop can run into. */
 export const demoOrderItems: readonly OrderListItem[] = [
-  { id: "ORD-1042", customerId: "cust-1042", customer: "Amina S. · demo", phone: "+7 701 ••• 42 10", channel: "Instagram", items: "Desk Lamp / Slate × 1", total: "₸ 24 900", orderLabel: "Created", orderState: "confirmed", reservationLabel: "Confirmed", reservationState: "confirmed", updated: "10:43 · current", attention: "None", scenario: "confirmed" },
-  { id: "ORD-1043", customerId: "cust-1043", customer: "Demo Customer B", phone: "+7 702 ••• 18 33", channel: "Web Chat", items: "Desk Lamp / Slate × 1", total: "₸ 24 900", orderLabel: "Created", orderState: "confirmed", reservationLabel: "Known failure", reservationState: "known-failure", updated: "10:43 · observed", attention: "Review inventory", scenario: "failed" },
-  { id: "ORD-1044", customerId: "cust-1042", customer: "Amina S. · demo", phone: "+7 701 ••• 42 10", channel: "WhatsApp", items: "Desk Lamp / Slate × 1", total: "₸ 24 900", orderLabel: "Created", orderState: "confirmed", reservationLabel: "OUTCOME_UNKNOWN", reservationState: "outcome-unknown", updated: "10:43 · pending", attention: "Reconcile before retry", scenario: "outcome-unknown" },
-  { id: "ORD-1045", customerId: "cust-1043", customer: "Demo Customer B", phone: "+7 702 ••• 18 33", channel: "Telegram", items: "Desk Lamp / Slate × 1", total: "₸ 24 900", orderLabel: "Needs attention", orderState: "waiting-human", reservationLabel: "Known failure", reservationState: "known-failure", updated: "10:47 · review", attention: "Human attention", scenario: "attention" },
-  { id: "ORD-1046", customerId: "cust-1042", customer: "Amina S. · demo", phone: "+7 701 ••• 42 10", channel: "Instagram", items: "Desk Lamp / Slate × 1", total: "₸ 24 900", orderLabel: "Stale / conflict", orderState: "stale-conflict", reservationLabel: "Confirmed · observed", reservationState: "confirmed", updated: "10:43 · stale", attention: "Refresh facts", scenario: "stale" },
-  { id: "ORD-1047", customerId: "cust-1042", customer: "Amina S. · demo", phone: "+7 701 ••• 42 10", channel: "WhatsApp", items: "Desk Lamp / Slate × 1", total: "₸ 24 900", orderLabel: "Created", orderState: "confirmed", reservationLabel: "Confirmed", reservationState: "confirmed", updated: "10:43 · policy", attention: "E02 restricted", scenario: "e02" },
+  { id: "ORD-1042", customerId: "cust-1042", customer: "Amina S.", phone: "+7 701 ••• 42 10", channel: "Instagram", items: "Desk Lamp / Slate × 1", total: "₸ 24 900", orderLabel: "Created", orderState: "confirmed", reservationLabel: "Reserved", reservationState: "confirmed", updated: "Today 10:43", attention: "None", scenario: "confirmed" },
+  { id: "ORD-1043", customerId: "cust-1043", customer: "Bekzat T.", phone: "+7 702 ••• 18 33", channel: "Web Chat", items: "Desk Lamp / Slate × 1", total: "₸ 24 900", orderLabel: "Created", orderState: "confirmed", reservationLabel: "Not reserved", reservationState: "known-failure", updated: "Today 10:43", attention: "Check stock", scenario: "failed" },
+  { id: "ORD-1044", customerId: "cust-1042", customer: "Amina S.", phone: "+7 701 ••• 42 10", channel: "WhatsApp", items: "Desk Lamp / Slate × 1", total: "₸ 24 900", orderLabel: "Created", orderState: "confirmed", reservationLabel: "Needs checking", reservationState: "outcome-unknown", updated: "Today 10:43", attention: "Check before retrying", scenario: "outcome-unknown" },
+  { id: "ORD-1045", customerId: "cust-1043", customer: "Bekzat T.", phone: "+7 702 ••• 18 33", channel: "Telegram", items: "Desk Lamp / Slate × 1", total: "₸ 24 900", orderLabel: "Needs a person", orderState: "waiting-human", reservationLabel: "Not reserved", reservationState: "known-failure", updated: "Today 10:47", attention: "Needs a decision", scenario: "attention" },
+  { id: "ORD-1046", customerId: "cust-1042", customer: "Amina S.", phone: "+7 701 ••• 42 10", channel: "Instagram", items: "Desk Lamp / Slate × 1", total: "₸ 24 900", orderLabel: "May be out of date", orderState: "stale-conflict", reservationLabel: "Reserved (older record)", reservationState: "confirmed", updated: "Today 10:43", attention: "Refresh", scenario: "stale" },
+  { id: "ORD-1047", customerId: "cust-1042", customer: "Amina S.", phone: "+7 701 ••• 42 10", channel: "WhatsApp", items: "Desk Lamp / Slate × 1", total: "₸ 24 900", orderLabel: "Created", orderState: "confirmed", reservationLabel: "Reserved", reservationState: "confirmed", updated: "Today 10:43", attention: "Changes blocked", scenario: "e02" },
 ] as const;
+
 const scenarioCopy: Record<OrderScenario, Pick<OrderDetailView, "createEvidence" | "reservationEvidence" | "orderDelivery" | "messageDelivery" | "notice" | "nextStep" | "nextDetail">> = {
-  confirmed: { createEvidence: "create_order confirmed · operation CO-1042", reservationEvidence: "reserve_inventory confirmed · reservation R-1042", orderDelivery: "Unavailable · no provider result shown", messageDelivery: "Delivery failed · communication only", notice: { state: "confirmed", title: "Order and reservation are independently confirmed", description: "The customer message failed separately. Retry communication only; never replay the confirmed reservation." }, nextStep: "Inspect related records", nextDetail: "Use current provider evidence for fulfilment questions; Order creation alone does not prove delivery." },
-  failed: { createEvidence: "create_order confirmed · Order exists", reservationEvidence: "reserve_inventory failed · known result · no stock held", orderDelivery: "No provider result shown", messageDelivery: "No communication receipt asserted", notice: { state: "known-failure", title: "Reservation failed — known result", description: "The Order exists, but inventory is not reserved. This is not OUTCOME_UNKNOWN and does not require reconciliation by default." }, nextStep: "Review current inventory", nextDetail: "Choose a newly authorized recovery after reviewing current facts. Do not create the same Order again." },
-  "outcome-unknown": { createEvidence: "create_order confirmed · Order exists", reservationEvidence: "reserve_inventory operation RI-1044 · confirmation unavailable", orderDelivery: "No provider result shown", messageDelivery: "No communication receipt asserted", notice: { state: "outcome-unknown", title: "Reservation reconciliation required", description: "The reservation may have committed. Confirmation is unavailable. Reconcile authoritative state before continuation; no blind mutation retry." }, nextStep: "Reconcile authoritative reservation state", nextDetail: "Inspect retained operation RI-1044 and authoritative effect evidence. No retry control is available." },
-  attention: { createEvidence: "create_order confirmed · Order exists", reservationEvidence: "reserve_inventory failed · known result", orderDelivery: "No provider result shown", messageDelivery: "No communication receipt asserted", notice: { state: "waiting-human", title: "Authorized human handling required", description: "The known partial outcome is clear; the permitted recovery policy still needs a human decision." }, nextStep: "Open existing escalation", nextDetail: "Review current Order and inventory facts. A human decision does not itself execute a mutation." },
-  stale: { createEvidence: "Order version 7 observed · current revision not verified", reservationEvidence: "Reservation confirmed in observed record · current fact requires revalidation", orderDelivery: "No current provider result", messageDelivery: "No communication receipt asserted", notice: { state: "stale-conflict", title: "Order facts are not decision-safe", description: "A newer or conflicting revision may exist. Refresh and re-evaluate before any consequential action." }, nextStep: "Refresh and revalidate", nextDetail: "Compare authoritative current Order and inventory facts. Do not replay a prior write." },
-  e02: { createEvidence: "create_order confirmed · no update executed", reservationEvidence: "Reservation remains independently confirmed", orderDelivery: "No provider result shown", messageDelivery: "No communication receipt asserted", notice: { state: "restricted", title: "E02 · automatic Order update restricted", description: "update_order is policy-blocked. This is not permission denial, reservation failure, or OUTCOME_UNKNOWN. No update executed." }, nextStep: "Request authorized human / policy handling", nextDetail: "A visible control cannot bypass backend policy. The known Order and Reservation states remain unchanged." },
+  confirmed: {
+    createEvidence: "Order created (ref CO-1042)",
+    reservationEvidence: "Stock reserved (ref R-1042)",
+    orderDelivery: "No delivery update yet",
+    messageDelivery: "Confirmation message to the customer was not delivered",
+    notice: { state: "confirmed", title: "Order created and stock reserved", description: "The confirmation message to the customer did not go through. Resend the message only; the order and the reservation are already done." },
+    nextStep: "Nothing to fix on the order",
+    nextDetail: "If the customer asks about delivery, check the delivery status first. A created order does not mean it has shipped.",
+  },
+  failed: {
+    createEvidence: "Order created",
+    reservationEvidence: "Stock could not be reserved",
+    orderDelivery: "No delivery update yet",
+    messageDelivery: "No message sent yet",
+    notice: { state: "known-failure", title: "Stock was not reserved", description: "The order exists, but no stock is held for it. This result is clear, so there is nothing to double-check; decide what to do next." },
+    nextStep: "Check current stock",
+    nextDetail: "Look at what is in stock now and choose what to do. Do not create the same order again.",
+  },
+  "outcome-unknown": {
+    createEvidence: "Order created",
+    reservationEvidence: "Reservation sent (ref RI-1044), no confirmation received",
+    orderDelivery: "No delivery update yet",
+    messageDelivery: "No message sent yet",
+    notice: { state: "outcome-unknown", title: "Reservation needs checking", description: "The reservation may have gone through, but no confirmation came back. Check the stock records before doing anything else, and do not try to reserve again." },
+    nextStep: "Check the stock records",
+    nextDetail: "Look up reference RI-1044 in the stock records. There is no retry button on purpose: reserving again could hold the stock twice.",
+  },
+  attention: {
+    createEvidence: "Order created",
+    reservationEvidence: "Stock could not be reserved",
+    orderDelivery: "No delivery update yet",
+    messageDelivery: "No message sent yet",
+    notice: { state: "waiting-human", title: "A person needs to decide", description: "The result is clear, but what to do next is a judgment call for your team." },
+    nextStep: "Open the review case",
+    nextDetail: "Review the order and current stock. Deciding does not change anything by itself.",
+  },
+  stale: {
+    createEvidence: "Order version 7 was seen; a newer version may exist",
+    reservationEvidence: "Stock was reserved when last seen; check it is still current",
+    orderDelivery: "No delivery update yet",
+    messageDelivery: "No message sent yet",
+    notice: { state: "stale-conflict", title: "This order may be out of date", description: "A newer version may exist. Refresh before making any decision based on it." },
+    nextStep: "Refresh and check again",
+    nextDetail: "Compare with the current order and stock records. Do not repeat an earlier change.",
+  },
+  e02: {
+    createEvidence: "Order created; no changes have been made",
+    reservationEvidence: "Stock remains reserved",
+    orderDelivery: "No delivery update yet",
+    messageDelivery: "No message sent yet",
+    notice: { state: "restricted", title: "Order changes are blocked", description: "Editing orders is switched off by policy. Nothing was changed. This is not a problem with the order or the stock." },
+    nextStep: "Ask for a manual change",
+    nextDetail: "If the order must change, use your usual manual process. Nothing on this screen can override the policy.",
+  },
 };
+
 export function demoOrderDetail(id: string, override?: OrderScenario): OrderDetailView | null {
   const row = demoOrderItems.find((item) => item.id === id); if (!row) return null; const scenario = override ?? row.scenario; const source = demoOrderItems.find((item) => item.scenario === scenario) ?? row;
-  return { ...source, id: row.id, customerId: row.customerId, customer: row.customer, scenario, version: 7, observedAt: "Order record observed 10:43", currency: "KZT", lines: [{ productId: "prod-lamp", product: "Desk Lamp / Slate", sku: "SKU-LAMP-42", quantity: "1.0000", reservedQuantity: scenario === "confirmed" || scenario === "e02" || scenario === "stale" ? "1.0000" : "0.0000", unitPrice: "24,900 KZT" }], ...scenarioCopy[scenario] };
+  return { ...source, id: row.id, customerId: row.customerId, customer: row.customer, scenario, version: 7, observedAt: "Last updated today at 10:43", currency: "KZT", lines: [{ productId: "prod-lamp", product: "Desk Lamp / Slate", sku: "SKU-LAMP-42", quantity: "1", reservedQuantity: scenario === "confirmed" || scenario === "e02" || scenario === "stale" ? "1" : "0", unitPrice: "24,900 KZT" }], ...scenarioCopy[scenario] };
 }

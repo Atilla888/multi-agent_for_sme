@@ -31,30 +31,37 @@ export type StateTone =
   | "information";
 
 export interface StatePresentation {
+  /** Short label shown in badges. Plain words, no internal codes. */
   readonly label: string;
   readonly marker: string;
   readonly tone: StateTone;
+  /** One or two plain sentences that tell a non-technical reader what to do. */
   readonly guidance: string;
 }
 
+/**
+ * How each backend state is shown to staff. The meaning of every state is fixed by the product
+ * rules (an unknown outcome is never shown as failed or done, a known failure never asks for
+ * reconciliation); only the wording is written for people who do not read code.
+ */
 export const statePresentation: Record<ProductState, StatePresentation> = {
-  "foundation-only": { label: "Foundation only", marker: "i", tone: "information", guidance: "Routing and layout exist; product behavior is not implemented in P5A." },
-  loading: { label: "Loading", marker: "…", tone: "pending", guidance: "Wait for a named result." },
-  "valid-empty": { label: "Valid empty", marker: "○", tone: "neutral", guidance: "The authorized query completed with no records." },
-  success: { label: "Success", marker: "✓", tone: "success", guidance: "The named request completed; this is not automatically a business effect." },
-  confirmed: { label: "Confirmed", marker: "✓", tone: "success", guidance: "Trusted evidence confirms the named business effect." },
-  pending: { label: "Pending", marker: "◷", tone: "pending", guidance: "A specific result or owner is still pending." },
-  processing: { label: "Processing", marker: "…", tone: "pending", guidance: "Work is active; completion is not yet confirmed." },
-  "known-failure": { label: "Known failure", marker: "×", tone: "danger", guidance: "Review current facts and choose a new authorized recovery." },
-  "permission-denied": { label: "Permission denied", marker: "⊘", tone: "restricted", guidance: "Protected values remain hidden; backend authorization is decisive." },
-  "not-available": { label: "Unavailable", marker: "—", tone: "neutral", guidance: "This capability is not currently available." },
-  "not-configured": { label: "Not configured", marker: "—", tone: "neutral", guidance: "A required integration has not been configured." },
-  "outcome-unknown": { label: "OUTCOME_UNKNOWN", marker: "?", tone: "unknown", guidance: "The effect may have committed. Reconcile authoritative state before any mutation retry." },
-  "model-not-ready": { label: "MODEL_NOT_READY", marker: "∅", tone: "neutral", guidance: "No validated forecast artifact or prediction exists; no result was produced." },
-  restricted: { label: "Restricted", marker: "⌁", tone: "restricted", guidance: "Policy blocks the action; no enabled success path is available." },
-  "waiting-human": { label: "Waiting human", marker: "◇", tone: "waiting", guidance: "Automation stopped; a human decision or assignment is pending." },
-  "stale-conflict": { label: "Stale / conflict", marker: "↻", tone: "warning", guidance: "Refresh and re-evaluate before a consequential action." },
-  "dependency-unavailable": { label: "Dependency unavailable", marker: "—", tone: "neutral", guidance: "Do not substitute zero, no match, or valid empty." },
-  "message-delivery-failed": { label: "Message delivery failed", marker: "!", tone: "danger", guidance: "Retry communication only; confirmed business effects remain confirmed." },
-  "target-only": { label: "TARGET only", marker: "T", tone: "information", guidance: "This approved target experience is not a current backend capability." },
+  "foundation-only": { label: "Coming soon", marker: "i", tone: "information", guidance: "This screen is planned but not built yet." },
+  loading: { label: "Loading", marker: "…", tone: "pending", guidance: "Please wait a moment." },
+  "valid-empty": { label: "Nothing here yet", marker: "○", tone: "neutral", guidance: "The search finished and found no records." },
+  success: { label: "Done", marker: "✓", tone: "success", guidance: "The request completed. Check the record itself for the business result." },
+  confirmed: { label: "Confirmed", marker: "✓", tone: "success", guidance: "This result has been verified." },
+  pending: { label: "Pending", marker: "◷", tone: "pending", guidance: "Waiting for a result or a decision." },
+  processing: { label: "In progress", marker: "…", tone: "pending", guidance: "Work is still running. It has not finished yet." },
+  "known-failure": { label: "Failed", marker: "×", tone: "danger", guidance: "This step did not go through. Check the latest details before choosing what to do next." },
+  "permission-denied": { label: "No access", marker: "⊘", tone: "restricted", guidance: "Your account does not have permission to see this." },
+  "not-available": { label: "Unavailable", marker: "—", tone: "neutral", guidance: "This is not available right now." },
+  "not-configured": { label: "Not set up", marker: "—", tone: "neutral", guidance: "This needs to be set up before it can be used." },
+  "outcome-unknown": { label: "Needs checking", marker: "?", tone: "unknown", guidance: "This may already have gone through. Check the records first, and do not try it again until you know." },
+  "model-not-ready": { label: "Not ready yet", marker: "∅", tone: "neutral", guidance: "The forecast model is not ready, so there is no result to show." },
+  restricted: { label: "Not allowed", marker: "⌁", tone: "restricted", guidance: "This action is blocked by policy and cannot be done from here." },
+  "waiting-human": { label: "Needs a person", marker: "◇", tone: "waiting", guidance: "Automatic handling stopped. Someone on your team needs to decide." },
+  "stale-conflict": { label: "May be out of date", marker: "↻", tone: "warning", guidance: "Refresh and check again before acting on this." },
+  "dependency-unavailable": { label: "Service unavailable", marker: "—", tone: "neutral", guidance: "We could not reach the source. This does not mean the result is empty or zero." },
+  "message-delivery-failed": { label: "Message not delivered", marker: "!", tone: "danger", guidance: "The message to the customer failed. The order itself is not affected. Resend the message only." },
+  "target-only": { label: "Planned", marker: "T", tone: "information", guidance: "This feature is planned and not available yet." },
 };

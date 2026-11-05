@@ -16,7 +16,7 @@ export interface IntegrationView {
 }
 
 export interface IntegrationsScreenModel {
-  readonly mode: "LOCAL UI FIXTURE ONLY";
+  readonly mode: "sample";
   readonly state: AdministrationViewState;
   readonly items: readonly IntegrationView[];
 }
@@ -37,7 +37,7 @@ export interface SettingsSectionView {
 }
 
 export interface SettingsScreenModel {
-  readonly mode: "LOCAL UI FIXTURE ONLY";
+  readonly mode: "sample";
   readonly state: AdministrationViewState;
   readonly sections: readonly SettingsSectionView[];
 }
@@ -57,7 +57,7 @@ export interface AuditEventView {
 }
 
 export interface AuditScreenModel {
-  readonly mode: "LOCAL UI FIXTURE ONLY";
+  readonly mode: "sample";
   readonly state: AdministrationViewState;
   readonly query: string;
   readonly items: readonly AuditEventView[];
@@ -66,9 +66,12 @@ export interface AuditScreenModel {
 
 export type SafeAgentRole = "Sales Agent" | "Support Agent" | "Analytics Agent";
 
+/** The stages of one AI run, in order: the agent proposes, the system checks, the work is done. */
+export type AgentRunPhase = "Agent proposed" | "Permission checked" | "Carried out" | "Result recorded" | "Person needed";
+
 export interface AgentRunStepView {
   readonly id: string;
-  readonly phase: "MODEL PROPOSES" | "EXECUTOR AUTHORIZES" | "DOMAIN ENFORCES" | "RESULT RECORDED" | "HUMAN REVIEW";
+  readonly phase: AgentRunPhase;
   readonly title: string;
   readonly safeSummary: string;
   readonly status: ProductState;
@@ -94,7 +97,7 @@ export interface AgentRunView {
 }
 
 export interface AgentRunsScreenModel {
-  readonly mode: "LOCAL UI FIXTURE ONLY";
+  readonly mode: "sample";
   readonly state: AdministrationViewState;
   readonly items: readonly AgentRunView[];
   readonly selected: AgentRunView | null;

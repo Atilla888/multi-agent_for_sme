@@ -2,7 +2,7 @@ import { demoDocuments } from "../fixtures/demoDocuments";
 import type { DocumentDetailModel, DocumentsScreenModel, DocumentValidationState } from "../types";
 import type { DocumentDataAdapter } from "./contracts";
 
-export const DOCUMENT_FIXTURE_MODE = "LOCAL UI FIXTURE ONLY" as const;
+export const DOCUMENT_FIXTURE_MODE = "sample" as const;
 
 function first(value: string | string[] | undefined): string {
   return Array.isArray(value) ? value[0] ?? "" : value ?? "";

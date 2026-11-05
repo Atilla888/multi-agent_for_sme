@@ -5,113 +5,109 @@ import { documentFixtureAdapter, getDocumentDetailFixture, getDocumentsFixtureSc
 import { DocumentDetailScreen } from "./components/DocumentDetailScreen";
 import { DocumentsScreen } from "./components/DocumentsScreen";
 
-describe("P5E Documents / Knowledge", () => {
-  it("renders a business-scoped document list with separate lifecycle facts", () => {
+describe("Documents", () => {
+  it("lists documents with processing and publishing shown separately", () => {
     const markup = renderToStaticMarkup(<DocumentsScreen model={getDocumentsFixtureScreen({})} />);
     expect(markup).toContain("Returns and exchanges policy");
-    expect(markup).toContain("Stored version");
+    expect(markup).toContain("Latest version");
     expect(markup).toContain("Processing");
-    expect(markup).toContain("Publication / retrieval");
-    expect(markup).toContain("North Shop · private business scope");
+    expect(markup).toContain("Published");
+    expect(markup).toContain("North Shop");
+    expect(markup).not.toMatch(/fixture|READY|lifecycle/);
   });
 
-  it("filters the local fixture list by search and lifecycle status", () => {
+  it("filters by search and status", () => {
     const search = getDocumentsFixtureScreen({ q: "shipping" });
     const status = getDocumentsFixtureScreen({ status: "failed" });
     expect(search.items.map((item) => item.id)).toEqual(["doc-shipping"]);
     expect(status.items.map((item) => item.id)).toEqual(["doc-warranty"]);
   });
 
-  it("renders loading without leaking fixture document records", () => {
+  it("renders loading without leaking document records", () => {
     const markup = renderToStaticMarkup(<DocumentsScreen model={getDocumentsFixtureScreen({ state: "loading" })} />);
-    expect(markup).toContain("Loading document records");
+    expect(markup).toContain("Loading documents");
     expect(markup).not.toContain("Returns and exchanges policy");
   });
 
-  it("distinguishes a valid empty filter result", () => {
+  it("distinguishes an empty filter result", () => {
     const markup = renderToStaticMarkup(<DocumentsScreen model={getDocumentsFixtureScreen({ q: "no matching document" })} />);
-    expect(markup).toContain("No documents in this fixture view");
-    expect(markup).toContain("No permitted document source matches");
+    expect(markup).toContain("No documents found");
+    expect(markup).toContain("No documents match this search or filter");
   });
 
-  it("fails closed for restricted access and hides protected records", () => {
+  it("fails closed for no access and hides records", () => {
     const markup = renderToStaticMarkup(<DocumentsScreen model={getDocumentsFixtureScreen({ state: "restricted" })} />);
-    expect(markup).toContain("Documents access is restricted");
-    expect(markup).toContain("Visible navigation does not grant backend access");
+    expect(markup).toContain("don&#x27;t have access to documents");
     expect(markup).not.toContain("Warranty handling guide");
   });
 
-  it("keeps source unavailability distinct from empty and failed indexing", () => {
+  it("keeps an unavailable source distinct from empty", () => {
     const markup = renderToStaticMarkup(<DocumentsScreen model={getDocumentsFixtureScreen({ state: "unavailable" })} />);
-    expect(markup).toContain("Document source is unavailable");
-    expect(markup).toContain("Do not reinterpret this as an empty collection");
+    expect(markup).toContain("can&#x27;t be loaded right now");
+    expect(markup).toContain("does not mean there are no documents");
     expect(markup).not.toContain("Warranty handling guide");
   });
 
-  it("keeps READY V2 unpublished while published V1 remains current", () => {
+  it("keeps a ready V2 unpublished while V1 stays current", () => {
     const markup = renderToStaticMarkup(<DocumentDetailScreen model={getDocumentDetailFixture("doc-shipping", {})} />);
-    expect(markup).toContain("V2 is READY but unpublished");
-    expect(markup).toContain("V1 remains the current published source");
+    expect(markup).toContain("V2 is ready but not published yet");
+    expect(markup).toContain("Agents keep using V1");
     expect(markup).toContain("V1 is current");
-    expect(markup).toContain("V2 is not retrievable");
+    expect(markup).toContain("Agents use V1 only");
   });
 
-  it("does not let a failed V2 displace active published V1", () => {
+  it("does not let a failed V2 displace published V1", () => {
     const markup = renderToStaticMarkup(<DocumentDetailScreen model={getDocumentDetailFixture("doc-warranty", {})} />);
     expect(markup).toContain("V2 failed processing");
-    expect(markup).toContain("does not displace published V1");
+    expect(markup).toContain("Agents keep using V1");
     expect(markup).toContain("V1 is current");
-    expect(markup).toContain("V1 only for authorized staff");
   });
 
-  it("does not present a stored processing version as READY or retrievable", () => {
+  it("does not present a processing version as ready or in use", () => {
     const detail = getDocumentDetailFixture("doc-operations", {});
     const markup = renderToStaticMarkup(<DocumentDetailScreen model={detail} />);
     expect(detail.document?.processingState).toBe("PROCESSING");
     expect(detail.document?.currentVersion).toBeNull();
-    expect(markup).toContain("No READY or published result is claimed");
-    expect(markup).toContain("Not retrievable");
+    expect(markup).toContain("still processing");
+    expect(markup).toContain("Not used yet");
   });
 
-  it("excludes a revoked publication from retrieval", () => {
+  it("excludes a removed document from use", () => {
     const markup = renderToStaticMarkup(<DocumentDetailScreen model={getDocumentDetailFixture("doc-retired", {})} />);
-    expect(markup).toContain("Revoked · no current version");
-    expect(markup).toContain("Excluded from retrieval");
-    expect(markup).toContain("Stored history is not an active retrieval source");
+    expect(markup).toContain("Removed");
+    expect(markup).toContain("Not used");
+    expect(markup).toContain("agents do not use them");
   });
 
-  it("shows safe provenance without raw storage or vector internals", () => {
+  it("shows file details without raw storage or vector internals", () => {
     const markup = renderToStaticMarkup(<DocumentDetailScreen model={getDocumentDetailFixture("doc-returns", {})} />);
-    expect(markup).toContain("Safe provenance");
     expect(markup).toContain("returns-policy-v1.txt");
     expect(markup).toContain("Plain text · UTF-8");
     expect(markup).not.toMatch(/bucket|object[_ -]?key|pgvector|embedding vector|vector id/i);
   });
 
-  it("renders a native disabled plain-text file control and no fake upload success", () => {
+  it("renders a disabled plain-text upload control and no fake upload success", () => {
     const markup = renderToStaticMarkup(<DocumentsScreen model={getDocumentsFixtureScreen({})} />);
     expect(markup).toMatch(/<input[^>]*type="file"[^>]*accept="\.txt,text\/plain"[^>]*disabled=""/);
-    expect(markup).toContain("Add text document · unavailable");
-    expect(markup).toContain("No file is sent");
+    expect(markup).toMatch(/<button[^>]*disabled=""[^>]*><span>Upload<\/span>/);
+    expect(markup).toContain("Nothing is sent from this screen");
     expect(markup).not.toMatch(/upload(ed)? successfully/i);
   });
 
-  it("keeps publish and revoke visibly unavailable and executes no action", () => {
+  it("keeps publish and remove visibly disabled", () => {
     const markup = renderToStaticMarkup(<DocumentDetailScreen model={getDocumentDetailFixture("doc-shipping", {})} />);
-    expect(markup).toMatch(/<button[^>]*disabled=""[^>]*><span>Publish version · unavailable<\/span>/);
-    expect(markup).toMatch(/<button[^>]*disabled=""[^>]*><span>Revoke current · unavailable<\/span>/);
-    expect(markup).toContain("No action executed");
+    expect(markup).toMatch(/<button[^>]*disabled=""[^>]*><span>Publish version<\/span>/);
+    expect(markup).toMatch(/<button[^>]*disabled=""[^>]*><span>Remove<\/span>/);
+    expect(markup).toContain("Nothing changes from this screen");
   });
 
-  it("states that RAG evidence is subordinate to authorization and structured facts", () => {
+  it("says documents inform answers but cannot change anything", () => {
     const markup = renderToStaticMarkup(<DocumentDetailScreen model={getDocumentDetailFixture("doc-returns", {})} />);
-    expect(markup).toContain("RAG evidence is not authorization");
-    expect(markup).toContain("cannot grant access");
-    expect(markup).toContain("override structured Order or Inventory facts");
-    expect(markup).toContain("trigger a business mutation");
+    expect(markup).toContain("Documents inform answers");
+    expect(markup).toContain("can&#x27;t change prices, stock, orders or who has access");
   });
 
-  it("uses a network-free fixture adapter and declares every public workflow endpoint unavailable", () => {
+  it("uses a network-free adapter and declares every workflow endpoint unavailable", () => {
     const fetchSpy = vi.fn();
     vi.stubGlobal("fetch", fetchSpy);
     documentFixtureAdapter.list("", "all");
@@ -122,7 +118,7 @@ describe("P5E Documents / Knowledge", () => {
     vi.unstubAllGlobals();
   });
 
-  it("does not create or advertise a standalone Business Brain destination", () => {
+  it("does not advertise a standalone Business Brain destination", () => {
     const list = renderToStaticMarkup(<DocumentsScreen model={getDocumentsFixtureScreen({})} />);
     const detail = renderToStaticMarkup(<DocumentDetailScreen model={getDocumentDetailFixture("doc-returns", {})} />);
     expect(`${list}${detail}`).not.toContain("Business Brain");

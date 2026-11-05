@@ -1,4 +1,5 @@
 import { ConversationsScreen, getConversationFixtureScreen, parseConversationScenario, parseConversationValidationState } from "@/features/conversations";
+import { ConversationsReadPage, fixtureReview } from "@/features/integration/serverScreens";
 
 interface ConversationDetailPageProps {
   readonly params: Promise<{ readonly id: string }>;
@@ -7,5 +8,5 @@ interface ConversationDetailPageProps {
 
 export default async function ConversationDetailPage({ params, searchParams }: ConversationDetailPageProps) {
   const [{ id }, query] = await Promise.all([params, searchParams]);
-  return <ConversationsScreen model={getConversationFixtureScreen(parseConversationValidationState(query.state), parseConversationScenario(query.scenario), id)} />;
+  return fixtureReview(query) ? <ConversationsScreen model={getConversationFixtureScreen(parseConversationValidationState(query.state), parseConversationScenario(query.scenario), id)} /> : <ConversationsReadPage query={query} id={id} />;
 }

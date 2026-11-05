@@ -30,7 +30,7 @@ export interface AnalyticsReport {
 }
 
 export interface AnalyticsScreenModel {
-  readonly mode: "LOCAL UI FIXTURE ONLY";
+  readonly mode: "sample";
   readonly state: AnalyticsViewState;
   readonly report: AnalyticsReport | null;
   readonly metric: AnalyticsMetric;

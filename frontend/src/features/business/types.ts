@@ -1,6 +1,6 @@
 export type BusinessValidationState = "default" | "loading" | "empty" | "restricted" | "unavailable";
 
-export const BUSINESS_FIXTURE_MODE = "LOCAL UI FIXTURE ONLY" as const;
+export const BUSINESS_FIXTURE_MODE = "sample" as const;
 
 export function parseBusinessValidationState(value: string | string[] | undefined): BusinessValidationState {
   const candidate = Array.isArray(value) ? value[0] : value;

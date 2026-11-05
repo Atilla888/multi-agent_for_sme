@@ -6,17 +6,16 @@ import { CustomerWebChatScreen } from "./components/CustomerWebChatScreen";
 
 function render(state: string) { return renderToStaticMarkup(<CustomerWebChatScreen model={getWebChatFixtureScreen({ state })} />); }
 
-describe("P5G Customer Web Chat", () => {
+describe("Customer Web Chat", () => {
   it("uses a separate customer shell without staff navigation", () => {
     const markup = render("active");
     expect(markup).toContain("customer-chat-shell");
     expect(markup).toContain("North Shop");
-    expect(markup).not.toContain("Staff workspace");
     expect(markup).not.toContain("Administration");
-    expect(markup).not.toContain("Business switch");
+    expect(markup).not.toContain("Needs review");
   });
 
-  it("renders customer and supported business actors with explicit identity", () => {
+  it("renders the customer and business sides with clear names", () => {
     const model = getWebChatFixtureScreen({ state: "confirmation" });
     const markup = renderToStaticMarkup(<CustomerWebChatScreen model={model} />);
     expect(model.messages.map((message) => message.actor)).toEqual(["Customer", "Sales Agent"]);
@@ -24,7 +23,7 @@ describe("P5G Customer Web Chat", () => {
     expect(markup).toContain("North Shop sales");
   });
 
-  it("keeps transport unavailable and performs no network call", () => {
+  it("keeps sending unavailable and performs no network call", () => {
     const fetchSpy = vi.fn();
     vi.stubGlobal("fetch", fetchSpy);
     webChatFixtureAdapter.getScreen("active");
@@ -32,21 +31,20 @@ describe("P5G Customer Web Chat", () => {
     expect(webChatApiContract.publicEndpoint).toBeNull();
     expect(webChatApiContract.sendMessage).toBe("UNAVAILABLE");
     const markup = render("active");
-    expect(markup).toContain("Web Chat · Not configured");
+    expect(markup).toContain("Preview");
     expect(markup).toMatch(/<textarea[^>]*disabled=""/);
-    expect(markup).toMatch(/<button[^>]*disabled=""[^>]*><span>Send · unavailable<\/span>/);
+    expect(markup).toMatch(/<button[^>]*disabled=""[^>]*><span>Send<\/span>/);
     vi.unstubAllGlobals();
   });
 
-  it("names order confirmation and disables both unavailable actions", () => {
+  it("asks for confirmation with both actions disabled", () => {
     const markup = render("confirmation");
-    expect(markup).toContain("Confirm order · unavailable");
-    expect(markup).toContain("Change details · unavailable");
-    expect(markup).toContain("This preview cannot execute it");
-    expect(markup.match(/disabled=""/g)?.length).toBeGreaterThanOrEqual(2);
+    expect(markup).toMatch(/<button[^>]*disabled=""[^>]*><span>Confirm order<\/span>/);
+    expect(markup).toMatch(/<button[^>]*disabled=""[^>]*><span>Change details<\/span>/);
+    expect(markup).toContain("This preview cannot place it");
   });
 
-  it("shows neutral processing copy without an invented customer CTA", () => {
+  it("shows neutral processing copy without an invented call to action", () => {
     const markup = render("processing");
     expect(markup).toContain("We&#x27;ll update you here when the result is available");
     expect(markup).toContain("No further action is needed right now");
@@ -54,51 +52,48 @@ describe("P5G Customer Web Chat", () => {
     expect(markup).not.toContain("Confirm order");
   });
 
-  it("protects customers from duplicate ordering after known reservation failure", () => {
+  it("protects customers from ordering twice after a reservation failure", () => {
     const markup = render("known-failure");
     expect(markup).toContain("Order ORD-1042 already exists");
     expect(markup).toContain("Item was not reserved");
     expect(markup).toContain("Please don&#x27;t place the same order again");
-    expect(markup).toContain("Ask for help · unavailable");
+    expect(markup).toMatch(/<button[^>]*disabled=""[^>]*><span>Ask for help<\/span>/);
   });
 
-  it("uses plain-language uncertain-result semantics and prevents resubmission", () => {
+  it("uses plain language for an uncertain result and prevents resubmission", () => {
     const markup = render("confirmation-pending");
     expect(markup).toContain("may have gone through");
     expect(markup).toContain("Please do not submit the same request again");
     expect(markup).not.toContain("OUTCOME_UNKNOWN");
-    expect(markup).not.toContain("ToolCall");
-    expect(markup).not.toContain("Agent Run");
   });
 
-  it("keeps confirmed business effect separate from failed message delivery", () => {
+  it("keeps a confirmed order separate from a failed message", () => {
     const markup = render("delivery-failure");
     expect(markup).toContain("Reservation remains confirmed");
     expect(markup).toContain("Message</span><strong>Not delivered");
-    expect(markup).toContain("Retry message · unavailable");
-    expect(markup).toContain("must never place the order or reserve inventory again");
+    expect(markup).toMatch(/<button[^>]*disabled=""[^>]*><span>Resend message<\/span>/);
+    expect(markup).toContain("must never place the order or reserve the item again");
   });
 
-  it("renders Waiting Human without promising completion", () => {
+  it("renders a person reviewing without promising completion", () => {
     const markup = render("waiting-human");
     expect(markup).toContain("A person is reviewing this");
     expect(markup).toContain("does not promise completion");
   });
 
-  it("keeps loading and unavailable states distinct from an empty chat", () => {
+  it("keeps loading and unavailable distinct from an empty chat", () => {
     const loading = render("loading");
     const unavailable = render("unavailable");
-    expect(loading).toContain("Loading customer conversation");
-    expect(unavailable).toContain("Customer service is unavailable");
-    expect(unavailable).toContain("No answer, send receipt, or business result is fabricated");
-    expect(unavailable).not.toContain("Customer conversation messages");
+    expect(loading).toContain("Loading your conversation");
+    expect(unavailable).toContain("Chat is unavailable right now");
+    expect(unavailable).not.toContain('aria-label="Messages"');
   });
 
-  it("contains a mobile-safe structural boundary and no internal runtime terminology", () => {
+  it("contains no internal runtime terminology in any state", () => {
     const states = ["initial", "active", "clarification", "confirmation", "processing", "confirmed", "known-failure", "waiting-human", "confirmation-pending", "delivery-failure"];
     const markup = states.map(render).join("\n");
     expect(markup).toContain("customer-chat-page");
     expect(markup).toContain("webchat-timeline");
-    expect(markup).not.toMatch(/LangGraph|Adaptive Orchestrator|raw prompt|chain-of-thought|M12|E02/);
+    expect(markup).not.toMatch(/LangGraph|Adaptive Orchestrator|raw prompt|chain-of-thought|E02 |LOCAL UI|unavailable ·/);
   });
 });

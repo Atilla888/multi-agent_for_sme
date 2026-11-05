@@ -27,7 +27,7 @@ export interface OverviewOrderRow {
 }
 
 export interface OverviewModel {
-  readonly mode: "LOCAL UI FIXTURE";
+  readonly mode: "sample";
   readonly kpis: readonly OverviewKpi[];
   readonly attention: readonly OverviewAttentionItem[];
   readonly recentOrders: readonly OverviewOrderRow[];
@@ -36,8 +36,8 @@ export interface OverviewModel {
 const attentionStates: ReadonlySet<ProductState> = new Set(["waiting-human", "outcome-unknown", "known-failure", "stale-conflict"]);
 
 /**
- * Overview (Figma page 02 · Overview). Every number is counted from the same local fixtures the
- * Conversations, Escalations and Orders screens use; nothing is invented for this page.
+ * Every number on the Overview is counted from the same sample records the Inbox, Needs review
+ * and Orders screens show; nothing is invented for this page.
  */
 export function getOverviewFixture(): OverviewModel {
   const openConversations = demoConversationItems.length;
@@ -45,12 +45,12 @@ export function getOverviewFixture(): OverviewModel {
   const ordersNeedingAttention = demoOrderItems.filter((order) => attentionStates.has(order.orderState) || attentionStates.has(order.reservationState));
 
   return {
-    mode: "LOCAL UI FIXTURE",
+    mode: "sample",
     kpis: [
       { label: "Open conversations", value: openConversations, note: `${demoConversationItems.filter((item) => item.unread).length} unread`, href: "/conversations" },
-      { label: "Waiting for a human", value: waitingHuman, note: `${demoEscalationQueue.length} escalations in queue`, href: "/escalations" },
-      { label: "Orders", value: demoOrderItems.length, note: "in the fixture list", href: "/orders" },
-      { label: "Orders needing attention", value: ordersNeedingAttention.length, note: "reservation or review", href: "/orders" },
+      { label: "Waiting for a person", value: waitingHuman, note: `${demoEscalationQueue.length} cases in review`, href: "/escalations" },
+      { label: "Orders", value: demoOrderItems.length, note: "in total", href: "/orders" },
+      { label: "Orders to check", value: ordersNeedingAttention.length, note: "stock or review needed", href: "/orders?status=attention" },
     ],
     attention: [
       ...demoEscalationQueue.map((item) => ({

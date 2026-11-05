@@ -10,33 +10,33 @@ const products = parseProducts({ items: [{ id, sku: "LOCAL-1", name: "Long autho
 const inventory = parseInventory({ items: [{ id, product_id: id, available_quantity: "0.0000", reserved_quantity: "2.0000", version: 1, observed_at: "2026-10-14T12:00:00Z" }] });
 function apiMock() { return { products: vi.fn().mockResolvedValue(products), product: vi.fn().mockResolvedValue(products.items[0]), inventory: vi.fn().mockResolvedValue(inventory) } as unknown as RealReadApi; }
 
-describe("real feature adapters", () => {
-  it("does not fabricate an unrestricted catalog list when query is absent", async () => {
+describe("live reads", () => {
+  it("does not fabricate an unrestricted catalog list when the query is absent", async () => {
     const api = apiMock();
     const model = await loadProducts(api, {});
     expect(model.mode).toBe("REAL");
     expect(model.products.items).toEqual([]);
     expect(api.products).not.toHaveBeenCalled();
   });
-  it("maps real Product results separately from fixture records", async () => {
+  it("labels live product results as live data", async () => {
     const model = await loadProducts(apiMock(), { q: "authorized" });
     const markup = renderToStaticMarkup(<RealProductsScreen model={model} />);
-    expect(markup).toContain("REAL · FastAPI");
+    expect(markup).toContain("Live data");
     expect(markup).toContain("12.3400 USD");
-    expect(markup).not.toContain("LOCAL UI FIXTURE ONLY");
+    expect(markup).not.toContain("Sample data");
   });
-  it("preserves known zero and reserved quantities independently", async () => {
+  it("shows a zero count and reserved units independently", async () => {
     const model = await loadInventory(apiMock(), { product: id });
     const markup = renderToStaticMarkup(<RealInventoryScreen model={model} />);
     expect(markup).toContain("0.0000"); expect(markup).toContain("2.0000");
     expect(markup).toContain("not a live-stock promise");
     expect(markup).not.toContain('>Pending<');
   });
-  it("rejects incomplete inventory instead of inventing zero or using fixtures", async () => {
+  it("rejects incomplete inventory instead of inventing zero", async () => {
     const api = apiMock(); vi.mocked(api.inventory).mockResolvedValue([]);
     await expect(loadInventory(api, { product: id })).rejects.toBeInstanceOf(ApiError);
   });
-  it("preserves Next.js redirect errors and maps backend unavailable distinctly", () => {
+  it("preserves Next.js redirect errors and maps an unavailable backend distinctly", () => {
     expect(() => ReadError({ title: "Products", error: new Error("NEXT_REDIRECT") })).toThrow();
     const markup = renderToStaticMarkup(<ReadError title="Products" error={new ApiError("unavailable", 503, "request-1")} />);
     expect(markup).toContain("Backend source is unavailable");
@@ -48,9 +48,9 @@ describe("real feature adapters", () => {
     expect(markup).toContain("12.3400"); expect(markup).toContain("100.0000");
     expect(markup).toContain("Currencies are not converted or combined");
     expect(markup).not.toContain("112.34");
-    expect(markup).not.toContain("PREDICTED series");
-    expect(markup).toContain("Confirmed-order value / USD historical ACTUAL series");
-    expect(markup).toContain("Confirmed-order value / KZT historical ACTUAL series");
+    expect(markup).not.toContain("PREDICTED");
+    expect(markup).toContain("Order value / USD chart");
+    expect(markup).toContain("Order value / KZT chart");
     expect(markup).not.toContain('class="analytics-chart__series"');
   });
 });

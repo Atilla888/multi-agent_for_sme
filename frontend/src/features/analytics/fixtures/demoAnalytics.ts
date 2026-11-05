@@ -61,8 +61,8 @@ export function buildDemoAnalyticsReport(period: AnalyticsPeriod, granularity: A
   const series = options.incomplete ? completeSeries.map((point, index) => index === gapIndex ? { ...point, value: null } : point) : completeSeries;
   return {
     targetDefinition: metric,
-    metricLabel: metric === "CONFIRMED_ORDER_UNITS" ? "Confirmed order units" : "Confirmed order value",
-    unitLabel: metric === "CONFIRMED_ORDER_UNITS" ? "units" : "KZT per currency",
+    metricLabel: metric === "CONFIRMED_ORDER_UNITS" ? "Units sold" : "Order value",
+    unitLabel: metric === "CONFIRMED_ORDER_UNITS" ? "Units in confirmed orders" : "Value of confirmed orders, in KZT",
     granularity,
     period,
     periodLabel: facts.label,
@@ -72,7 +72,7 @@ export function buildDemoAnalyticsReport(period: AnalyticsPeriod, granularity: A
     currencyScope: "PER_CURRENCY",
     cutoff: facts.cutoff,
     observedAt: facts.observedAt,
-    sourceLabel: "Deterministic P5F fixture shaped to get_sales_report",
+    sourceLabel: "Sample report",
     freshness: options.stale ? "stale" : "current",
     completeness: options.incomplete ? "incomplete" : "complete",
     series,

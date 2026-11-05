@@ -6,36 +6,36 @@ import { SettingsScreen } from "./components/SettingsScreen";
 
 function render(state = "fixture") { return renderToStaticMarkup(<SettingsScreen model={getSettingsFixtureScreen({ state })} />); }
 
-describe("P5H Settings", () => {
-  it("renders only approved business, access, and capability sections", () => {
+describe("Settings", () => {
+  it("renders only business, access and switched-off sections", () => {
     const markup = render();
-    expect(markup).toContain("Business context");
-    expect(markup).toContain("Effective access");
-    expect(markup).toContain("Capability boundaries");
-    expect(markup).not.toMatch(/Billing|Theme marketplace|Agent policy editor/);
+    expect(markup).toContain("Business");
+    expect(markup).toContain("Access");
+    expect(markup).toContain("What is switched off");
+    expect(markup).not.toMatch(/Billing|Theme marketplace|Agent policy editor|Keycloak|OIDC|fixture/);
   });
 
-  it("renders every fixture field as disabled and read-only in effect", () => {
+  it("renders every field disabled", () => {
     const model = getSettingsFixtureScreen({});
     expect(model.sections.flatMap((section) => section.fields).every((field) => field.editable === false)).toBe(true);
     const markup = render();
     expect(markup.match(/<input[^>]*disabled=""/g)?.length).toBe(7);
-    expect(markup).toContain("Save settings · unavailable");
+    expect(markup).toMatch(/<button[^>]*disabled=""[^>]*><span>Save changes<\/span>/);
   });
 
-  it("does not fake settings persistence", () => {
+  it("does not fake saving", () => {
     const markup = render();
-    expect(markup).toContain("Nothing is persisted and no success result is produced");
+    expect(markup).toContain("Nothing on this screen is saved");
     expect(markup).not.toMatch(/saved successfully|changes saved/i);
     expect(administrationApiContracts.settings.write).toBe("UNAVAILABLE");
   });
 
-  it("preserves E02 and M12 as non-configurable boundaries", () => {
+  it("keeps blocked order changes and paused-case resume non-configurable", () => {
     const markup = render();
-    expect(markup).toContain("E02 restricted");
-    expect(markup).toContain("Cannot be enabled from Settings");
-    expect(markup).toContain("M12 TARGET / NOT STARTED");
-    expect(markup).toContain("No replay or Resume action is available");
+    expect(markup).toContain("Blocked by policy");
+    expect(markup).toContain("Can&#x27;t be turned on from Settings");
+    expect(markup).toContain("Not available yet");
+    expect(markup).not.toMatch(/E02 |TARGET|NOT STARTED/);
   });
 
   it("is network-free and keeps failure states distinct", () => {
@@ -43,10 +43,10 @@ describe("P5H Settings", () => {
     vi.stubGlobal("fetch", fetchSpy);
     settingsFixtureAdapter.getScreen({});
     expect(fetchSpy).not.toHaveBeenCalled();
-    expect(render("restricted")).toContain("Settings access is restricted");
-    expect(render("unavailable")).toContain("Configuration source is unavailable");
-    expect(render("empty")).toContain("No configurable settings in scope");
-    expect(render("loading")).toContain("Loading effective settings");
+    expect(render("restricted")).toContain("don&#x27;t have access to settings");
+    expect(render("unavailable")).toContain("can&#x27;t be loaded right now");
+    expect(render("empty")).toContain("No settings to show");
+    expect(render("loading")).toContain("Loading settings");
     vi.unstubAllGlobals();
   });
 });

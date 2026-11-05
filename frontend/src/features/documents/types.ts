@@ -43,7 +43,7 @@ export interface DocumentDetailView extends DocumentListItem {
 }
 
 export interface DocumentsScreenModel {
-  readonly mode: "LOCAL UI FIXTURE ONLY";
+  readonly mode: "sample";
   readonly validationState: DocumentValidationState;
   readonly items: readonly DocumentListItem[];
   readonly query: string;
@@ -51,7 +51,7 @@ export interface DocumentsScreenModel {
 }
 
 export interface DocumentDetailModel {
-  readonly mode: "LOCAL UI FIXTURE ONLY";
+  readonly mode: "sample";
   readonly validationState: DocumentValidationState;
   readonly document: DocumentDetailView | null;
 }
