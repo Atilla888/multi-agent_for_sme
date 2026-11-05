@@ -1,5 +1,5 @@
 import { ApiError } from "@/services/api/client";
-import type { CustomerDto, InventoryDto, OrderDto, ProductDto, ProductPageDto, SalesDto } from "@/services/api/reads";
+import type { ConversationDetailDto, ConversationSummaryDto, CustomerDto, InventoryDto, OrderDto, ProductDto, ProductPageDto, SalesDto } from "@/services/api/reads";
 import { readApi } from "@/services/api/reads";
 import { uuidPattern } from "@/services/auth/configuration";
 
@@ -11,6 +11,7 @@ export interface ProductsRead { readonly mode: "REAL"; readonly query: string; r
 export interface InventoryRead { readonly mode: "REAL"; readonly query: string; readonly products: readonly ProductDto[]; readonly items: readonly InventoryDto[]; }
 export interface CustomerRead { readonly mode: "REAL"; readonly customer: CustomerDto; }
 export interface OrderRead { readonly mode: "REAL"; readonly order: OrderDto; }
+export interface ConversationsRead { readonly mode: "REAL"; readonly items: readonly ConversationSummaryDto[]; readonly selected: ConversationDetailDto | null; readonly status: string; }
 export interface AnalyticsRead { readonly mode: "REAL"; readonly start: string; readonly end: string; readonly report: SalesDto; }
 
 export async function loadProducts(api: RealReadApi, query: Query): Promise<ProductsRead> {
@@ -46,4 +47,12 @@ export async function loadAnalytics(api: RealReadApi, query: Query, now = new Da
   const params = new URLSearchParams({ start, end, granularity: first(query, "granularity") || "DAY", target: first(query, "metric") || "CONFIRMED_ORDER_UNITS" });
   if (first(query, "product")) params.set("product_id", checkedId(first(query, "product")));
   return { mode: "REAL", start, end, report: await api.sales(params) };
+}
+
+export async function loadConversations(api: RealReadApi, query: Query, selectedId?: string): Promise<ConversationsRead> {
+  const status = ["OPEN", "ESCALATED", "CLOSED"].includes(first(query, "status")) ? first(query, "status") : "";
+  const items = await api.conversations(status || undefined);
+  const id = selectedId ?? items[0]?.id;
+  const selected = id ? await api.conversation(checkedId(id)) : null;
+  return { mode: "REAL", items, selected, status: status || "all" };
 }

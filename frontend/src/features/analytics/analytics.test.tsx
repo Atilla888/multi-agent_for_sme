@@ -5,27 +5,26 @@ import { analyticsFixtureAdapter, getAnalyticsFixtureScreen } from "./adapters/f
 import { chartSegments } from "./components/ActualChart";
 import { AnalyticsScreen } from "./components/AnalyticsScreen";
 
-describe("P5F Analytics", () => {
-  it("renders the approved historical ACTUAL workspace", () => {
+describe("Reports", () => {
+  it("renders the report with its chart, figures and sample-data label", () => {
     const markup = renderToStaticMarkup(<AnalyticsScreen model={getAnalyticsFixtureScreen({})} />);
-    expect(markup).toContain("Historical ACTUAL only");
-    expect(markup).toContain("Valid historical result");
-    expect(markup).toContain("Historical chart · ACTUAL only");
-    expect(markup).toContain("Historical Analytics underlying values");
-    expect(markup).toContain("LOCAL UI FIXTURE ONLY");
+    expect(markup).toContain("Reports");
+    expect(markup).toContain("Report figures");
+    expect(markup).toContain("Sample data");
     expect(markup).toContain("North Shop");
+    expect(markup).not.toMatch(/ACTUAL|fixture|P5F/);
   });
 
-  it("renders supported metric, completeness, and freshness cards", () => {
+  it("renders total, coverage and freshness cards", () => {
     const markup = renderToStaticMarkup(<AnalyticsScreen model={getAnalyticsFixtureScreen({})} />);
-    expect(markup).toContain("Observed total");
-    expect(markup).toContain("Confirmed order units");
-    expect(markup).toContain("Completeness");
-    expect(markup).toContain("Freshness");
-    expect(markup).toContain("CONFIRMED orders only");
+    expect(markup).toContain("Total");
+    expect(markup).toContain("Units sold");
+    expect(markup).toContain("Data coverage");
+    expect(markup).toContain("Last updated");
+    expect(markup).toContain("Confirmed orders only");
   });
 
-  it("applies only allowed period, metric, and granularity filters", () => {
+  it("applies only allowed period, measure and grouping", () => {
     const model = getAnalyticsFixtureScreen({ period: "previous-complete-month", metric: "CONFIRMED_ORDER_VALUE", granularity: "MONTH" });
     expect(model.period).toBe("previous-complete-month");
     expect(model.metric).toBe("CONFIRMED_ORDER_VALUE");
@@ -38,53 +37,50 @@ describe("P5F Analytics", () => {
     expect(invalid.period).toBe("last-complete-month");
   });
 
-  it("keeps loading and valid-empty states distinct", () => {
+  it("keeps loading and empty distinct", () => {
     const loading = renderToStaticMarkup(<AnalyticsScreen model={getAnalyticsFixtureScreen({ state: "loading" })} />);
     const empty = renderToStaticMarkup(<AnalyticsScreen model={getAnalyticsFixtureScreen({ state: "empty" })} />);
-    expect(loading).toContain("Loading historical observations");
-    expect(loading).not.toContain("Valid empty historical report");
-    expect(empty).toContain("Valid empty historical report");
-    expect(empty).toContain("not a source outage or a replacement zero");
+    expect(loading).toContain("Loading figures");
+    expect(loading).not.toContain("No confirmed orders in this period");
+    expect(empty).toContain("No confirmed orders in this period");
+    expect(empty).toContain("not a technical problem");
   });
 
-  it("renders incomplete data as a gap and never as zero", () => {
+  it("renders missing data as a gap and never as zero", () => {
     const model = getAnalyticsFixtureScreen({ state: "incomplete" });
     const markup = renderToStaticMarkup(<AnalyticsScreen model={model} />);
     expect(model.report?.series.some((point) => point.value === null)).toBe(true);
-    expect(markup).toContain("Incomplete historical data");
+    expect(markup).toContain("Some data is missing");
     expect(markup).toContain("Missing");
-    expect(markup).toContain("Unavailable");
-    expect(markup).toContain("Missing observation · not zero");
-    expect(markup).toContain("Observed subtotal");
+    expect(markup).toContain("not counted as zero");
+    expect(markup).toContain("Subtotal");
   });
 
-  it("keeps stale observations visible with a clear warning", () => {
+  it("keeps out-of-date figures visible with a clear warning", () => {
     const model = getAnalyticsFixtureScreen({ state: "stale" });
     const markup = renderToStaticMarkup(<AnalyticsScreen model={model} />);
     expect(model.report?.freshness).toBe("stale");
-    expect(markup).toContain("Stale historical snapshot");
-    expect(markup).toContain("Refresh authoritative data");
-    expect(markup).toContain("ACTUAL value");
+    expect(markup).toContain("This report may be out of date");
+    expect(markup).toContain("Refresh before using them");
+    expect(markup).toContain("Report figures");
   });
 
-  it("withholds all report values when the dependency is unavailable", () => {
+  it("withholds all figures when the source is unavailable", () => {
     const model = getAnalyticsFixtureScreen({ state: "unavailable" });
     const markup = renderToStaticMarkup(<AnalyticsScreen model={model} />);
     expect(model.report).toBeNull();
-    expect(markup).toContain("Historical report source is unavailable");
+    expect(markup).toContain("can&#x27;t be loaded right now");
     expect(markup).not.toContain("analytics-chart__series");
-    expect(markup).not.toContain("ACTUAL value");
+    expect(markup).not.toContain("Report figures");
   });
 
-  it("withholds protected report data in the restricted state", () => {
+  it("withholds figures when the person has no access", () => {
     const markup = renderToStaticMarkup(<AnalyticsScreen model={getAnalyticsFixtureScreen({ state: "restricted" })} />);
-    expect(markup).toContain("Analytics access is restricted");
-    expect(markup).toContain("do not grant backend access");
-    expect(markup).not.toContain("Deterministic P5F fixture shaped to get_sales_report");
+    expect(markup).toContain("don&#x27;t have access to reports");
     expect(markup).not.toContain("analytics-chart__series");
   });
 
-  it("drives the chart and table from one typed series", () => {
+  it("drives the chart and table from one series", () => {
     const model = getAnalyticsFixtureScreen({ state: "incomplete" });
     const series = model.report?.series ?? [];
     const segments = chartSegments(series);
@@ -94,11 +90,11 @@ describe("P5F Analytics", () => {
     for (const point of series.filter((item) => item.value !== null)) expect(markup).toContain(point.label);
   });
 
-  it("has no fake API, forecast series, research metrics, or unsupported KPI", () => {
+  it("has no fake API, forecast series, research metrics or unsupported KPI", () => {
     expect(analyticsApiContract.publicEndpoint).toBeNull();
     expect(String(analyticsFixtureAdapter.getReport)).not.toContain("fetch(");
     const markup = renderToStaticMarkup(<AnalyticsScreen model={getAnalyticsFixtureScreen({})} />);
-    expect(markup).not.toContain("PREDICTED / ");
+    expect(markup).not.toContain("PREDICTED");
     expect(markup).not.toContain("Revenue");
     expect(markup).not.toMatch(/TSR|FER|H0|H1|SINGLE|STATIC|ADAPTIVE/);
   });

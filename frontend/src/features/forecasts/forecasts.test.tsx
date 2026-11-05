@@ -4,51 +4,48 @@ import { forecastApiContract } from "./adapters/contracts";
 import { forecastFixtureAdapter, getForecastFixtureScreen } from "./adapters/fixtureAdapter";
 import { ForecastsScreen } from "./components/ForecastsScreen";
 
-describe("P5F Forecasts", () => {
-  it("defaults to the current MODEL_NOT_READY capability", () => {
+describe("Forecasts", () => {
+  it("defaults to the not-ready state and says so plainly", () => {
     const model = getForecastFixtureScreen({});
     const markup = renderToStaticMarkup(<ForecastsScreen model={model} />);
     expect(model.capability?.status).toBe("MODEL_NOT_READY");
     expect(model.capability?.errorCode).toBe("DEPENDENCY_UNAVAILABLE");
-    expect(markup).toContain("The forecast model is not ready yet");
-    expect(markup).toContain("No validated model artifact or forecast result exists");
-    expect(markup).toContain("MODEL_NOT_READY");
-    expect(markup).toContain("No prediction has been produced");
+    expect(markup).toContain("Forecasts are not ready yet");
+    expect(markup).toContain("Not ready yet");
+    expect(markup).toContain("nothing is predicted");
+    expect(markup).not.toMatch(/MODEL_NOT_READY|DEPENDENCY_UNAVAILABLE|forecast_sales|TARGET/);
   });
 
-  it("does not fabricate a forecast series, numeric result, artifact, or run", () => {
+  it("does not fabricate a forecast series, number, artifact or run", () => {
     const model = getForecastFixtureScreen({});
     const markup = renderToStaticMarkup(<ForecastsScreen model={model} />);
     expect(model.capability?.artifactAvailable).toBe(false);
     expect(model.capability?.predictionAvailable).toBe(false);
     expect(model.capability?.runAvailable).toBe(false);
-    expect(markup).not.toContain("<svg");
+    expect(markup).not.toContain("<svg viewBox");
     expect(markup).not.toContain("forecast-result");
     expect(markup).not.toContain("href=\"/forecasts/");
   });
 
-  it("keeps forecast request visibly and natively disabled", () => {
+  it("keeps the request button visibly disabled", () => {
     const markup = renderToStaticMarkup(<ForecastsScreen model={getForecastFixtureScreen({})} />);
-    expect(markup).toContain("Request forecast · unavailable");
-    expect(markup).toContain("disabled=\"\"");
-    expect(markup).toContain("No request was sent");
+    expect(markup).toMatch(/<button[^>]*disabled=""[^>]*><span>Request forecast<\/span>/);
+    expect(markup).toContain("Nothing is requested from this screen");
   });
 
-  it("separates future TARGET requirements from current capability", () => {
+  it("describes the future result without predicting anything", () => {
     const markup = renderToStaticMarkup(<ForecastsScreen model={getForecastFixtureScreen({})} />);
-    expect(markup).toContain("TARGET PRODUCT UX · not current");
-    expect(markup).toContain("What a future real result must prove");
-    expect(markup).toContain("non-interactive and contains no prediction");
-    expect(markup).toContain("Open historical Analytics");
+    expect(markup).toContain("How a forecast will be shown");
+    expect(markup).toContain("It contains no prediction");
+    expect(markup).toContain("Open Reports");
   });
 
-  it("withholds request context in the restricted state", () => {
+  it("withholds the request section when the person has no access", () => {
     const model = getForecastFixtureScreen({ state: "restricted" });
     const markup = renderToStaticMarkup(<ForecastsScreen model={model} />);
     expect(model.capability).toBeNull();
-    expect(markup).toContain("Forecast access is restricted");
-    expect(markup).not.toContain("forecast_sales");
-    expect(markup).not.toContain("Request forecast · unavailable");
+    expect(markup).toContain("don&#x27;t have access to forecasts");
+    expect(markup).not.toContain("Request forecast");
   });
 
   it("uses an interface-ready adapter without a fake API or experiment output", () => {

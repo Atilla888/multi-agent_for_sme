@@ -7,31 +7,31 @@ import { getInventoryFixtureScreen } from "./adapters/fixtureAdapter";
 import { inventoryApiContract } from "./adapters/contracts";
 import { InventoryScreen } from "./components/InventoryScreen";
 
-describe("P5D Inventory and adapter safety", () => {
-  it("renders observed quantity, source and reservation evidence", () => {
+describe("Inventory", () => {
+  it("shows the count, when it was checked, and the reservation", () => {
     const markup = renderToStaticMarkup(<InventoryScreen model={getInventoryFixtureScreen({ product: "prod-lamp" })} />);
-    expect(markup).toContain("8.0000");
-    expect(markup).toContain("Observed quantity is not a live-stock promise");
-    expect(markup).toContain("Confirmed reservation R-1042");
+    expect(markup).toContain("Checked today 10:41");
+    expect(markup).toContain("not a live count");
+    expect(markup).toContain("ref R-1042");
   });
 
-  it("keeps a known zero distinct from source unavailability", () => {
+  it("keeps a confirmed zero distinct from an unavailable source", () => {
     const zero = renderToStaticMarkup(<InventoryScreen model={getInventoryFixtureScreen({ product: "prod-shelf" })} />);
     const unavailable = renderToStaticMarkup(<InventoryScreen model={getInventoryFixtureScreen({ state: "unavailable" })} />);
-    expect(zero).toContain("0.0000");
-    expect(zero).toContain("Known zero is a valid quantity");
-    expect(unavailable).toContain("Do not reinterpret this as an empty result");
-    expect(unavailable).not.toContain("0.0000");
+    expect(zero).toContain("Out of stock");
+    expect(zero).toContain("Zero is a confirmed count");
+    expect(unavailable).toContain("does not mean there are no records");
+    expect(unavailable).not.toContain("Zero is a confirmed count");
   });
 
-  it("keeps an unknown reservation separate and without blind retry", () => {
+  it("asks for a check and offers no retry when a reservation outcome is unknown", () => {
     const markup = renderToStaticMarkup(<InventoryScreen model={getInventoryFixtureScreen({ status: "outcome-unknown" })} />);
-    expect(markup).toContain("The hold may have committed");
-    expect(markup).toContain("no blind retry");
+    expect(markup).toContain("may have gone through");
+    expect(markup).toContain("check before reserving again");
     expect(markup).not.toMatch(/<button[^>]*>[^<]*Retry/i);
   });
 
-  it("keeps fixture adapters network-free and public endpoints absent", () => {
+  it("keeps sample adapters network-free and public endpoints absent", () => {
     const fetchSpy = vi.fn();
     vi.stubGlobal("fetch", fetchSpy);
     getCustomerFixtureScreen({}); getOrdersFixtureScreen({}); getProductsFixtureScreen({}); getInventoryFixtureScreen({});

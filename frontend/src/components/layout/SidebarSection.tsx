@@ -10,36 +10,23 @@ interface SidebarSectionProps {
   readonly pathname: string;
 }
 
-function AccessMarker({ item }: { readonly item: NavItem }) {
-  if (!item.access) return null;
-  return (
-    <span className="nav-access-marker">
-      {item.access === "restricted" ? "Restricted" : "Contextual"}
-    </span>
-  );
-}
-
 function NavLink({ item, pathname, active }: { readonly item: NavItem; readonly pathname: string; readonly active?: boolean }) {
   const current = active ?? isRouteActive(pathname, item.href);
   return (
     <Link
-      className={`nav-item ${current ? "nav-item--active" : ""} ${item.access ? "nav-item--restricted" : ""}`.replace(/\s+/g, " ").trim()}
+      className={`nav-item ${current ? "nav-item--active" : ""}`.trim()}
       href={item.href}
       aria-current={current ? "page" : undefined}
-      title={item.label}
+      title={item.access ? `${item.label} · needs extra permission` : item.label}
     >
-      {item.icon ? <Icon name={item.icon} /> : null}
+      {item.icon ? <Icon name={item.icon} size={18} /> : null}
       <span className="nav-label">{item.label}</span>
-      <AccessMarker item={item} />
+      {item.access ? <span className="nav-access-marker"><Icon name="lock" size={13} /><span className="sr-only">Needs extra permission</span></span> : null}
     </Link>
   );
 }
 
-/**
- * One area of the approved IA. Areas with children render as a Figma sidebar section:
- * an uppercase heading followed by flat NavItems. The area's own route is listed first
- * when it is not already one of its children (Conversations, Analytics).
- */
+/** One sidebar group: a small heading followed by its screens. */
 export function SidebarSection({ area, pathname }: SidebarSectionProps) {
   if (!area.children) {
     return (

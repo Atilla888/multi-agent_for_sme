@@ -11,42 +11,44 @@ import {
 } from "./navigation";
 import { matchNavigation } from "@/components/layout/NavigationSearch";
 
-describe("approved information architecture", () => {
-  it("keeps exactly the six approved top-level areas", () => {
+describe("staff navigation", () => {
+  it("keeps five groups with plain-language labels", () => {
     expect(staffNavigation.map((area) => area.label)).toEqual([
       "Overview",
       "Conversations",
       "Business",
-      "Knowledge",
-      "Analytics",
+      "Insights",
       "Administration",
     ]);
   });
 
-  it("keeps the approved nested destinations", () => {
-    expect(staffNavigation.map((area) => [area.label, area.children?.map((item) => item.label) ?? []])).toEqual([
+  it("keeps every approved route under a plain-language label", () => {
+    expect(staffNavigation.map((area) => [area.label, area.children?.map((item) => [item.label, item.href]) ?? []])).toEqual([
       ["Overview", []],
-      ["Conversations", ["Escalations"]],
-      ["Business", ["Customers", "Orders", "Products", "Inventory"]],
-      ["Knowledge", ["Documents"]],
-      ["Analytics", ["Forecasts"]],
-      ["Administration", ["Integrations", "Settings", "Audit", "Agent Runs"]],
+      ["Conversations", [["Inbox", "/conversations"], ["Needs review", "/escalations"]]],
+      ["Business", [["Customers", "/customers"], ["Orders", "/orders"], ["Products", "/products"], ["Inventory", "/inventory"]]],
+      ["Insights", [["Reports", "/analytics"], ["Forecasts", "/forecasts"], ["Documents", "/documents"]]],
+      ["Administration", [["Channels", "/integrations"], ["Settings", "/settings"], ["Activity log", "/audit"], ["AI activity", "/agent-runs"]]],
     ]);
   });
 
-  it("marks Audit and Agent Runs as permissioned/contextual without disabling their routes", () => {
+  it("marks the activity log and AI activity as permissioned without disabling their routes", () => {
     const administration = staffNavigation.find((area) => area.label === "Administration");
-    const audit = administration?.children?.find((item) => item.label === "Audit");
-    const runs = administration?.children?.find((item) => item.label === "Agent Runs");
+    const audit = administration?.children?.find((item) => item.href === "/audit");
+    const runs = administration?.children?.find((item) => item.href === "/agent-runs");
 
-    expect(audit).toMatchObject({ href: "/audit", access: "restricted" });
-    expect(runs).toMatchObject({ href: "/agent-runs", access: "contextual-restricted" });
+    expect(audit).toMatchObject({ label: "Activity log", access: "restricted" });
+    expect(runs).toMatchObject({ label: "AI activity", access: "contextual-restricted" });
   });
 
-  it("keeps authentication and customer chat outside staff navigation", () => {
+  it("keeps sign-in and customer chat outside staff navigation", () => {
     const staffRoutes = staffNavigation.flatMap((area) => [area.href, ...(area.children?.map((item) => item.href) ?? [])]);
     expect(staffRoutes).not.toContain(authenticationRoute.href);
     expect(staffRoutes).not.toContain(customerRoute.href);
+  });
+
+  it("uses no internal jargon in any label", () => {
+    for (const item of flatNavigation()) expect(item.label).not.toMatch(/agent run|audit|integration|escalation|analytics/i);
   });
 });
 
@@ -57,24 +59,25 @@ describe("route matching", () => {
     expect(isRouteActive("/overview/extra", "/overview")).toBe(false);
   });
 
-  it("returns the most specific approved label", () => {
+  it("returns the most specific label", () => {
     expect(findNavigationLabel("/forecasts")).toBe("Forecasts");
     expect(findNavigationLabel("/orders/order-1")).toBe("Orders");
+    expect(findNavigationLabel("/conversations")).toBe("Inbox");
   });
 });
 
-describe("lab 3 Figma shell navigation", () => {
+describe("shell navigation", () => {
   it("gives every staff destination an icon for the tablet icon rail", () => {
     const items = staffNavigation.flatMap((area) => [area, ...(area.children ?? [])]);
     expect(items.every((item) => Boolean(item.icon))).toBe(true);
   });
 
-  it("uses the Figma mobile tabs in order", () => {
+  it("uses the four most-used screens as mobile tabs", () => {
     expect(mobileTabs.map((tab) => [tab.label, tab.href])).toEqual([
       ["Home", "/overview"],
-      ["Chats", "/conversations"],
+      ["Inbox", "/conversations"],
       ["Orders", "/orders"],
-      ["Analytics", "/analytics"],
+      ["Reports", "/analytics"],
     ]);
   });
 
@@ -87,18 +90,18 @@ describe("lab 3 Figma shell navigation", () => {
 
   it("matches header search by exact label, then prefix, then substring", () => {
     expect(matchNavigation("orders")?.href).toBe("/orders");
-    expect(matchNavigation("esc")?.href).toBe("/escalations");
-    expect(matchNavigation("runs")?.href).toBe("/agent-runs");
+    expect(matchNavigation("needs")?.href).toBe("/escalations");
+    expect(matchNavigation("activity")?.href).toBe("/audit");
     expect(matchNavigation("   ")).toBeUndefined();
     expect(matchNavigation("payroll")).toBeUndefined();
   });
 });
 
-describe("header breadcrumb", () => {
-  it("names the area and screen like the Figma header", () => {
+describe("header trail", () => {
+  it("names the group and the screen", () => {
     expect(findNavigationTrail("/orders/ORD-1042")).toEqual(["Business", "Orders"]);
-    expect(findNavigationTrail("/escalations")).toEqual(["Conversations", "Escalations"]);
-    expect(findNavigationTrail("/conversations")).toEqual(["Conversations"]);
-    expect(findNavigationTrail("/forecasts")).toEqual(["Analytics", "Forecasts"]);
+    expect(findNavigationTrail("/escalations")).toEqual(["Conversations", "Needs review"]);
+    expect(findNavigationTrail("/conversations")).toEqual(["Conversations", "Inbox"]);
+    expect(findNavigationTrail("/forecasts")).toEqual(["Insights", "Forecasts"]);
   });
 });

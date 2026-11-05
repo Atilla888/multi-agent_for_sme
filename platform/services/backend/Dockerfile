@@ -11,7 +11,9 @@ RUN python -m pip install --upgrade pip==25.2 && \
       alembic==1.20.0 fastapi==0.116.1 pydantic==2.11.7 \
       pydantic-settings==2.10.1 'psycopg[binary,pool]==3.2.10' \
       SQLAlchemy==2.0.54 'uvicorn[standard]==0.35.0' 'PyJWT[crypto]==2.15.0' \
-      fastembed==0.8.1 minio==7.2.20 httpx==0.28.1
+      fastembed==0.8.1 minio==7.2.20 httpx==0.28.1 \
+      anthropic==1.15.0 httpx2==2.14.0 httpcore2==2.14.0 jiter==0.17.0 \
+      docstring-parser==0.18.0 opentelemetry-api==1.45.1
 
 FROM dependencies AS model-assets
 ENV HF_HOME=/tmp/hf XDG_CACHE_HOME=/tmp

@@ -10,5 +10,5 @@ function first(value: string | string[] | undefined): string { return Array.isAr
 
 export function getForecastFixtureScreen(query: Record<string, string | string[] | undefined>): ForecastScreenModel {
   const state: ForecastViewState = first(query.state) === "restricted" ? "restricted" : "model-not-ready";
-  return { mode: "LOCAL CURRENT-STATE REPRESENTATION", state, capability: state === "restricted" ? null : forecastFixtureAdapter.readiness() };
+  return { mode: "sample", state, capability: state === "restricted" ? null : forecastFixtureAdapter.readiness() };
 }

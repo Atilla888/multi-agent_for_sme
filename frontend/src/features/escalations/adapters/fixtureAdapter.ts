@@ -8,5 +8,5 @@ export function parseEscalationScenario(value: string | string[] | undefined): E
   return candidate && scenarios.has(candidate as EscalationScenario) ? candidate as EscalationScenario : "waiting-human";
 }
 export function getEscalationsFixtureScreen(scenario: EscalationScenario): EscalationsScreenModel {
-  return { mode: "LOCAL UI FIXTURE ONLY", queue: demoEscalationQueue, selected: demoEscalationDetail(scenario) };
+  return { mode: "sample", queue: demoEscalationQueue, selected: demoEscalationDetail(scenario) };
 }

@@ -93,3 +93,46 @@ class SalesReportDto(ReadDto):
     granularity: Literal["DAY", "WEEK", "MONTH"]
     currency_scope: Literal["PER_CURRENCY"]
     product_id: UUID | None
+
+
+class ConversationSummaryDto(ReadDto):
+    id: UUID
+    customer_id: UUID
+    customer_name: str | None
+    channel: Literal["TELEGRAM", "WHATSAPP", "INSTAGRAM", "WEB"] | None
+    status: Literal["OPEN", "ESCALATED", "CLOSED"]
+    last_message: str | None
+    last_direction: Literal["INBOUND", "OUTBOUND"] | None
+    last_at: datetime | None
+    run_status: Literal["RUNNING", "WAITING_HUMAN", "SUCCEEDED", "FAILED"] | None
+    active_agent: Literal["Sales", "Support", "Analytics"] | None
+    outcome: str | None
+    version: int
+    updated_at: datetime
+
+
+class ConversationPageDto(ReadDto):
+    items: list[ConversationSummaryDto]
+
+
+class ConversationMessageDto(ReadDto):
+    id: UUID
+    direction: Literal["INBOUND", "OUTBOUND"]
+    body: str
+    status: str
+    created_at: datetime
+
+
+class ConversationRunDto(ReadDto):
+    id: UUID
+    status: Literal["RUNNING", "WAITING_HUMAN", "SUCCEEDED", "FAILED"]
+    active_agent: Literal["Sales", "Support", "Analytics"] | None
+    outcome: str | None
+    handoff_count: int
+    created_at: datetime
+
+
+class ConversationDetailDto(ReadDto):
+    conversation: ConversationSummaryDto
+    messages: list[ConversationMessageDto]
+    runs: list[ConversationRunDto]

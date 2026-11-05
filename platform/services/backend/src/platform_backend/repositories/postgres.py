@@ -410,6 +410,213 @@ class PostgresRepository:
         ).fetchall()
         return list(reversed(rows))
 
+    # --- Channel conversations (M08 WhatsApp adapter) -------------------------------
+
+    def get_integration(self, channel: str, provider_account_id: str) -> dict[str, Any] | None:
+        return self._connection.execute(
+            "SELECT id,channel,mode,enabled FROM integrations "
+            "WHERE business_id=%s AND channel=%s AND provider_account_id=%s",
+            (self.business_id, channel, provider_account_id),
+        ).fetchone()
+
+    def find_message_by_provider_id(
+        self, integration_id: UUID, provider_message_id: str
+    ) -> UUID | None:
+        row = self._connection.execute(
+            "SELECT id FROM messages WHERE business_id=%s AND integration_id=%s "
+            "AND provider_message_id=%s",
+            (self.business_id, integration_id, provider_message_id),
+        ).fetchone()
+        return row["id"] if row else None
+
+    def insert_customer_with_identity(
+        self,
+        customer_id: UUID,
+        identity_id: UUID,
+        channel: str,
+        external_user_id: str,
+        display_name: str | None,
+    ) -> None:
+        self._connection.execute(
+            "INSERT INTO customers(business_id,id,display_name,updated_at) VALUES (%s,%s,%s,now())",
+            (self.business_id, customer_id, display_name),
+        )
+        self._connection.execute(
+            "INSERT INTO customer_identities"
+            "(business_id,id,customer_id,channel,external_user_id,link_method,updated_at) "
+            "VALUES (%s,%s,%s,%s,%s,'FIRST_CONTACT',now())",
+            (self.business_id, identity_id, customer_id, channel, external_user_id),
+        )
+
+    def find_open_conversation(self, identity_id: UUID) -> UUID | None:
+        row = self._connection.execute(
+            "SELECT id FROM conversations WHERE business_id=%s AND identity_id=%s "
+            "AND status IN ('OPEN','ESCALATED') ORDER BY created_at DESC LIMIT 1",
+            (self.business_id, identity_id),
+        ).fetchone()
+        return row["id"] if row else None
+
+    def insert_conversation(
+        self, conversation_id: UUID, customer_id: UUID, identity_id: UUID
+    ) -> None:
+        self._connection.execute(
+            "INSERT INTO conversations(business_id,id,customer_id,identity_id,status,updated_at) "
+            "VALUES (%s,%s,%s,%s,'OPEN',now())",
+            (self.business_id, conversation_id, customer_id, identity_id),
+        )
+
+    def set_conversation_status(self, conversation_id: UUID, status: str) -> None:
+        self._connection.execute(
+            "UPDATE conversations SET status=%s,version=version+1,updated_at=now() "
+            "WHERE business_id=%s AND id=%s",
+            (status, self.business_id, conversation_id),
+        )
+
+    def insert_message(
+        self,
+        message_id: UUID,
+        conversation_id: UUID,
+        integration_id: UUID | None,
+        provider_message_id: str | None,
+        direction: str,
+        body: str,
+        status: str,
+        correlation_id: UUID,
+    ) -> None:
+        self._connection.execute(
+            "INSERT INTO messages(business_id,id,conversation_id,integration_id,"
+            "provider_message_id,direction,body,status,correlation_id,updated_at) "
+            "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,now())",
+            (
+                self.business_id,
+                message_id,
+                conversation_id,
+                integration_id,
+                provider_message_id,
+                direction,
+                body,
+                status,
+                correlation_id,
+            ),
+        )
+
+    def update_message_status(
+        self, message_id: UUID, status: str, provider_message_id: str | None = None
+    ) -> None:
+        self._connection.execute(
+            "UPDATE messages SET status=%s,provider_message_id=COALESCE(%s,provider_message_id),"
+            "version=version+1,updated_at=now() WHERE business_id=%s AND id=%s",
+            (status, provider_message_id, self.business_id, message_id),
+        )
+
+    def update_message_status_by_provider_id(self, provider_message_id: str, status: str) -> bool:
+        row = self._connection.execute(
+            "UPDATE messages SET status=%s,version=version+1,updated_at=now() "
+            "WHERE business_id=%s AND provider_message_id=%s AND direction='OUTBOUND' "
+            "RETURNING id",
+            (status, self.business_id, provider_message_id),
+        ).fetchone()
+        return row is not None
+
+    def insert_agent_run(
+        self,
+        run_id: UUID,
+        message_id: UUID,
+        active_agent: str,
+        deadline: datetime,
+        metadata: dict[str, Any],
+    ) -> None:
+        self._connection.execute(
+            "INSERT INTO agent_runs(business_id,id,message_id,mode,status,active_agent,"
+            "resume_revision,step_count,handoff_count,retry_count,deadline,budget_state,"
+            "execution_metadata,routing_confidence,reason_code,updated_at) "
+            "VALUES (%s,%s,%s,'SINGLE','RUNNING',%s,0,0,0,0,%s,'{}'::jsonb,%s,'UNKNOWN',"
+            "'CHANNEL_INBOUND',now())",
+            (self.business_id, run_id, message_id, active_agent, deadline, Jsonb(metadata)),
+        )
+
+    def update_agent_run(
+        self,
+        run_id: UUID,
+        *,
+        status: str,
+        active_agent: str,
+        metadata: dict[str, Any],
+        step_count: int,
+        handoff_count: int,
+        reason_code: str,
+    ) -> None:
+        self._connection.execute(
+            "UPDATE agent_runs SET status=%s,active_agent=%s,execution_metadata=%s,"
+            "step_count=%s,handoff_count=%s,reason_code=%s,version=version+1,updated_at=now() "
+            "WHERE business_id=%s AND id=%s",
+            (
+                status,
+                active_agent,
+                Jsonb(metadata),
+                step_count,
+                handoff_count,
+                reason_code,
+                self.business_id,
+                run_id,
+            ),
+        )
+
+    def latest_run_for_conversation(self, conversation_id: UUID) -> dict[str, Any] | None:
+        return self._connection.execute(
+            "SELECT r.id,r.status,r.active_agent,r.execution_metadata FROM agent_runs r "
+            "JOIN messages m ON m.business_id=r.business_id AND m.id=r.message_id "
+            "WHERE r.business_id=%s AND m.conversation_id=%s "
+            "ORDER BY r.created_at DESC LIMIT 1",
+            (self.business_id, conversation_id),
+        ).fetchone()
+
+    def list_conversations(self, limit: int, status: str | None = None) -> list[dict[str, Any]]:
+        """Staff inbox rows: newest first, with the last message and the latest run."""
+        return self._connection.execute(
+            "SELECT c.id,c.customer_id,c.identity_id,c.status,c.version,c.created_at,c.updated_at,"
+            "cu.display_name AS customer_name,ci.channel,"
+            "lm.body AS last_body,lm.direction AS last_direction,lm.created_at AS last_at,"
+            "r.status AS run_status,r.active_agent,r.reason_code "
+            "FROM conversations c "
+            "LEFT JOIN customers cu ON cu.business_id=c.business_id AND cu.id=c.customer_id "
+            "LEFT JOIN customer_identities ci ON ci.business_id=c.business_id "
+            "AND ci.id=c.identity_id "
+            "LEFT JOIN LATERAL (SELECT body,direction,created_at FROM messages m "
+            "WHERE m.business_id=c.business_id AND m.conversation_id=c.id "
+            "ORDER BY m.created_at DESC,m.id DESC LIMIT 1) lm ON true "
+            "LEFT JOIN LATERAL (SELECT ar.status,ar.active_agent,ar.reason_code FROM agent_runs ar "
+            "JOIN messages m ON m.business_id=ar.business_id AND m.id=ar.message_id "
+            "WHERE ar.business_id=c.business_id AND m.conversation_id=c.id "
+            "ORDER BY ar.created_at DESC LIMIT 1) r ON true "
+            "WHERE c.business_id=%s AND c.customer_id IS NOT NULL "
+            "AND (%s::text IS NULL OR c.status=%s) "
+            "ORDER BY COALESCE(lm.created_at,c.updated_at) DESC,c.id DESC LIMIT %s",
+            (self.business_id, status, status, limit),
+        ).fetchall()
+
+    def get_conversation_detail(self, conversation_id: UUID) -> dict[str, Any] | None:
+        return self._connection.execute(
+            "SELECT c.id,c.customer_id,c.identity_id,c.status,c.version,c.created_at,c.updated_at,"
+            "cu.display_name AS customer_name,ci.channel "
+            "FROM conversations c "
+            "LEFT JOIN customers cu ON cu.business_id=c.business_id AND cu.id=c.customer_id "
+            "LEFT JOIN customer_identities ci ON ci.business_id=c.business_id "
+            "AND ci.id=c.identity_id "
+            "WHERE c.business_id=%s AND c.id=%s",
+            (self.business_id, conversation_id),
+        ).fetchone()
+
+    def list_conversation_runs(self, conversation_id: UUID, limit: int) -> list[dict[str, Any]]:
+        return self._connection.execute(
+            "SELECT r.id,r.message_id,r.status,r.active_agent,r.reason_code,r.handoff_count,"
+            "r.execution_metadata,r.created_at FROM agent_runs r "
+            "JOIN messages m ON m.business_id=r.business_id AND m.id=r.message_id "
+            "WHERE r.business_id=%s AND m.conversation_id=%s "
+            "ORDER BY r.created_at DESC LIMIT %s",
+            (self.business_id, conversation_id, limit),
+        ).fetchall()
+
     def get_business_configuration(self) -> tuple[str, int] | None:
         row = self._connection.execute(
             "SELECT configuration_version,version FROM businesses WHERE id=%s",

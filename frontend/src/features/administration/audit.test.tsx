@@ -6,44 +6,44 @@ import { AuditScreen } from "./components/AuditScreen";
 
 function render(query: Record<string, string> = {}) { return renderToStaticMarkup(<AuditScreen model={getAuditFixtureScreen(query)} />); }
 
-describe("P5H Audit", () => {
-  it("fails closed by default and withholds fixture event existence", () => {
+describe("Activity log", () => {
+  it("fails closed by default and withholds entry existence", () => {
     const markup = render();
-    expect(markup).toContain("Audit access is restricted");
-    expect(markup).toContain("Event existence and protected fields remain concealed");
+    expect(markup).toContain("don&#x27;t have access to the activity log");
+    expect(markup).toContain("Nothing about its contents is shown");
     expect(markup).not.toContain("AUD-1042");
   });
 
-  it("renders authorized fixture rows with semantic durable evidence", () => {
+  it("renders entries with plain-language actions and results", () => {
     const markup = render({ state: "fixture" });
-    expect(markup).toContain("Redacted audit fixture events");
-    expect(markup).toContain("reserve_inventory");
-    expect(markup).toContain("update_order");
-    expect(markup).toContain("REJECTED · E02");
-    expect(markup).toContain("RECONCILIATION REQUIRED");
+    expect(markup).toContain("Reserve stock");
+    expect(markup).toContain("Change order");
+    expect(markup).toContain("Blocked by policy");
+    expect(markup).toContain("Needs checking");
+    expect(markup).not.toMatch(/reserve_inventory|update_order|REJECTED|RECONCILIATION/);
   });
 
-  it("renders selected safe detail without secret or reasoning fields", () => {
+  it("renders the selected entry without secret or reasoning fields", () => {
     const markup = render({ state: "fixture", event: "AUD-1043" });
-    expect(markup).toContain("Selected redacted fixture event");
+    expect(markup).toContain("Selected entry");
     expect(markup).toContain("corr-demo-1043");
-    expect(markup).toContain("The unsupported order update was rejected before a business effect");
+    expect(markup).toContain("The order change was blocked before anything changed");
     expect(markup).not.toMatch(/password|access[_ -]?token|private[_ -]?key|raw prompt|reasoning trace/i);
   });
 
-  it("filters only deterministic safe fixture fields", () => {
-    const model = getAuditFixtureScreen({ state: "fixture", q: "reconciliation" });
+  it("filters only safe fields", () => {
+    const model = getAuditFixtureScreen({ state: "fixture", q: "check reservation" });
     expect(model.items.map((item) => item.id)).toEqual(["AUD-1044"]);
     const empty = getAuditFixtureScreen({ state: "fixture", q: "not present" });
     expect(empty.items).toHaveLength(0);
-    expect(renderToStaticMarkup(<AuditScreen model={empty} />)).toContain("No matching fixture events");
+    expect(renderToStaticMarkup(<AuditScreen model={empty} />)).toContain("No matching entries");
   });
 
-  it("keeps unavailable and loading distinct from valid empty", () => {
-    expect(render({ state: "unavailable" })).toContain("Audit source is unavailable");
-    expect(render({ state: "unavailable" })).toContain("not a valid no-event result");
-    expect(render({ state: "empty" })).toContain("No matching fixture events");
-    expect(render({ state: "loading" })).toContain("Loading authorized audit events");
+  it("keeps unavailable and loading distinct from empty", () => {
+    expect(render({ state: "unavailable" })).toContain("can&#x27;t be loaded right now");
+    expect(render({ state: "unavailable" })).toContain("does not mean nothing happened");
+    expect(render({ state: "empty" })).toContain("No matching entries");
+    expect(render({ state: "loading" })).toContain("Loading the activity log");
   });
 
   it("is network-free and declares restricted absent API", () => {

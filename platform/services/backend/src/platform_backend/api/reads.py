@@ -10,6 +10,11 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from platform_backend.api.configuration import HttpServices, configured_services
 from platform_backend.api.schemas import (
+    ConversationDetailDto,
+    ConversationMessageDto,
+    ConversationPageDto,
+    ConversationRunDto,
+    ConversationSummaryDto,
     CustomerDto,
     InventoryDto,
     InventoryPageDto,
@@ -23,7 +28,7 @@ from platform_backend.api.schemas import (
 from platform_backend.domain.context import PrincipalContext, StaffRole
 from platform_backend.domain.errors import DomainFailure, ErrorCode
 from platform_backend.domain.models import Product
-from platform_backend.security.policy import require_business_access
+from platform_backend.security.policy import require_business_access, require_customer_access
 
 router = APIRouter()
 bearer = HTTPBearer(auto_error=False)
@@ -185,4 +190,91 @@ def sales(
 ) -> SalesReportDto:
     return SalesReportDto.model_validate(
         http.queries.report(scope, start, end, granularity, target, product_id)
+    )
+
+
+def _conversation_summary(row: dict[str, object]) -> ConversationSummaryDto:
+    return ConversationSummaryDto(
+        id=row["id"],  # type: ignore[arg-type]
+        customer_id=row["customer_id"],  # type: ignore[arg-type]
+        customer_name=row.get("customer_name"),  # type: ignore[arg-type]
+        channel=row.get("channel"),  # type: ignore[arg-type]
+        status=row["status"],  # type: ignore[arg-type]
+        last_message=row.get("last_body"),  # type: ignore[arg-type]
+        last_direction=row.get("last_direction"),  # type: ignore[arg-type]
+        last_at=row.get("last_at"),  # type: ignore[arg-type]
+        run_status=row.get("run_status"),  # type: ignore[arg-type]
+        active_agent=row.get("active_agent"),  # type: ignore[arg-type]
+        outcome=row.get("reason_code"),  # type: ignore[arg-type]
+        version=row["version"],  # type: ignore[arg-type]
+        updated_at=row["updated_at"],  # type: ignore[arg-type]
+    )
+
+
+@router.get("/conversations", response_model=ConversationPageDto)
+def conversations(
+    scope: Principal,
+    http: Services,
+    status: Annotated[Literal["OPEN", "ESCALATED", "CLOSED"] | None, HttpQuery()] = None,
+    limit: Annotated[int, HttpQuery(ge=1, le=100)] = 50,
+) -> ConversationPageDto:
+    """Customer conversations the staff member may see; operators only see assigned customers."""
+    with http.database.transaction(scope.business_id) as repository:
+        require_business_access(scope, repository)
+        rows = repository.list_conversations(limit, status)
+        visible = []
+        for row in rows:
+            try:
+                require_customer_access(scope, repository, row["customer_id"])
+            except DomainFailure:
+                continue
+            visible.append(_conversation_summary(row))
+    return ConversationPageDto(items=visible)
+
+
+@router.get("/conversations/{conversation_id}", response_model=ConversationDetailDto)
+def conversation(conversation_id: UUID, scope: Principal, http: Services) -> ConversationDetailDto:
+    with http.database.transaction(scope.business_id) as repository:
+        require_business_access(scope, repository)
+        row = repository.get_conversation_detail(conversation_id)
+        if row is None or row["customer_id"] is None:
+            raise DomainFailure(ErrorCode.NOT_ACCESSIBLE, "Resource is not accessible")
+        require_customer_access(scope, repository, row["customer_id"])
+        messages = repository.list_conversation_messages(conversation_id, 200)
+        runs = repository.list_conversation_runs(conversation_id, 50)
+        latest = runs[0] if runs else None
+        summary = _conversation_summary(
+            {
+                **row,
+                "last_body": messages[-1]["body"] if messages else None,
+                "last_direction": messages[-1]["direction"] if messages else None,
+                "last_at": messages[-1]["created_at"] if messages else None,
+                "run_status": latest["status"] if latest else None,
+                "active_agent": latest["active_agent"] if latest else None,
+                "reason_code": latest["reason_code"] if latest else None,
+            }
+        )
+    return ConversationDetailDto(
+        conversation=summary,
+        messages=[
+            ConversationMessageDto(
+                id=item["id"],
+                direction=item["direction"],
+                body=item["body"],
+                status=item["status"],
+                created_at=item["created_at"],
+            )
+            for item in messages
+        ],
+        runs=[
+            ConversationRunDto(
+                id=item["id"],
+                status=item["status"],
+                active_agent=item["active_agent"],
+                outcome=item["reason_code"],
+                handoff_count=item["handoff_count"],
+                created_at=item["created_at"],
+            )
+            for item in runs
+        ],
     )

@@ -4,40 +4,41 @@ import { getOrderDetailFixture, getOrdersFixtureScreen } from "./adapters/fixtur
 import { OrderDetailScreen } from "./components/OrderDetailScreen";
 import { OrdersScreen } from "./components/OrdersScreen";
 
-describe("P5D Orders safety states", () => {
-  it("renders Order State and Reservation State independently", () => {
+describe("Orders", () => {
+  it("shows order status and stock reservation as separate columns", () => {
     const markup = renderToStaticMarkup(<OrdersScreen model={getOrdersFixtureScreen({})} />);
-    expect(markup).toContain("Order state");
-    expect(markup).toContain("Reservation state");
-    expect(markup).toContain("OUTCOME_UNKNOWN");
+    expect(markup).toContain("Order status");
+    expect(markup).toContain("Stock reservation");
+    expect(markup).toContain("Needs checking");
+    expect(markup).not.toMatch(/OUTCOME_UNKNOWN|fixture|E02/);
   });
 
-  it("keeps a known reservation failure out of reconciliation semantics", () => {
+  it("explains a clear reservation failure without asking for a recheck", () => {
     const markup = renderToStaticMarkup(<OrderDetailScreen model={getOrderDetailFixture("ORD-1043", {})} />);
-    expect(markup).toContain("Order exists, but inventory is not reserved");
-    expect(markup).toContain("Review current inventory");
-    expect(markup).toContain("does not require reconciliation by default");
+    expect(markup).toContain("Stock was not reserved");
+    expect(markup).toContain("Check current stock");
+    expect(markup).toContain("nothing to double-check");
   });
 
-  it("requires reconciliation and exposes no blind retry control for OUTCOME_UNKNOWN", () => {
+  it("asks for a check and offers no retry button when the reservation outcome is unknown", () => {
     const markup = renderToStaticMarkup(<OrderDetailScreen model={getOrderDetailFixture("ORD-1044", {})} />);
-    expect(markup).toContain("The reservation may have committed");
-    expect(markup).toContain("Reconcile authoritative state");
-    expect(markup).toContain("no blind mutation retry");
+    expect(markup).toContain("may have gone through");
+    expect(markup).toContain("Check the stock records");
+    expect(markup).toContain("do not try to reserve again");
     expect(markup).not.toMatch(/<button[^>]*>[^<]*Retry/i);
   });
 
-  it("renders E02 as a disabled policy restriction with no successful update", () => {
+  it("shows blocked order changes as a disabled control with nothing changed", () => {
     const markup = renderToStaticMarkup(<OrderDetailScreen model={getOrderDetailFixture("ORD-1047", {})} />);
-    expect(markup).toContain("E02 · automatic Order update restricted");
-    expect(markup).toMatch(/<button[^>]*disabled[^>]*><span>Update order · restricted<\/span><\/button>/);
-    expect(markup).toContain("No update executed");
+    expect(markup).toContain("Order changes are blocked");
+    expect(markup).toMatch(/<button[^>]*disabled[^>]*><span>Change order<\/span><\/button>/);
+    expect(markup).toContain("Nothing was changed");
   });
 
-  it("keeps Order Delivery and Message Delivery separate", () => {
+  it("keeps delivery and customer messages separate from the order itself", () => {
     const markup = renderToStaticMarkup(<OrderDetailScreen model={getOrderDetailFixture("ORD-1042", {})} />);
-    expect(markup).toContain("Order delivery");
-    expect(markup).toContain("Message delivery");
-    expect(markup).toContain("communication only");
+    expect(markup).toContain("Delivery");
+    expect(markup).toContain("Customer message");
+    expect(markup).toContain("Messages never change the order or the reservation");
   });
 });

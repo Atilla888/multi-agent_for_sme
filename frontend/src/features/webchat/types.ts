@@ -32,7 +32,7 @@ export interface WebChatMessage {
 }
 
 export interface WebChatScreenModel {
-  readonly mode: "LOCAL UI FIXTURE ONLY";
+  readonly mode: "sample";
   readonly businessName: string;
   readonly state: WebChatViewState;
   readonly messages: readonly WebChatMessage[];

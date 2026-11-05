@@ -78,29 +78,31 @@ describe("field primitives", () => {
 });
 
 describe("semantic status and feedback", () => {
-  it("communicates status with both a marker and explicit text", () => {
+  it("communicates status with both a marker and plain text", () => {
     const markup = renderToStaticMarkup(<StatusBadge state="waiting-human" />);
     expect(markup).toContain("status-badge__marker");
     expect(markup).toContain("status-badge__dot");
-    expect(markup).toContain("Waiting human");
+    expect(markup).toContain("Needs a person");
   });
 
-  it("keeps OUTCOME_UNKNOWN reconciliation semantics distinct and adds no retry action", () => {
+  it("asks for a check, not a retry, when an outcome is unknown", () => {
     const markup = renderToStaticMarkup(<StateNotice state="outcome-unknown" />);
-    expect(markup).toContain("OUTCOME_UNKNOWN");
-    expect(markup).toContain("effect may have committed");
-    expect(markup).toContain("Reconcile authoritative state");
+    expect(markup).toContain("Needs checking");
+    expect(markup).toContain("may already have gone through");
+    expect(markup).toContain("do not try it again");
     expect(markup).not.toContain("<button");
+    expect(markup).not.toContain("OUTCOME_UNKNOWN");
   });
 
-  it("keeps MODEL_NOT_READY, permission denial, and not configured distinct", () => {
+  it("keeps not ready, no access and not set up distinct and jargon-free", () => {
     const model = renderToStaticMarkup(<StateNotice state="model-not-ready" />);
     const permission = renderToStaticMarkup(<StateNotice state="permission-denied" />);
     const configuration = renderToStaticMarkup(<StateNotice state="not-configured" />);
-    expect(model).toContain("MODEL_NOT_READY");
-    expect(model).toContain("no result was produced");
-    expect(permission).toContain("backend authorization is decisive");
-    expect(configuration).toContain("required integration");
+    expect(model).toContain("Not ready yet");
+    expect(model).toContain("no result to show");
+    expect(permission).toContain("does not have permission");
+    expect(configuration).toContain("needs to be set up");
+    expect(`${model}${permission}${configuration}`).not.toMatch(/MODEL_NOT_READY|backend|integration/);
   });
 
   it("renders generic empty and loading feedback without product data", () => {
@@ -181,41 +183,39 @@ describe("surface and display primitives", () => {
   });
 });
 
-describe("approved token contract", () => {
+describe("design tokens", () => {
   const cssPath = fileURLToPath(new URL("../../styles/globals.css", import.meta.url));
   const css = readFileSync(cssPath, "utf8");
 
-  it("maps semantic purpose tokens to the lab 3 Figma design system", () => {
-    expect(css).toContain("--color-indigo-600: #4f46e5");
-    expect(css).toContain("--color-neutral-50: #f6f7f9");
-    expect(css).toContain("--color-neutral-900: #111827");
-    expect(css).toContain("--primary: var(--color-indigo-600)");
-    expect(css).toContain("--primary-hover: var(--color-indigo-700)");
-    expect(css).toContain("--sidebar: var(--color-neutral-900)");
-    expect(css).toContain("--agent-sales: var(--color-emerald-700)");
-    expect(css).toContain("--agent-analytics: var(--color-violet-700)");
-    expect(css).toContain("--status-unknown: var(--color-violet-700)");
-    expect(css).toContain("--status-waiting: var(--color-indigo-700)");
-    expect(css).toContain("--chart-actual: var(--color-indigo-600)");
-    expect(css).toContain("--chart-predicted: var(--color-violet-700)");
-    expect(css).toContain("--radius-md: 8px");
-    expect(css).toContain("--radius-lg: 12px");
+  it("defines one accent and semantic status tones for light and dark", () => {
+    expect(css).toContain("--primary: #0071e3");
+    expect(css).toContain("--background: #f5f5f7");
+    expect(css).toContain("@media (prefers-color-scheme: dark)");
+    expect(css).toContain("--status-unknown:");
+    expect(css).toContain("--status-waiting:");
+    expect(css).toContain("--chart-actual:");
+    expect(css).toContain("--chart-predicted:");
+    expect(css).toContain("--radius-md: 10px");
+    expect(css).toContain("--radius-lg: 14px");
     expect(css).not.toContain("navy");
   });
 
-  it("follows the Figma breakpoints for the staff shell", () => {
-    expect(css).toContain("--sidebar-width: 240px");
-    expect(css).toContain("--rail-width: 76px");
+  it("keeps the shell breakpoints and translucent chrome", () => {
+    expect(css).toContain("--sidebar-width: 248px");
+    expect(css).toContain("--rail-width: 72px");
     expect(css).toContain("@media (max-width: 1100px)");
     expect(css).toContain("@media (max-width: 640px)");
     expect(css).toContain(".mobile-tabbar");
+    expect(css).toContain("backdrop-filter: blur(24px)");
   });
 
-  it("retains typography, focus, and reduced-motion treatment", () => {
-    expect(css).toContain("--type-page-size: 28px");
+  it("uses the system font, size-specific tracking, focus rings and accessibility preferences", () => {
+    expect(css).toContain("-apple-system, BlinkMacSystemFont");
+    expect(css).toContain("--tracking-tight: -0.02em");
     expect(css).toContain("--type-body-line: 20px");
-    expect(css).toContain("--type-metric-size: 28px");
     expect(css).toContain("outline: 2px solid var(--focus-ring)");
     expect(css).toContain("@media (prefers-reduced-motion: reduce)");
+    expect(css).toContain("@media (prefers-reduced-transparency: reduce)");
+    expect(css).toContain("@media (prefers-contrast: more)");
   });
 });

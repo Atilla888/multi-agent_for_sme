@@ -34,5 +34,5 @@ export function buildDemoWebChat(state: WebChatViewState): WebChatScreenModel {
     ? []
     : [customerRequest, stateReplies[state] ?? supportReply];
 
-  return { mode: "LOCAL UI FIXTURE ONLY", businessName: "North Shop", state, messages, transportConfigured: false };
+  return { mode: "sample", businessName: "North Shop", state, messages, transportConfigured: false };
 }

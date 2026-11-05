@@ -7,7 +7,7 @@ import { Icon } from "@/components/ui/Icon";
 import { flatNavigation, isRouteActive, mobileTabs } from "@/lib/navigation";
 import type { AuthenticatedSession } from "@/types/auth";
 
-/** Mobile bottom tab bar (Figma, Mobile · 390): Home, Chats, Orders, Analytics and a More sheet. */
+/** Mobile bottom tab bar: Home, Inbox, Orders, Reports and a More sheet with every other screen. */
 export function MobileTabBar({ session }: { readonly session?: AuthenticatedSession }) {
   const pathname = usePathname();
   const [moreOpen, setMoreOpen] = useState(false);
@@ -16,31 +16,36 @@ export function MobileTabBar({ session }: { readonly session?: AuthenticatedSess
   return (
     <>
       {moreOpen ? (
-        <div className="mobile-more" id="mobile-more-sheet">
-          <nav aria-label="All staff screens">
-            <ul>
-              {flatNavigation().map((item) => {
-                const active = isRouteActive(pathname, item.href);
-                return (
-                  <li key={item.href}>
-                    <Link className={`mobile-more__link ${active ? "mobile-more__link--active" : ""}`} href={item.href} aria-current={active ? "page" : undefined} onClick={() => setMoreOpen(false)}>
-                      {item.icon ? <Icon name={item.icon} /> : null}
-                      <span>{item.label}</span>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </nav>
-          {session ? (
-            <form action="/api/auth/logout" method="post">
-              <button className="mobile-more__link" type="submit">
-                <Icon name="logout" />
-                <span>Sign out</span>
-              </button>
-            </form>
-          ) : null}
-        </div>
+        <>
+          <button className="mobile-more__scrim" type="button" aria-label="Close menu" onClick={() => setMoreOpen(false)} />
+          <div className="mobile-more" id="mobile-more-sheet">
+            <span className="mobile-more__grip" aria-hidden="true" />
+            <nav aria-label="All screens">
+              <ul>
+                {flatNavigation().map((item) => {
+                  const active = isRouteActive(pathname, item.href);
+                  return (
+                    <li key={item.href}>
+                      <Link className={`mobile-more__link ${active ? "mobile-more__link--active" : ""}`} href={item.href} aria-current={active ? "page" : undefined} onClick={() => setMoreOpen(false)}>
+                        {item.icon ? <Icon name={item.icon} /> : null}
+                        <span>{item.label}</span>
+                        {item.access ? <Icon name="lock" size={14} className="mobile-more__lock" /> : null}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </nav>
+            {session ? (
+              <form action="/api/auth/logout" method="post">
+                <button className="mobile-more__link" type="submit">
+                  <Icon name="logout" />
+                  <span>Sign out</span>
+                </button>
+              </form>
+            ) : null}
+          </div>
+        </>
       ) : null}
       <nav className="mobile-tabbar" aria-label="Primary">
         {mobileTabs.map((tab) => {

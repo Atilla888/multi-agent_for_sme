@@ -1,6 +1,6 @@
 import type { HTMLAttributes } from "react";
 import { statePresentation, type ProductState } from "@/types/states";
-import { StatusBadge } from "./StatusBadge";
+import { Icon, type IconName } from "./Icon";
 
 interface StateNoticeProps extends Omit<HTMLAttributes<HTMLDivElement>, "title"> {
   readonly state: ProductState;
@@ -8,12 +8,25 @@ interface StateNoticeProps extends Omit<HTMLAttributes<HTMLDivElement>, "title">
   readonly description?: string;
 }
 
+const iconByTone: Record<string, IconName> = {
+  success: "check",
+  danger: "alert",
+  warning: "alert",
+  waiting: "user",
+  unknown: "info",
+  restricted: "lock",
+  pending: "clock",
+  information: "info",
+  neutral: "info",
+};
+
+/** A short, calm message about the state of something on the screen, with what to do next. */
 export function StateNotice({ state, title, description, className = "", ...props }: StateNoticeProps) {
   const presentation = statePresentation[state];
   return (
     <div className={`state-notice state-notice--${presentation.tone} ${className}`.trim()} role="status" {...props}>
-      <StatusBadge state={state} />
-      <div>
+      <span className="state-notice__icon" aria-hidden="true"><Icon name={iconByTone[presentation.tone] ?? "info"} size={16} /></span>
+      <div className="state-notice__body">
         <p className="state-notice__title">{title ?? presentation.label}</p>
         <p className="state-notice__description">{description ?? presentation.guidance}</p>
       </div>

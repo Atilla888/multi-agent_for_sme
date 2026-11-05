@@ -22,5 +22,5 @@ export function getAnalyticsFixtureScreen(query: Record<string, string | string[
   const granularity = allowed(first(query.granularity), granularities, "WEEK");
   const period = allowed(first(query.period), periods, "last-complete-month");
   const state = allowed(first(query.state), states, "default");
-  return { mode: "LOCAL UI FIXTURE ONLY", state, report: analyticsFixtureAdapter.getReport({ metric, granularity, period, state }), metric, granularity, period };
+  return { mode: "sample", state, report: analyticsFixtureAdapter.getReport({ metric, granularity, period, state }), metric, granularity, period };
 }

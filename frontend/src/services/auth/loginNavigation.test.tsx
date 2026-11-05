@@ -39,7 +39,7 @@ describe("explicit browser login initiation", () => {
     const markup = renderToStaticMarkup(page);
     expect(markup).toContain('href="/api/auth/login"');
     expect(markup).toContain('class="button button--primary"');
-    expect(markup).toContain("Continue to Keycloak");
+    expect(markup).toContain(">Sign in</a>");
     expect(beginLogin).not.toHaveBeenCalled();
     expect(network).not.toHaveBeenCalled();
   });

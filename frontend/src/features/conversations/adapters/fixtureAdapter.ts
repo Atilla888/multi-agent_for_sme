@@ -14,6 +14,6 @@ export function parseConversationScenario(value: string | string[] | undefined):
 }
 
 export function getConversationFixtureScreen(validationState: ConversationValidationState, scenario: ConversationScenario, selectedId = "c-42"): ConversationScreenModel {
-  if (validationState === "empty") return { mode: "LOCAL UI FIXTURE ONLY", items: [], selected: null, validationState };
-  return { mode: "LOCAL UI FIXTURE ONLY", items: demoConversationItems, selected: selectedId === "c-42" ? demoConversationWorkspace(scenario) : null, validationState };
+  if (validationState === "empty") return { mode: "sample", items: [], selected: null, validationState };
+  return { mode: "sample", items: demoConversationItems, selected: selectedId === "c-42" ? demoConversationWorkspace(scenario) : null, validationState };
 }
