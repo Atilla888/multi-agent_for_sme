@@ -40,7 +40,7 @@ Exact employee roles, approval levels, and customer identity-verification rules 
 
 **RESEARCH TARGET:** Implement and evaluate Single Agent, Static Multi-Agent, and Context-Aware Adaptive Multi-Agent arrangements using comparable scenarios, business tools, data, and evaluation rules. Ablations may test the contribution of shared context, adaptive routing, handoff, structured state, and confidence-based escalation where feasible.
 
-**OUT OF SCOPE / OPTIONAL FUTURE:** Full CRM/ERP coverage; additional agents (Inventory, Marketing, Finance, Owner, Reputation, Forecasting); general industry coverage; Kafka/NATS, ClickHouse, Kubernetes, microservices, event sourcing, or CQRS without new evidence; advanced recommendation/anomaly-detection modules unless necessary for the diploma; a finalized design system before UX research.
+**OUT OF SCOPE / OPTIONAL FUTURE:** Full CRM/ERP coverage; additional agents (Inventory, Marketing, Finance, Owner, Reputation, Forecasting); general industry coverage; Kafka/NATS, ClickHouse, Kubernetes, microservices, event sourcing, or CQRS without new evidence; advanced recommendation/anomaly-detection modules unless an MVP scenario needs them; a finalized design system before UX research.
 
 ## 6. Functional requirements
 

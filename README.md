@@ -1,6 +1,6 @@
 # Multi-Agent Platform for SMEs
 
-An intelligent adaptive multi-agent platform that automates customer conversations and business analytics for small and medium-sized retail businesses. Built as a diploma project.
+An intelligent adaptive multi-agent platform that automates customer conversations and business analytics for small and medium-sized retail businesses.
 
 ## What it does
 

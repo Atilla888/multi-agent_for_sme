@@ -1,6 +1,6 @@
 # UML diagrams — Multi-Agent Platform (PlantUML)
 
-All 14 diagram types of UML 2.5 for the diploma project, plus two ER diagrams of the database. Every diagram is written in PlantUML and drawn from the real project: the backend source (`platform/services/backend/src/platform_backend`), the database schema (`physical_schema.sql`), the Docker Compose file, and the architecture chapters D01–D13 of the master document.
+All 14 diagram types of UML 2.5 for the platform, plus two ER diagrams of the database. Every diagram is written in PlantUML and drawn from the real project: the backend source (`platform/services/backend/src/platform_backend`), the database schema (`physical_schema.sql`), the Docker Compose file, and the architecture chapters D01–D13 of the master document.
 
 - `src/` — PlantUML sources (`.puml`); `_style.iuml` holds the shared styling
 - `png/` — rendered images (run the commands below to also produce `svg/`, which stays sharp in Word and in slides)

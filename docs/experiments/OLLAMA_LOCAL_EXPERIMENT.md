@@ -67,7 +67,7 @@ SpecialistAgent (Sales / Support / Analytics)
 ## 5. O6 Specialist Runtime Experiment
 
 ### A. Experiment Harness
-Implemented in [`platform/tests/experimental/test_ollama_specialist_runtime.py`](file:///C:/Users/len/Desktop/diploma-multi-agent-platform/platform/tests/experimental/test_ollama_specialist_runtime.py):
+Implemented in [`platform/tests/experimental/test_ollama_specialist_runtime.py`](../../platform/tests/experimental/test_ollama_specialist_runtime.py):
 - Real `SpecialistAgent` with production prompt rendering and admission logic.
 - Real `ROLE_TOOLS` (role-based tool permission boundaries) and `TOOL_INPUTS` (Pydantic schema validation).
 - Safe `RecordingExecutor` tracking admitted tool invocations without connecting to PostgreSQL or mutating state.

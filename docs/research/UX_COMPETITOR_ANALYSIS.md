@@ -152,11 +152,11 @@ The following are individual reviews of public, mostly vendor-authored pages. Th
 
 **Observed:** Senbi describes CRM for leads, customers, sales, tasks, payments and goods, plus an AI sales agent and an in-CRM assistant for questions on live sales/product data. Source: [Senbi CRM — pipeline, leads, finance and KPI in one place](https://senbi.org/en/crm/). **Interpretation:** Broadest local analogy for structured SME operations plus owner-facing natural-language data access.
 
-#### What is similar to our diploma project
+#### What is similar to our platform
 
 Unified business records, inbound AI lead handling and natural-language questions over CRM facts are documented on the [official CRM page](https://senbi.org/en/crm/).
 
-#### What is different from our diploma project
+#### What is different from our platform
 
 The public description is CRM/commerce centered; three named Sales/Support/Analytics agents and their adaptive comparison are **not verified from public sources**. This is a scope distinction, not a negative capability claim.
 
@@ -214,11 +214,11 @@ Published evidence does not establish cross-specialist workflow state or our res
 
 **Observed:** aspanCRM documents a shared channel Inbox, CRM pipelines, AI agents, workflows, reports and audit. Sources: [Product overview](https://aspancrm.kz/ru/product/), [Inbox](https://aspancrm.kz/ru/product/inbox/), [AI agents](https://aspancrm.kz/ru/product/ai/). **Interpretation:** Strong local analogue for channel → CRM action continuity.
 
-#### What is similar to our diploma project
+#### What is similar to our platform
 
 AI inside customer channels can create a lead, move a deal and assign a task; human takeover and shared knowledge across agents are described. [AI agents](https://aspancrm.kz/ru/product/ai/).
 
-#### What is different from our diploma project
+#### What is different from our platform
 
 Its documented actions are CRM lead/deal operations. Our planned retail workflow also needs authoritative product, order and inventory actions plus a three-architecture research comparison; those should not be inferred from the vendor page.
 
@@ -276,11 +276,11 @@ No public proof reviewed of retail order/inventory tool semantics or research-gr
 
 **Observed:** CareHub positions a unified customer Inbox with Cario AI, operator workspace, channel analytics and human transfer. Sources: [CareHub home](https://carehub.kz/), [Inbox](https://carehub.kz/product/inbox), [AI agent](https://carehub.kz/product/ai-agent).
 
-#### What is similar to our diploma project
+#### What is similar to our platform
 
 Its channel-first operator view, AI answers in the same customer dialogue and transfer with context address our conversation/handoff tasks. [AI agent](https://carehub.kz/en/product/ai-agent), [CareHub home](https://carehub.kz/).
 
-#### What is different from our diploma project
+#### What is different from our platform
 
 Published emphasis is messaging, lead lifecycle and service analytics. Our Business Brain's structured orders/inventory and independent forecasting are not established by these pages.
 
@@ -338,11 +338,11 @@ The public evidence is mainly product-page description; it does not verify a mul
 
 **Observed vendor description:** Bayge presents a messenger-centered CRM with AI bot, booking, sales pipeline and analytics. [Bayge CRM](https://crm.bayge.kz/).
 
-#### What is similar to our diploma project
+#### What is similar to our platform
 
 AI-assisted conversations, knowledge-backed responses, CRM leads and channel aggregation are described. [Bayge CRM](https://crm.bayge.kz/).
 
-#### What is different from our diploma project
+#### What is different from our platform
 
 Published modes emphasize booking/sales/support by bot configuration; our three separately bounded agents and orchestration experiment are not established by this page.
 
@@ -400,11 +400,11 @@ Evidence is a marketing page; agent handoff, permissioned tools and retail trans
 
 **Evidence limit:** This review refers to **Ubee AI at `ubee.kz`**, not an unrelated beauty-booking product with a similar name. Search returned an official-domain excerpt about AI replies, CRM and automation, but direct access to the page timed out. These details are **not directly verified from an opened public source**. [Official URL for later verification](https://ubee.kz/).
 
-#### What is similar to our diploma project
+#### What is similar to our platform
 
 The indexed excerpt suggests channel messages, AI replies, CRM lead records and manager involvement. Treat this as a research lead pending direct official-page or demo access. [Official URL](https://ubee.kz/).
 
-#### What is different from our diploma project
+#### What is different from our platform
 
 The indexed excerpt emphasizes sales funnel automation. Specialized multi-agent orchestration and owner forecasting are **not verified from accessible public sources**.
 
@@ -462,11 +462,11 @@ Direct official-site access is unavailable in this research session; context, wr
 
 **Observed vendor description:** AIQazaq markets integration of 1C, external CRM, spreadsheets and messengers with an AI assistant, including owner queries over business data. [AIQazaq](https://aiqazaq.kz/).
 
-#### What is similar to our diploma project
+#### What is similar to our platform
 
 Structured business data is queried through natural language and brought into AI-supported decisions; messaging sales use cases are also described. [AIQazaq](https://aiqazaq.kz/).
 
-#### What is different from our diploma project
+#### What is different from our platform
 
 It is presented largely as an integration/service solution rather than a bounded native retail operator UI. A shared three-agent Business Brain and adaptive routing are **not verified**.
 

@@ -2,7 +2,7 @@
 
 ## 3C.0 Scope and Source Authority
 
-Phase 3C is complete for the design-system scope of the diploma UX/UI track. The canonical artifact is the editable Figma file **Diplom — Multi-Agent Platform UX/UI** (key `OFXTN83nFl3RqukrEYQrFy`), page `03C — Design System`. This report records the owner's final 49/49 structural validation and manual visual review, the existing Phase 3B UX decisions, and the local Phase 3C plugin's token/component definitions. It does not claim that a frontend, full high-fidelity screens, prototype, or backend capabilities were implemented.
+Phase 3C is complete for the design-system scope of the UX/UI track. The canonical artifact is the editable Figma file **Diplom — Multi-Agent Platform UX/UI** (key `OFXTN83nFl3RqukrEYQrFy`), page `03C — Design System`. This report records the owner's final 49/49 structural validation and manual visual review, the existing Phase 3B UX decisions, and the local Phase 3C plugin's token/component definitions. It does not claim that a frontend, full high-fidelity screens, prototype, or backend capabilities were implemented.
 
 The [Phase 3B review](PHASE_3B_UX_REVIEW.md) remains the authority for approved low-fi layouts and safe flow semantics; the [Phase 2C IA](PHASE_2C_INFORMATION_ARCHITECTURE.md), [Phase 2D flows](PHASE_2D_CORE_USER_FLOWS.md), and [Phase 2E inventory](PHASE_2E_FINAL_SCREEN_INVENTORY.md) retain their respective functional authority. Phase 3C supplies reusable visual language and components, not new product behavior.
 
