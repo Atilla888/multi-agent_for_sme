@@ -1,0 +1,142 @@
+@startuml 27_er_knowledge_execution
+!include _style.iuml
+title ER Diagram (2/2) — knowledge, execution / audit and forecasting\n(physical_schema.sql)
+hide circle
+skinparam linetype ortho
+
+entity object_records {
+  * business_id, id <<PK>>
+  --
+  * bucket, object_key : text
+  * sha256 : char(64)
+  * media_type : text
+  * byte_size : bigint
+  * kind : DOCUMENT|ATTACHMENT|MODEL
+  * status : QUARANTINED|CLEAN|REVOKED|DELETED
+}
+entity documents {
+  * business_id, id <<PK>>
+  --
+  * title : text
+  * access_scope : CUSTOMER|STAFF
+  published_version_id : uuid <<FK>>
+  revoked_at : timestamptz
+  * version : bigint
+}
+entity document_versions {
+  * business_id, id <<PK>>
+  --
+  * document_id : uuid <<FK>>
+  * object_id : uuid <<FK>>
+  * content_hash : char(64)
+  * parser_version, embedding_model : text
+  * embedding_dimension : int
+  * status : STAGED|READY|FAILED|REVOKED
+}
+entity embeddings {
+  * business_id, id <<PK>>
+  --
+  * document_id, document_version_id <<FK>>
+  * chunk_index : int
+  * chunk_text : text
+  * embedding : vector
+}
+entity messages {
+  * business_id, id <<PK>>
+}
+entity agent_runs {
+  * business_id, id <<PK>>
+  --
+  * message_id : uuid <<FK>>
+  * mode : SINGLE|STATIC_MULTI|ADAPTIVE_MULTI
+  * status : RUNNING|WAITING_HUMAN|SUCCEEDED|FAILED
+  active_agent : Sales|Support|Analytics
+  * resume_revision : bigint
+  * step_count, handoff_count, retry_count : int
+  * deadline : timestamptz
+  * budget_state, execution_metadata : jsonb
+  * routing_confidence, reason_code : text
+}
+entity agent_steps {
+  * business_id, id <<PK>>
+  --
+  * run_id <<FK>>
+  * sequence : int
+  * kind : ROUTE|CONTEXT|HANDOFF|WAIT|FINAL
+  * summary : jsonb
+}
+entity idempotency_operations {
+  * business_id, id <<PK>>
+  --
+  * operation_key : text
+  * tool_name : create_order|update_order|reserve_inventory
+  * canonical_payload_hash : char(64)
+  * actor_scope : text
+  * status : STARTED|SUCCEEDED|FAILED|UNKNOWN
+  result : jsonb
+  * run_id <<FK>>
+}
+entity tool_calls {
+  * business_id, id <<PK>>
+  --
+  * run_id <<FK>>
+  operation_id <<FK>>
+  * tool_name : text
+  * attempt : int
+  * status : STARTED|SUCCEEDED|FAILED|OUTCOME_UNKNOWN
+  error_code, duration_ms, result_summary
+}
+entity escalations {
+  * business_id, id <<PK>>
+  --
+  * run_id <<FK>>
+  * reason_code : text
+  assigned_user_id <<FK>>
+  * status : OPEN|CLAIMED|RESOLVED
+  * expected_resume_revision : bigint
+  resolution : jsonb
+}
+entity audit_logs {
+  * business_id, id <<PK>>
+  --
+  run_id <<FK>>
+  * correlation_id : uuid
+  * actor_scope, event_type, resource_type : text
+  resource_id : uuid
+  * detail : jsonb
+}
+entity model_artifacts {
+  * business_id, id <<PK>>
+  --
+  * object_id <<FK>>
+  * model_version, dataset_version : text
+  * manifest : jsonb
+  * status : CANDIDATE|VALIDATED|RETIRED
+}
+entity forecast_runs {
+  * business_id, id <<PK>>
+  --
+  * model_artifact_id <<FK>>
+  agent_run_id <<FK>>
+  * as_of : timestamptz
+  * horizon : int
+  * granularity, target_definition : text
+  * status : PENDING|SUCCEEDED|FAILED
+  predictions : jsonb
+}
+
+object_records ||--o{ document_versions
+documents ||--o{ document_versions
+documents |o--o| document_versions : published
+document_versions ||--o{ embeddings
+messages ||--o{ agent_runs
+agent_runs ||--o{ agent_steps
+agent_runs ||--o{ tool_calls
+agent_runs ||--o{ idempotency_operations
+idempotency_operations |o--o{ tool_calls
+agent_runs ||--o{ escalations
+agent_runs |o--o{ audit_logs
+object_records ||--o{ model_artifacts
+model_artifacts ||--o{ forecast_runs
+agent_runs |o--o{ forecast_runs
+@enduml

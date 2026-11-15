@@ -1,0 +1,12 @@
+# Optional transport configuration only. Base schema, volumes and domain are unchanged.
+services:
+  keycloak:
+    environment:
+      KC_HOSTNAME: ${KEYCLOAK_PUBLIC_ORIGIN:?Explicit browser Keycloak origin required}
+  backend:
+    environment:
+      OIDC_ISSUER: ${OIDC_ISSUER:?Trusted external realm issuer required}
+      OIDC_AUDIENCE: ${OIDC_AUDIENCE:?Backend token audience required}
+      OIDC_JWKS_TRANSPORT_URL: ${OIDC_JWKS_TRANSPORT_URL:?Trusted internal JWKS URL required}
+      OIDC_ALLOW_LOCAL_HTTP: ${OIDC_ALLOW_LOCAL_HTTP:-false}
+      HTTP_CORS_ORIGINS: ${HTTP_CORS_ORIGINS:?Explicit frontend origins required}

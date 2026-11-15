@@ -1,0 +1,38 @@
+# Demo overlay: WhatsApp channel + Claude agent. Use together with compose.yaml and compose.p5i.yaml.
+#   docker compose -f infra/compose/compose.yaml -f infra/compose/compose.p5i.yaml \
+#                  -f infra/compose/compose.demo.yaml --env-file .env up -d
+# Secrets stay in the ignored .env; nothing here is a default credential.
+services:
+  backend:
+    environment:
+      DEV_LLM_PROVIDER: ${DEV_LLM_PROVIDER:-claude}
+      DEV_LLM_MODEL: ${DEV_LLM_MODEL:-claude-opus-5-5}
+      DEV_LLM_EFFORT: ${DEV_LLM_EFFORT:-medium}
+      DEV_LLM_TIMEOUT_SECONDS: ${DEV_LLM_TIMEOUT_SECONDS:-45}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:?Anthropic API key required for the Claude agent}
+      WHATSAPP_VERIFY_TOKEN: ${WHATSAPP_VERIFY_TOKEN:?Webhook verify token required}
+      WHATSAPP_APP_SECRET: ${WHATSAPP_APP_SECRET:?Meta app secret required}
+      WHATSAPP_ACCESS_TOKEN: ${WHATSAPP_ACCESS_TOKEN:?WhatsApp access token required}
+      WHATSAPP_PHONE_NUMBER_ID: ${WHATSAPP_PHONE_NUMBER_ID:?WhatsApp phone number id required}
+      WHATSAPP_BUSINESS_ID: ${WHATSAPP_BUSINESS_ID:?Tenant business UUID required}
+      TOOL_CURSOR_SIGNING_KEY: ${TOOL_CURSOR_SIGNING_KEY:-}
+      CHANNEL_RUN_TIMEOUT_SECONDS: ${CHANNEL_RUN_TIMEOUT_SECONDS:-60}
+  demo-seed:
+    profiles: [demo]
+    build:
+      context: ../..
+      dockerfile: services/backend/Dockerfile
+      target: runtime
+    environment:
+      MIGRATOR_DATABASE_URL: postgresql://${POSTGRES_MIGRATOR_USER:?}:${POSTGRES_MIGRATOR_PASSWORD:?}@postgres:5432/${POSTGRES_DB:?}
+      WHATSAPP_BUSINESS_ID: ${WHATSAPP_BUSINESS_ID:?}
+      WHATSAPP_PHONE_NUMBER_ID: ${WHATSAPP_PHONE_NUMBER_ID:?}
+      DEMO_BUSINESS_NAME: ${DEMO_BUSINESS_NAME:-North Shop}
+      DEMO_STAFF_ISSUER: ${DEMO_STAFF_ISSUER:-}
+      DEMO_STAFF_SUBJECT: ${DEMO_STAFF_SUBJECT:-}
+    command: ["python", "-m", "platform_backend.demo.seed"]
+    depends_on:
+      migration:
+        condition: service_completed_successfully
+    networks: [data]
+    restart: "no"

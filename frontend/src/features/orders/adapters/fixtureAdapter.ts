@@ -1,0 +1,10 @@
+import { BUSINESS_FIXTURE_MODE, parseBusinessValidationState } from "@/features/business";
+import { demoOrderDetail, demoOrderItems } from "../fixtures/demoOrders";
+import type { OrderDataAdapter } from "./contracts";
+import type { OrderDetailModel, OrdersScreenModel, OrderScenario } from "../types";
+const scenarios = new Set<OrderScenario>(["confirmed", "failed", "outcome-unknown", "attention", "stale", "e02"]);
+export const orderFixtureAdapter: OrderDataAdapter = { list(query, status) { const needle = query.trim().toLocaleLowerCase(); return demoOrderItems.filter((item) => (!needle || `${item.id} ${item.customer}`.toLocaleLowerCase().includes(needle)) && (status === "all" || item.scenario === status)); }, detail: demoOrderDetail };
+function first(value: string | string[] | undefined): string { return Array.isArray(value) ? value[0] ?? "" : value ?? ""; }
+export function parseOrderScenario(value: string | string[] | undefined): OrderScenario | undefined { const candidate = first(value); return scenarios.has(candidate as OrderScenario) ? candidate as OrderScenario : undefined; }
+export function getOrdersFixtureScreen(query: Record<string, string | string[] | undefined>): OrdersScreenModel { const validationState = parseBusinessValidationState(query.state); const search = first(query.q); const status = first(query.status) || "all"; const items = validationState === "default" ? orderFixtureAdapter.list(search, status) : []; return { mode: BUSINESS_FIXTURE_MODE, validationState: validationState === "default" && items.length === 0 ? "empty" : validationState, items, query: search, status }; }
+export function getOrderDetailFixture(id: string, query: Record<string, string | string[] | undefined>): OrderDetailModel { const validationState = parseBusinessValidationState(query.state); const order = orderFixtureAdapter.detail(id, parseOrderScenario(query.scenario)); return { mode: BUSINESS_FIXTURE_MODE, validationState: validationState === "default" && !order ? "empty" : validationState, order: validationState === "default" ? order : null }; }

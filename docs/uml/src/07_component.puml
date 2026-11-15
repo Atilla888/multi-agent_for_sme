@@ -1,0 +1,83 @@
+@startuml 07_component
+!include _style.iuml
+title Component Diagram — six macro-layers (D02) with provided / required interfaces
+
+package "L1 Client Channels" {
+  [Telegram / WhatsApp /\nInstagram adapters] as Chan <<planned>>
+  [Customer Web Chat\n(Next.js /chat)] as WebChat
+  [Staff dashboard\n(Next.js 16 / React 19 / TS)] as Dash
+}
+
+package "L2 API Gateway & Security" {
+  [FastAPI app\n(api.app, api.reads)] as Api
+  [StaffIdentityService\n+ OidcVerifier] as Ident
+  [Security policy\n(require_business_access,\nrequire_customer_access,\nrequire_owner)] as Policy
+  portin "HTTP /me /products /inventory\n/customers /orders /analytics/sales" as HttpPort
+}
+
+package "L3 Adaptive Orchestration" {
+  [Orchestrator\n(LangGraph, SINGLE / STATIC_MULTI /\nADAPTIVE_MULTI)] as Orch <<planned>>
+  [Sales agent] as Sales
+  [Support agent] as Support
+  [Analytics agent] as Analytics
+}
+
+package "L4 Business Brain" {
+  [BusinessBrain] as Brain
+  [Knowledge retrieval (RAG)\nKnowledgeService] as RAG
+}
+
+package "L5 Tools / API Execution & Operational ML" {
+  [ToolExecutor\n(10 tools)] as Exec
+  [OrderService /\nQueryService /\nOperationLedger] as App
+  [Forecast service\n(XGBoost)] as Forecast <<planned>>
+}
+
+package "L6 Data & Infrastructure" {
+  database "PostgreSQL 17\n+ pgvector" as PG
+  database "Redis 8" as Redis
+  database "MinIO (S3,\nprivate bucket)" as Minio
+  [Keycloak 26] as KC
+}
+
+cloud "Gemini API\n(LLM provider)" as Gemini
+
+interface "BrainPort" as IBrain
+interface "ExecutorPort" as IExec
+interface "LLMProvider" as ILLM
+interface "OIDC / JWKS" as IOidc
+interface "KnowledgeProvider" as IKnow
+
+Dash --> HttpPort : HTTPS + bearer token
+WebChat --> HttpPort
+Chan --> Api : signed webhook
+HttpPort - Api
+Api --> Ident
+Ident --> IOidc
+IOidc - KC
+Api --> Policy
+Api ..> Orch : RunRequest\n(planned)
+Orch --> Sales
+Orch --> Support
+Orch --> Analytics
+Sales --> IBrain
+Support --> IBrain
+Analytics --> IBrain
+IBrain - Brain
+Sales --> IExec
+Support --> IExec
+Analytics --> IExec
+IExec - Exec
+Sales --> ILLM
+ILLM - Gemini
+Brain --> IKnow
+IKnow - RAG
+Exec --> App
+Exec ..> Forecast : forecast_sales
+App --> PG
+Brain --> PG
+RAG --> PG : embeddings
+RAG --> Minio : document bytes
+Orch ..> Redis : checkpoints\n(planned)
+Policy --> PG : RLS-scoped reads
+@enduml

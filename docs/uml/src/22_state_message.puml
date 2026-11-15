@@ -1,0 +1,27 @@
+@startuml 22_state_message
+!include _style.iuml
+title State Machine Diagram (5/5) — Message (messages.status) and Conversation
+
+state "Inbound message" as IN {
+  [*] --> RECEIVED : verified provider event\n/ durable receipt, dedupe
+  RECEIVED --> PROCESSING : worker claims\n/ lease_until, claim_token
+  PROCESSING --> RECEIVED : lease expired
+  PROCESSING --> PROCESSED : run finalized
+  PROCESSING --> FAILED : unrecoverable
+}
+state "Outbound message" as OUT {
+  [*] --> PENDING_DELIVERY : grounded response ready
+  PENDING_DELIVERY --> DELIVERED : provider accepted
+  PENDING_DELIVERY --> DELIVERY_UNKNOWN : timeout / no ack
+  DELIVERY_UNKNOWN --> DELIVERED : delivery retried\n(no business replay)
+  DELIVERY_UNKNOWN --> FAILED : retries exhausted
+}
+state "Conversation" as CONV {
+  [*] --> OPEN_C
+  state "OPEN" as OPEN_C
+  OPEN_C --> ESCALATED : escalation opened
+  ESCALATED --> OPEN_C : escalation resolved
+  OPEN_C --> CLOSED : closed by staff / inactivity
+  ESCALATED --> CLOSED
+}
+@enduml

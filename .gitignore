@@ -1,0 +1,70 @@
+# Secrets and private material
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
+private/
+FINAL_MASTER_INTERNAL.pdf
+*_INTERNAL.pdf
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Node
+node_modules/
+.npm/
+.pnpm-store/
+
+# IDE and OS
+.vscode/
+.idea/
+.history/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs and raw recovery evidence
+*.log
+logs/
+*.jsonl
+/evidence/
+
+# Local research and tooling
+research/private/
+.tools/
+TinyTeX/
+chrome-profile*/
+ChromeProfile*/
+
+# Local model artifacts and Ollama runtime state
+*.gguf
+*.safetensors
+*.ckpt
+/models/local/
+/ollama-data/
+
+# TeX temporary artifacts
+*.aux
+*.bbl
+*.blg
+*.fls
+*.fdb_latexmk
+*.out
+*.synctex.gz
+*.toc
+
+# Plugin dist is intentionally versioned for local Figma manifest import.
+# Lockfiles and the development-safe PDF are intentionally not ignored.

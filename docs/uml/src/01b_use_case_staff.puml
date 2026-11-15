@@ -1,0 +1,47 @@
+@startuml 01b_use_case_staff
+!include _style.iuml
+title Use Case Diagram (2/2) — Staff workspace (Next.js dashboard)
+left to right direction
+
+actor "Staff member" as Staff
+actor "Business Owner\n(OWNER)" as Owner
+actor "Human Operator\n(OPERATOR)" as Operator
+actor "Platform Admin\n(PLATFORM_ADMIN)" as Admin
+Owner -|> Staff
+Operator -|> Staff
+Admin -|> Staff
+
+rectangle "Multi-Agent Platform" {
+  usecase "Sign in\n(Keycloak OIDC)" as UC_Auth
+  usecase "View conversations\nand agent runs" as UC_Monitor
+  usecase "Resolve escalation\n(approve / reject / clarify)" as UC_Resolve
+  usecase "View orders, products\nand inventory" as UC_Orders
+  usecase "View sales report" as UC_Report
+  usecase "Request sales forecast" as UC_Forecast
+  usecase "Upload knowledge\ndocument" as UC_Upload
+  usecase "Publish / revoke\ndocument version" as UC_Publish
+  usecase "Manage channel\nintegrations" as UC_Integr
+  usecase "Manage staff identity\nand memberships" as UC_Identity
+}
+
+actor "Keycloak" as KC <<system>>
+actor "Forecast service\n(XGBoost artifact)" as ML <<system>>
+
+Staff --> UC_Auth
+Staff --> UC_Monitor
+Staff --> UC_Orders
+Operator --> UC_Resolve
+Owner --> UC_Report
+Owner --> UC_Forecast
+Owner --> UC_Upload
+Owner --> UC_Publish
+Owner --> UC_Integr
+Admin --> UC_Integr
+Admin --> UC_Identity
+
+UC_Auth --> KC
+UC_Forecast --> ML
+UC_Publish .up.> UC_Upload : <<extend>>\n[version READY]
+
+note "forecast_sales currently returns MODEL_NOT_READY:\nno validated artifact exists yet (D10).\n\nEvery staff use case needs an authenticated session;\nthe backend re-checks membership and assignment\non each call." as N1
+@enduml

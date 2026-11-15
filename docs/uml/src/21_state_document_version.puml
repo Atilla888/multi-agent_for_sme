@@ -1,0 +1,23 @@
+@startuml 21_state_document_version
+!include _style.iuml
+title State Machine Diagram (4/5) — DocumentVersion and its ObjectRecord (knowledge ingestion)
+
+state "DocumentVersion" as DV {
+  [*] --> STAGED : stage_version\n[type, signature, size ok]\n/ object QUARANTINED
+  STAGED --> READY : process_version\n[hash ok ∧ parsed ∧ embeddings complete]\n/ object CLEAN
+  STAGED --> FAILED : parse / integrity / embedding error
+  READY --> Published : publish [CAS on document.version]\n/ published_version_id = this
+  state Published : current version for retrieval
+  Published --> READY : another version published
+  Published --> REVOKED : revoke document\n/ pointer cleared, readers lose access
+  READY --> REVOKED : revoke
+  FAILED --> [*]
+  REVOKED --> [*]
+}
+
+note right of DV
+  A failed V2 never replaces an active V1.
+  Retrieval only reads published READY versions
+  whose object is CLEAN (ACL filter before ranking).
+end note
+@enduml

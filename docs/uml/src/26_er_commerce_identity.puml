@@ -1,0 +1,131 @@
+@startuml 26_er_commerce_identity
+!include _style.iuml
+title ER Diagram (1/2) — tenant, identity, commerce and conversation\n(physical_schema.sql; every tenant table has PK (business_id, id) and forced RLS)
+hide circle
+skinparam linetype ortho
+
+entity businesses {
+  * id : uuid <<PK>>
+  --
+  * name : text
+  * timezone : text
+  * configuration_version : text
+  * version : bigint
+}
+entity app_users {
+  * id : uuid <<PK>>
+  --
+  * issuer : text
+  * subject : text
+  display_name : text
+}
+entity business_memberships {
+  * business_id : uuid <<PK,FK>>
+  * id : uuid <<PK>>
+  --
+  * user_id : uuid <<FK>>
+  * role : OWNER | OPERATOR
+}
+entity customers {
+  * business_id : uuid <<PK,FK>>
+  * id : uuid <<PK>>
+  --
+  display_name : text
+  contact_reference : text
+}
+entity customer_identities {
+  * business_id, id <<PK>>
+  --
+  * customer_id : uuid <<FK>>
+  * channel : TELEGRAM|WHATSAPP|INSTAGRAM|WEB
+  * external_user_id : text
+  * link_method : FIRST_CONTACT|MANUAL_VERIFIED|VERIFIED
+}
+entity integrations {
+  * business_id, id <<PK>>
+  --
+  * channel : text
+  * provider_account_id : text
+  * secret_reference : text
+  * mode : LIVE|MOCK|SANDBOX
+  * enabled : boolean
+}
+entity products {
+  * business_id, id <<PK>>
+  --
+  * sku : text
+  * name : text
+  * unit_price : numeric(18,4)
+  * currency : varchar(3)
+  * active : boolean
+}
+entity inventory {
+  * business_id, id <<PK>>
+  --
+  * product_id : uuid <<FK>>
+  * available_qty : numeric(18,4)
+  * reserved_qty : numeric(18,4)
+  * version : bigint
+}
+entity orders {
+  * business_id, id <<PK>>
+  --
+  * customer_id : uuid <<FK>>
+  * status : CREATED|CONFIRMED|NEEDS_ATTENTION
+  * currency : varchar(3)
+  delivery_reference : text
+  * version : bigint
+}
+entity order_items {
+  * business_id, id <<PK>>
+  --
+  * order_id : uuid <<FK>>
+  * product_id : uuid <<FK>>
+  * quantity : numeric(18,4)
+  * reserved_qty : numeric(18,4)
+  * unit_price : numeric(18,4)
+}
+entity conversations {
+  * business_id, id <<PK>>
+  --
+  customer_id : uuid <<FK>>
+  identity_id : uuid <<FK>>
+  owner_user_id : uuid <<FK>>
+  * status : OPEN|ESCALATED|CLOSED
+}
+entity messages {
+  * business_id, id <<PK>>
+  --
+  * conversation_id : uuid <<FK>>
+  integration_id : uuid <<FK>>
+  provider_message_id : text
+  * direction : INBOUND|OUTBOUND
+  * body : text
+  * status : text
+  * correlation_id : uuid
+  lease_until, claim_token
+}
+entity message_attachments {
+  * business_id, id <<PK>>
+  --
+  * message_id : uuid <<FK>>
+  * object_id : uuid <<FK>>
+}
+
+businesses ||--o{ business_memberships
+app_users ||--o{ business_memberships
+businesses ||--o{ customers
+customers ||--o{ customer_identities
+businesses ||--o{ integrations
+businesses ||--o{ products
+products ||--|| inventory
+customers ||--o{ orders
+orders ||--|{ order_items
+products ||--o{ order_items
+customers |o--o{ conversations
+customer_identities |o--o{ conversations
+app_users |o--o{ conversations
+conversations ||--o{ messages
+integrations |o--o{ messages
+messages ||--o{ message_attachments
+@enduml

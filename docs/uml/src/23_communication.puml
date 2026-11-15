@@ -1,0 +1,23 @@
+@startuml 23_communication
+!include _style.iuml
+title Communication Diagram — create_order collaboration (same interaction as Sequence 2/4)\n(drawn with objects and numbered links: PlantUML has no native communication type)
+
+object ":Customer" as C
+object "sales : SpecialistAgent" as SA
+object "brain : BusinessBrain" as B
+object "llm : GeminiProvider" as L
+object "executor : ToolExecutor" as E
+object "orders : OrderService" as O
+object "ledger : OperationLedger" as LG
+object "db : PostgresDatabase" as DB
+
+C -- SA : "1: message(write_confirmed)\n9: grounded reply ←"
+SA -- B : "2: build(ContextRequest)\n2.1: ContextBundle ←"
+SA -- L : "3: invoke_with_tools()\n3.1: AgentDecision(CALL_TOOL create_order) ←"
+SA -- E : "4: execute(create_order, args, ctx)\n8: ToolResult(SUCCEEDED) ←"
+E -- O : "5: create_order(ctx, customer, lines)\n7.3: {order_id, CREATED} ←"
+O -- LG : "6: admit(ctx, tool, payload)\n6.1: OperationTicket ←"
+O -- DB : "7: lock products, check versions\n7.1: insert Order + OrderItems\n7.2: finish operation + audit"
+LG -- DB : "6.0: IdempotencyOperation STARTED"
+E -- DB : "4.1: ToolCall STARTED\n8.0: ToolCall SUCCEEDED + AuditLog"
+@enduml

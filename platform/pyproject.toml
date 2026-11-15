@@ -1,0 +1,60 @@
+[build-system]
+requires = ["hatchling==1.27.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "sme-adaptive-platform"
+version = "0.1.0"
+description = "Tenant-safe SME platform implementation with M08 development agent foundation"
+requires-python = ">=3.11,<3.14"
+dependencies = [
+  "alembic==1.20.0",
+  "anthropic==1.15.0",
+  "fastapi==0.116.1",
+  "fastembed==0.8.1",
+  "httpx==0.28.1",
+  "minio==7.2.20",
+  "pydantic==2.11.7",
+  "pydantic-settings==2.10.1",
+  "psycopg[binary,pool]==3.2.10",
+  "PyJWT[crypto]==2.15.0",
+  "SQLAlchemy==2.0.54",
+  "uvicorn[standard]==0.35.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "mypy==1.17.1",
+  "pytest==8.4.2",
+  "pytest-cov==6.2.1",
+  "ruff==0.12.11",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["services/backend/src/platform_backend"]
+
+[tool.pytest.ini_options]
+addopts = "-ra --strict-markers"
+testpaths = ["tests"]
+markers = [
+  "postgres: requires a real PostgreSQL instance",
+  "integration: crosses process or storage boundaries",
+]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+src = ["services/backend/src", "."]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "S"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["S101", "E501"]  # pytest assertions and long SQL fixtures are intentional
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+packages = ["platform_backend"]
+mypy_path = "services/backend/src"
+
