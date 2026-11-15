@@ -5,6 +5,12 @@ import { forecastFixtureAdapter, getForecastFixtureScreen } from "./adapters/fix
 import { ForecastsScreen } from "./components/ForecastsScreen";
 
 describe("Forecasts", () => {
+  it("has no eyebrow labels and says the not-ready rules in quiet lines", () => {
+    const markup = renderToStaticMarkup(<ForecastsScreen model={getForecastFixtureScreen({})} />);
+    expect(markup).not.toContain("section-kicker");
+    expect(markup).not.toContain("In the meantime");
+    expect(markup).toMatch(/class="rule-note">This is a description only/);
+  });
   it("defaults to the not-ready state and says so plainly", () => {
     const model = getForecastFixtureScreen({});
     const markup = renderToStaticMarkup(<ForecastsScreen model={model} />);

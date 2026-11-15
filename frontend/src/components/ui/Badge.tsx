@@ -1,6 +1,9 @@
 import type { ComponentPropsWithoutRef } from "react";
 
-/** Badge tones from the Figma design system: status tones plus one tone per agent. */
+/**
+ * Tag tones: neutral for metadata, status tones colour the words only.
+ * @deprecated `sales`, `support` and `analytics` render exactly like `neutral`: agents are never colour-coded.
+ */
 export type BadgeTone =
   | "neutral"
   | "information"

@@ -12,5 +12,5 @@ function SettingsBoundary({ model }: { readonly model: SettingsScreenModel }) {
 
 /** Settings: business details, access and what is switched off. Read-only for now. */
 export function SettingsScreen({ model }: { readonly model: SettingsScreenModel }) {
-  return <div className="feature-page admin-screen settings-screen"><PageHeader title="Settings" description="Your business details, how people sign in, and what is switched off." source="sample" /><SettingsBoundary model={model} /></div>;
+  return <div className="feature-page admin-screen settings-screen"><PageHeader title="Settings" source="sample" /><SettingsBoundary model={model} /></div>;
 }

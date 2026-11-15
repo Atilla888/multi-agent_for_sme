@@ -17,7 +17,7 @@ export function InventoryScreen({ model }: { readonly model: InventoryScreenMode
           <TableCaption className="sr-only">Stock on hand and reserved units per product.</TableCaption>
           <TableHeader><TableRow><TableHead>Product</TableHead><TableHead>In stock</TableHead><TableHead>Reserved</TableHead><TableHead>Status</TableHead><TableHead className="col-secondary">Last checked</TableHead><TableHead><span className="sr-only">Open</span></TableHead></TableRow></TableHeader>
           <TableBody>{model.items.map((item) => <TableRow key={item.id}>
-            <TableCell data-label="Product"><Link className="row-link" href={`/inventory?product=${item.productId}`}>{item.product}</Link><span className="table-cell-note">{item.sku}</span></TableCell>
+            <TableCell data-label="Product"><Link className="row-link" href={`/inventory?product=${item.productId}`}>{item.product}</Link><span className="table-cell-note cell-id">{item.sku}</span></TableCell>
             <TableCell data-label="In stock" className="quantity-cell">{item.availableQuantity}</TableCell>
             <TableCell data-label="Reserved" className="cell-number">{item.reservedQuantity}</TableCell>
             <TableCell data-label="Status"><StatusBadge state={item.state} /><span className="table-cell-note">{item.stateLabel}</span></TableCell>

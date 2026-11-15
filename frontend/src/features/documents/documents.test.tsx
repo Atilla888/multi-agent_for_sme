@@ -6,6 +6,11 @@ import { DocumentDetailScreen } from "./components/DocumentDetailScreen";
 import { DocumentsScreen } from "./components/DocumentsScreen";
 
 describe("Documents", () => {
+  it("lists document versions as mono references and shows detail facts in the side panel", () => {
+    expect(renderToStaticMarkup(<DocumentsScreen model={getDocumentsFixtureScreen({})} />)).toContain('class="cell-id"');
+    expect(renderToStaticMarkup(<DocumentDetailScreen model={getDocumentDetailFixture("doc-shipping", {})} />)).toContain("detail-layout__side details-panel");
+  });
+
   it("lists documents with processing and publishing shown separately", () => {
     const markup = renderToStaticMarkup(<DocumentsScreen model={getDocumentsFixtureScreen({})} />);
     expect(markup).toContain("Returns and exchanges policy");

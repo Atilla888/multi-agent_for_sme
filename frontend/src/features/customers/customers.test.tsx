@@ -5,6 +5,12 @@ import { CustomerDetailScreen } from "./components/CustomerDetailScreen";
 import { CustomersScreen } from "./components/CustomersScreen";
 
 describe("Customers", () => {
+  it("shows customer facts in the details panel next to their conversations and orders", () => {
+    const markup = renderToStaticMarkup(<CustomerDetailScreen model={getCustomerDetailFixture("cust-1042", undefined)} />);
+    expect(markup).toContain("detail-layout__side details-panel");
+    expect(markup).toContain("Only the details needed for support are shown");
+  });
+
   it("renders the list with sample-data labelling and detail links", () => {
     const markup = renderToStaticMarkup(<CustomersScreen model={getCustomerFixtureScreen({})} />);
     expect(markup).toContain("Sample data");

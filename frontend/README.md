@@ -62,7 +62,9 @@ Keycloak handles passwords (Authorization Code flow with PKCE). The browser keep
 
 ## Design
 
-Written for shop owners and operators, not engineers: one accent colour, the system font, a dark theme that follows the OS, and plain-language status labels (`Needs checking`, `Needs a person`, `Not ready yet`) that map one-to-one onto the backend states in `src/types/states.ts`. Controls that aren't available yet are shown disabled with a short note. Styles live in `src/styles/globals.css` and the shared components; the full specification is [docs/DESIGN.md](../docs/DESIGN.md).
+Written for shop owners and operators, not engineers. Light mode is warm and human, dark mode graphite and precise; it follows the operating system. Geist for text and Geist Mono for order numbers, IDs and times. Status is a small icon plus plain words (`Needs checking`, `Needs a person`, `Not ready yet`) mapped one-to-one onto the backend states in `src/types/states.ts`; colour never carries meaning alone. Controls that aren't available yet are shown disabled with a short note. Tokens and component styles live in `src/styles/globals.css`; the full specification is [docs/DESIGN.md](../docs/DESIGN.md) (§6).
+
+`npm run preview` renders every screen, including the live-data ones from stub records, into `.preview/`; `PREVIEW_THEME=dark npm run preview` renders the dark variant.
 
 ## Not yet available
 

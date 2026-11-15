@@ -42,6 +42,13 @@ describe("live reads", () => {
     expect(markup).toContain("Backend source is unavailable");
     expect(markup).not.toContain("12.3400");
   });
+  it("drops the live report's About card but keeps its rules", () => {
+    const report = parseSales({ series: [{ period: "2026-10-01T00:00:00Z", currency: "USD", value: "12.3400" }], target_definition: "CONFIRMED_ORDER_VALUE", included_statuses: ["CONFIRMED"], event_timestamp: "orders.created_at", cutoff: "2026-11-01T00:00:00Z", as_of: "2026-11-01T00:01:00Z", granularity: "DAY", currency_scope: "PER_CURRENCY", product_id: null });
+    const markup = renderToStaticMarkup(<RealAnalyticsScreen model={{ mode: "REAL", start: "2026-10-01T00:00:00Z", end: report.cutoff, report }} />);
+    expect(markup).not.toContain("About this report");
+    expect(markup).toContain("Currencies are not converted or combined");
+    expect(markup).toContain("Confirmed orders only");
+  });
   it("keeps currencies separate and never invents missing periods or a forecast", () => {
     const report = parseSales({ series: [{ period: "2026-10-01T00:00:00Z", currency: "USD", value: "12.3400" }, { period: "2026-10-01T00:00:00Z", currency: "KZT", value: "100.0000" }], target_definition: "CONFIRMED_ORDER_VALUE", included_statuses: ["CONFIRMED"], event_timestamp: "orders.created_at", cutoff: "2026-11-01T00:00:00Z", as_of: "2026-11-01T00:01:00Z", granularity: "DAY", currency_scope: "PER_CURRENCY", product_id: null });
     const markup = renderToStaticMarkup(<RealAnalyticsScreen model={{ mode: "REAL", start: "2026-10-01T00:00:00Z", end: report.cutoff, report }} />);

@@ -19,9 +19,9 @@ function NavLink({ item, pathname, active }: { readonly item: NavItem; readonly 
       aria-current={current ? "page" : undefined}
       title={item.access ? `${item.label} · needs extra permission` : item.label}
     >
-      {item.icon ? <Icon name={item.icon} size={18} /> : null}
+      {item.icon ? <Icon name={item.icon} size={15} /> : null}
       <span className="nav-label">{item.label}</span>
-      {item.access ? <span className="nav-access-marker"><Icon name="lock" size={13} /><span className="sr-only">Needs extra permission</span></span> : null}
+      {item.access ? <span className="nav-access-marker"><Icon name="lock" size={12} /><span className="sr-only">Needs extra permission</span></span> : null}
     </Link>
   );
 }

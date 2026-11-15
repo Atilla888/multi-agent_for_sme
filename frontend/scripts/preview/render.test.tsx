@@ -31,6 +31,9 @@ import { ForecastsScreen, getForecastFixtureScreen } from "@/features/forecasts"
 import { IntegrationsScreen, SettingsScreen, AuditScreen, AgentRunsScreen, getIntegrationsFixtureScreen, getSettingsFixtureScreen, getAuditFixtureScreen, getAgentRunsFixtureScreen } from "@/features/administration";
 import { CustomerWebChatScreen, getWebChatFixtureScreen } from "@/features/webchat";
 import LoginPage from "@/app/(auth)/login/page";
+import { RealAnalyticsScreen, RealCustomerScreen, RealInventoryScreen, RealOrderScreen, RealProductsScreen } from "@/features/integration/components";
+import { RealConversationsScreen } from "@/features/integration/RealConversationsScreen";
+import { liveAnalytics, liveConversations, liveCustomer, liveInventory, liveOrder, liveProducts } from "./liveStubs";
 import type { AuthenticatedSession } from "@/types/auth";
 
 const session: AuthenticatedSession = { subject: "preview", displayName: "Aruzhan Kassym", roles: ["OWNER"], activeBusinessId: "north-shop", expiresAt: "", businessName: "North Shop" };
@@ -53,12 +56,19 @@ const screens: Record<string, () => ReactNode> = {
   settings: () => <SettingsScreen model={getSettingsFixtureScreen({})} />,
   audit: () => <AuditScreen model={getAuditFixtureScreen({ state: "fixture" })} />,
   "agent-runs": () => <AgentRunsScreen model={getAgentRunsFixtureScreen({ state: "fixture" })} />,
+  // Live-data screens (what the app shows by default), rendered from stub read models.
+  "live/conversations": () => <RealConversationsScreen model={liveConversations} />,
+  "live/products": () => <RealProductsScreen model={liveProducts} />,
+  "live/inventory": () => <RealInventoryScreen model={liveInventory} />,
+  "live/customer": () => <RealCustomerScreen model={liveCustomer} />,
+  "live/order": () => <RealOrderScreen model={liveOrder} />,
+  "live/analytics": () => <RealAnalyticsScreen model={liveAnalytics} />,
 };
 
 const theme = process.env.PREVIEW_THEME === "dark" ? "dark" : "light"; // PREVIEW_THEME=dark npm run preview
 
 function page(title: string, css: string, body: string): string {
-  return `<!doctype html><html lang="en" data-theme="${theme}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${title}</title><style>${css}</style></head><body>${body}</body></html>`;
+  return `<!doctype html><html lang="en" data-theme="${theme}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${title}</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap"><style>${css}</style></head><body>${body}</body></html>`;
 }
 
 it("writes every screen to .preview/", async () => {

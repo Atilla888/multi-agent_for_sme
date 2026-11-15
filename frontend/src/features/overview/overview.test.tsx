@@ -9,6 +9,13 @@ import { OverviewScreen } from "./OverviewScreen";
 describe("Overview", () => {
   const model = getOverviewFixture();
 
+  it("leads with what needs attention and drops the number cards", () => {
+    const markup = renderToStaticMarkup(<OverviewScreen model={model} />);
+    expect(markup).not.toContain("overview-kpi");
+    expect(markup.indexOf("Needs review")).toBeLessThan(markup.indexOf("Recent orders"));
+    expect(markup).toMatch(new RegExp(`Needs review <span class="overview-count">${model.attention.length}</span>`));
+  });
+
   it("counts the numbers from the shared sample records instead of inventing them", () => {
     expect(model.kpis.map((kpi) => kpi.label)).toEqual(["Open conversations", "Waiting for a person", "Orders", "Orders to check"]);
     expect(model.kpis[0].value).toBe(demoConversationItems.length);

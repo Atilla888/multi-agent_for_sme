@@ -51,7 +51,7 @@ export function OrdersScreen({ model }: { readonly model: OrdersScreenModel }) {
             <TableHead>Order</TableHead><TableHead>Customer</TableHead><TableHead className="col-secondary">Channel</TableHead><TableHead className="col-secondary">Items</TableHead><TableHead>Total</TableHead><TableHead>Order status</TableHead><TableHead>Stock reservation</TableHead><TableHead className="col-secondary">Updated</TableHead>
           </TableRow></TableHeader>
           <TableBody>{model.items.map((order) => <TableRow key={order.id}>
-            <TableCell data-label="Order"><Link className="row-link" href={`/orders/${order.id}`}>{order.id}</Link></TableCell>
+            <TableCell data-label="Order"><Link className="row-link cell-id" href={`/orders/${order.id}`}>{order.id}</Link></TableCell>
             <TableCell data-label="Customer"><strong className="cell-primary">{order.customer}</strong><span className="table-cell-note">{order.phone}</span></TableCell>
             <TableCell data-label="Channel" className="col-secondary">{order.channel}</TableCell>
             <TableCell data-label="Items" className="col-secondary">{order.items}</TableCell>
