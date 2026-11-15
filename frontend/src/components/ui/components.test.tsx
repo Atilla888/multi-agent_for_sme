@@ -17,6 +17,8 @@ import { Select } from "./Select";
 import { Separator } from "./Separator";
 import { StateNotice } from "./StateNotice";
 import { StatusBadge } from "./StatusBadge";
+import { statusIconFor } from "./StatusIcon";
+import { statePresentation, type ProductState } from "@/types/states";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "./Table";
 import { Tabs, nextEnabledTabIndex } from "./Tabs";
 import { Textarea } from "./Textarea";
@@ -78,11 +80,25 @@ describe("field primitives", () => {
 });
 
 describe("semantic status and feedback", () => {
-  it("communicates status with both a marker and plain text", () => {
+  it("draws status as an icon plus words, never colour alone", () => {
     const markup = renderToStaticMarkup(<StatusBadge state="waiting-human" />);
     expect(markup).toContain("status-badge__marker");
-    expect(markup).toContain("status-badge__dot");
+    expect(markup).toContain('data-icon="person-circle"');
     expect(markup).toContain("Needs a person");
+  });
+
+  it("gives Needs checking and Failed different icon shapes", () => {
+    expect(statusIconFor("outcome-unknown")).toBe("question-dashed");
+    expect(statusIconFor("known-failure")).toBe("x-circle");
+  });
+
+  it("maps every product state to an icon", () => {
+    for (const state of Object.keys(statePresentation) as ProductState[]) expect(statusIconFor(state), state).toBeTruthy();
+  });
+
+  it("keeps the label for screen readers when only the icon shows", () => {
+    const markup = renderToStaticMarkup(<StatusBadge state="known-failure" iconOnly />);
+    expect(markup).toContain('<span class="visually-hidden">Failed</span>');
   });
 
   it("asks for a check, not a retry, when an outcome is unknown", () => {

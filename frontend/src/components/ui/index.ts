@@ -15,6 +15,7 @@ export * from "./SemanticStates";
 export * from "./Separator";
 export * from "./StateNotice";
 export * from "./StatusBadge";
+export * from "./StatusIcon";
 export * from "./Table";
 export * from "./Tabs";
 export * from "./Textarea";

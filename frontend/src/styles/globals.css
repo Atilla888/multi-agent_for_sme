@@ -312,7 +312,8 @@ small { font-size: var(--type-caption-size); line-height: var(--type-caption-lin
 .type-metric { font-size: var(--type-metric-size); font-weight: 600; line-height: var(--type-metric-line); letter-spacing: var(--tracking-tight); font-variant-numeric: tabular-nums; }
 .type-h1 { font-size: var(--type-h1-size); font-weight: 600; line-height: var(--type-h1-line); letter-spacing: var(--tracking-tight); }
 
-.sr-only {
+.sr-only,
+.visually-hidden {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -738,8 +739,8 @@ small { font-size: var(--type-caption-size); line-height: var(--type-caption-lin
 .icon-button:hover:not(:disabled) { background: var(--surface-hover); }
 .icon-button:disabled { color: var(--disabled-fg); background: var(--disabled-bg); cursor: not-allowed; }
 
-/* Badges: a dot plus a text label, so colour is never the only signal. */
-.badge, .status-badge {
+/* Badges: small tags for metadata. Status uses .status-badge below. */
+.badge {
   max-width: 100%;
   display: inline-flex;
   width: max-content;
@@ -755,7 +756,7 @@ small { font-size: var(--type-caption-size); line-height: var(--type-caption-lin
   line-height: var(--type-caption-line);
   white-space: normal;
 }
-.badge::before, .status-badge__dot { width: 6px; height: 6px; flex: 0 0 auto; background: currentColor; border-radius: var(--radius-pill); content: ""; }
+.badge::before { width: 6px; height: 6px; flex: 0 0 auto; background: currentColor; border-radius: var(--radius-pill); content: ""; }
 
 .badge--information, .badge--info { color: var(--status-information); background: var(--status-information-bg); }
 .badge--success { color: var(--status-success); background: var(--status-success-bg); }
@@ -765,14 +766,30 @@ small { font-size: var(--type-caption-size); line-height: var(--type-caption-lin
 .badge--support { color: var(--agent-support); background: var(--agent-support-bg); }
 .badge--analytics { color: var(--agent-analytics); background: var(--agent-analytics-bg); }
 
-.status-badge--success { color: var(--status-success); background: var(--status-success-bg); }
-.status-badge--pending { color: var(--status-pending); background: var(--status-pending-bg); }
-.status-badge--warning { color: var(--status-warning); background: var(--status-warning-bg); }
-.status-badge--danger { color: var(--status-danger); background: var(--status-danger-bg); }
-.status-badge--unknown { color: var(--status-unknown); background: var(--status-unknown-bg); }
-.status-badge--restricted { color: var(--status-restricted); background: var(--status-restricted-bg); }
-.status-badge--waiting { color: var(--status-waiting); background: var(--status-waiting-bg); }
-.status-badge--information { color: var(--status-information); background: var(--status-information-bg); }
+/* Status marks: a small icon plus words, in the tone colour. No pill, no fill. */
+.status-badge {
+  max-width: 100%;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 6px;
+  color: var(--status-neutral);
+  font-size: var(--type-body-size);
+  font-weight: 500;
+  line-height: var(--type-body-line);
+  white-space: nowrap;
+}
+.status-badge__marker { display: inline-flex; flex: 0 0 auto; }
+.status-icon { display: block; flex: 0 0 auto; }
+.status-badge--success { color: var(--status-success); }
+.status-badge--pending { color: var(--status-pending); }
+.status-badge--warning { color: var(--status-warning); }
+.status-badge--danger { color: var(--status-danger); }
+.status-badge--unknown { color: var(--status-unknown); }
+.status-badge--restricted { color: var(--status-restricted); }
+.status-badge--waiting { color: var(--status-waiting); }
+.status-badge--information { color: var(--status-information); }
+.status-badge--neutral { color: var(--status-neutral); }
 
 /* State notice: a quiet, tinted message with an icon, a title and what to do next. */
 .state-notice {
@@ -783,35 +800,28 @@ small { font-size: var(--type-caption-size); line-height: var(--type-caption-lin
   color: var(--foreground);
   background: var(--surface-muted);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
 }
 .state-notice__icon {
-  width: 28px;
-  height: 28px;
-  display: inline-grid;
+  display: inline-flex;
   flex: 0 0 auto;
-  place-items: center;
-  color: var(--foreground-muted);
-  background: color-mix(in srgb, currentColor 14%, transparent);
-  border-radius: var(--radius-pill);
+  padding-top: 2px;
+  color: var(--status-neutral);
 }
 .state-notice__body { min-width: 0; display: grid; gap: 2px; }
 .state-notice__title { font-weight: 600; }
 .state-notice__description { color: var(--foreground-muted); font-size: var(--type-small-size); line-height: var(--type-small-line); }
 
-.state-notice--success { background: var(--status-success-bg); border-color: color-mix(in srgb, var(--status-success) 22%, transparent); }
 .state-notice--success .state-notice__icon { color: var(--status-success); }
-.state-notice--pending, .state-notice--information { background: var(--status-information-bg); border-color: color-mix(in srgb, var(--status-information) 22%, transparent); }
-.state-notice--pending .state-notice__icon, .state-notice--information .state-notice__icon { color: var(--status-information); }
-.state-notice--warning { background: var(--status-warning-bg); border-color: color-mix(in srgb, var(--status-warning) 28%, transparent); }
+.state-notice--pending .state-notice__icon { color: var(--status-pending); }
+.state-notice--information .state-notice__icon { color: var(--status-information); }
 .state-notice--warning .state-notice__icon { color: var(--status-warning); }
+.state-notice--restricted .state-notice__icon { color: var(--status-restricted); }
 .state-notice--danger { background: var(--status-danger-bg); border-color: color-mix(in srgb, var(--status-danger) 24%, transparent); }
 .state-notice--danger .state-notice__icon { color: var(--status-danger); }
-.state-notice--unknown { background: var(--status-unknown-bg); border-color: color-mix(in srgb, var(--status-unknown) 28%, transparent); }
+.state-notice--unknown { background: var(--status-unknown-bg); border-color: color-mix(in srgb, var(--status-unknown) 24%, transparent); }
 .state-notice--unknown .state-notice__icon { color: var(--status-unknown); }
-.state-notice--restricted { background: var(--status-restricted-bg); }
-.state-notice--restricted .state-notice__icon { color: var(--status-restricted); }
-.state-notice--waiting { background: var(--status-waiting-bg); border-color: color-mix(in srgb, var(--status-waiting) 28%, transparent); }
+.state-notice--waiting { background: var(--status-waiting-bg); border-color: color-mix(in srgb, var(--status-waiting) 24%, transparent); }
 .state-notice--waiting .state-notice__icon { color: var(--status-waiting); }
 
 /* Form fields */
