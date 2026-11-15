@@ -1,17 +1,8 @@
-import type { AuthenticatedSession, StaffRole } from "@/types/auth";
+import type { AuthenticatedSession } from "@/types/auth";
 
-const roleLabels: Record<StaffRole, string> = {
-  OWNER: "Owner",
-  OPERATOR: "Operator",
-  PLATFORM_ADMIN: "Platform admin",
-};
-
-export function businessLabel(session?: AuthenticatedSession): string {
-  return session?.businessName ?? session?.activeBusinessId ?? "No active business";
-}
-
-export function roleLabel(session?: AuthenticatedSession): string {
-  return session ? session.roles.map((role) => roleLabels[role] ?? role).join(" / ") : "Not signed in";
+/** The shop's name (or ID while the backend has no name), or the given fallback when there is no active business. */
+export function businessLabel(session: AuthenticatedSession | undefined, fallback: string): string {
+  return session?.businessName ?? session?.activeBusinessId ?? fallback;
 }
 
 /** Two-letter initials for the avatar, e.g. "Aruzhan Kassym" → "AK". */

@@ -1,68 +1,81 @@
-import type { EscalationDetail, EscalationScenario, EscalationSummary } from "../types";
+import { escalations } from "@/i18n/messages/escalations";
+import type { DecisionLine, DecisionSection, DecisionSectionId, EscalationDetail, EscalationScenario, EscalationSummary, PlainDecisionLine } from "../types";
+
+/** A review case with its reason worded in English too, for screens that do not translate it yet. */
+function summary(item: Omit<EscalationSummary, "reason">): EscalationSummary {
+  return { ...item, reason: escalations.en.reasons[item.reasonKey] };
+}
 
 /** Sample review cases. */
 export const demoEscalationQueue: readonly EscalationSummary[] = [
-  { id: "ESC-204", conversationId: "c-42", orderId: "ORD-1042", participant: "Amina S.", reason: "Stock reservation needs a decision", time: "10:42", state: "waiting-human" },
-  { id: "ESC-205", conversationId: "c-43", participant: "Mira K.", reason: "Order change is not allowed", time: "09:18", state: "restricted" },
-  { id: "ESC-206", conversationId: "c-44", orderId: "ORD-1090", participant: "Dana R.", reason: "Stock could not be reserved", time: "Yesterday", state: "known-failure" },
-] as const;
+  summary({ id: "ESC-204", conversationId: "c-42", orderId: "ORD-1042", participant: "Amina S.", reasonKey: "reservationDecision", time: "10:42", state: "waiting-human" }),
+  summary({ id: "ESC-205", conversationId: "c-43", participant: "Mira K.", reasonKey: "orderChangeBlocked", time: "09:18", state: "restricted" }),
+  summary({ id: "ESC-206", conversationId: "c-44", orderId: "ORD-1090", participant: "Dana R.", reasonKey: "stockNotReserved", time: "Yesterday", state: "known-failure" }),
+];
+
+const sectionOrder: readonly DecisionSectionId[] = ["why-it-stopped", "what-we-know", "what-is-uncertain", "what-not-to-do", "next-step", "your-decision"];
+
+/** The six questions in order; a plain key stands for a line without values. */
+function sections(...answers: readonly (readonly (PlainDecisionLine | DecisionLine)[])[]): readonly DecisionSection[] {
+  return sectionOrder.map((id, index) => ({ id, lines: (answers[index] ?? []).map((line) => typeof line === "string" ? { key: line } : line) }));
+}
 
 const base = {
-  id: "ESC-204", conversationId: "c-42", orderId: "ORD-1042", participant: "Amina S.", reason: "Stock reservation needs a decision", time: "10:42",
+  id: "ESC-204", conversationId: "c-42", orderId: "ORD-1042", participant: "Amina S.", reasonKey: "reservationDecision", time: "10:42",
 } as const;
 
 export function demoEscalationDetail(scenario: EscalationScenario): EscalationDetail {
   const selectedBase = scenario === "restricted"
-    ? { id: "ESC-205", conversationId: "c-43", participant: "Mira K.", reason: "Order change is not allowed", time: "09:18" }
+    ? { id: "ESC-205", conversationId: "c-43", participant: "Mira K.", reasonKey: "orderChangeBlocked", time: "09:18" } as const
     : scenario === "known-failure"
-      ? { id: "ESC-206", conversationId: "c-44", orderId: "ORD-1090", participant: "Dana R.", reason: "Stock could not be reserved", time: "Yesterday" }
+      ? { id: "ESC-206", conversationId: "c-44", orderId: "ORD-1090", participant: "Dana R.", reasonKey: "stockNotReserved", time: "Yesterday" } as const
       : base;
-  if (scenario === "outcome-unknown") return { ...base, state: "outcome-unknown", handler: "Nobody yet", safetyLabel: "Check before retrying", m12Target: false, sections: [
-    { title: "Why it stopped", lines: ["The stock reservation did not return a confirmation."] },
-    { title: "What we know", lines: ["Order ORD-1042 exists.", "The reservation request was sent."] },
-    { title: "What is uncertain", lines: ["The stock may or may not be reserved."] },
-    { title: "What not to do", lines: ["Do not reserve again until the records are checked.", "Do not assume it failed just because there is no confirmation."] },
-    { title: "Next step", lines: ["Check the stock records for reference RI-1044."] },
-    { title: "Your decision", lines: ["Review only for now. Reconciling from this screen is not available yet."] },
-  ] };
-  if (scenario === "known-failure") return { ...selectedBase, state: "known-failure", handler: "Human Operator", safetyLabel: "Clear result", m12Target: false, sections: [
-    { title: "Why it stopped", lines: ["Stock could not be reserved."] },
-    { title: "What we know", lines: ["Order ORD-1042 exists.", "No stock is held for it."] },
-    { title: "What is uncertain", lines: ["Nothing. The result is clear."] },
-    { title: "What not to do", lines: ["Do not place the same order again.", "Order changes are blocked by policy."] },
-    { title: "Next step", lines: ["Check current stock and choose how to proceed."] },
-    { title: "Your decision", lines: ["Decision actions are not available from this screen yet."] },
-  ] };
-  if (scenario === "restricted") return { ...selectedBase, state: "restricted", handler: "Human Operator", safetyLabel: "Blocked by policy", m12Target: false, sections: [
-    { title: "Why it stopped", lines: ["The requested order change is not allowed by policy."] },
-    { title: "What we know", lines: ["The order was not changed.", "Nothing on the order should be reported as changed."] },
-    { title: "What is uncertain", lines: ["Nothing. The change did not run."] },
-    { title: "What not to do", lines: ["Do not treat this as an access problem or a stock problem."] },
-    { title: "Next step", lines: ["Use your usual manual process if the order must change."] },
-    { title: "Your decision", lines: ["Nothing can be approved from this screen."] },
-  ] };
-  if (scenario === "resume-target") return { ...base, state: "target-only", handler: "Human Operator", safetyLabel: "Paused", m12Target: true, sections: [
-    { title: "Why it stopped", lines: ["Earlier automated work is paused, waiting for a decision."] },
-    { title: "What we know", lines: ["This case shows how a paused case will look."] },
-    { title: "What is uncertain", lines: ["Current details have not been re-checked."] },
-    { title: "What not to do", lines: ["Never repeat work that was already completed."] },
-    { title: "Next step", lines: ["Resuming will be available once it is built and tested."] },
-    { title: "Your decision", lines: ["Resume stays switched off for now."] },
-  ] };
-  if (scenario === "resolved") return { ...base, state: "confirmed", handler: "Human Operator", safetyLabel: "Resolved", m12Target: false, sections: [
-    { title: "Why it stopped", lines: ["The case needed a person earlier."] },
-    { title: "What we know", lines: ["The case is resolved."] },
-    { title: "What is uncertain", lines: ["Nothing outstanding."] },
-    { title: "What not to do", lines: ["A resolved case does not close the conversation."] },
-    { title: "Next step", lines: ["Keep the decision as read-only history."] },
-    { title: "Your decision", lines: ["No action is needed."] },
-  ] };
-  return { ...base, state: "waiting-human", handler: "Nobody yet", safetyLabel: "Automatic handling stopped", m12Target: false, sections: [
-    { title: "Why it stopped", lines: ["A person needs to take ownership before it can continue."] },
-    { title: "What we know", lines: ["Conversation c-42 and order ORD-1042 belong to this case.", "Support handled it before it stopped."] },
-    { title: "What is uncertain", lines: ["No decision has been recorded yet."] },
-    { title: "What not to do", lines: ["Do not act on what is visible here alone; access is checked separately."] },
-    { title: "Next step", lines: ["Assign someone on the team."] },
-    { title: "Your decision", lines: ["Assigning and deciding from this screen are not available yet."] },
-  ] };
+  if (scenario === "outcome-unknown") return { ...summary({ ...base, state: "outcome-unknown" }), handler: "nobody", situation: "checkBeforeRetry", m12Target: false, sections: sections(
+    ["noConfirmation"],
+    [{ key: "orderExists", orderId: "ORD-1042" }, "requestSent"],
+    ["mayBeReserved"],
+    ["dontReserveAgain", "dontAssumeFailed"],
+    [{ key: "checkStockRecords", reference: "RI-1044" }],
+    ["reviewOnly"],
+  ) };
+  if (scenario === "known-failure") return { ...summary({ ...selectedBase, state: "known-failure" }), handler: "humanOperator", situation: "clearResult", m12Target: false, sections: sections(
+    ["stockNotReserved"],
+    [{ key: "orderExists", orderId: "ORD-1042" }, "noStockHeld"],
+    ["resultClear"],
+    ["dontRepeatOrder", "changesBlocked"],
+    ["checkCurrentStock"],
+    ["decisionsUnavailable"],
+  ) };
+  if (scenario === "restricted") return { ...summary({ ...selectedBase, state: "restricted" }), handler: "humanOperator", situation: "blockedByPolicy", m12Target: false, sections: sections(
+    ["changeNotAllowed"],
+    ["orderNotChanged", "dontReportChanged"],
+    ["changeDidNotRun"],
+    ["notAccessOrStock"],
+    ["useManualProcess"],
+    ["nothingToApprove"],
+  ) };
+  if (scenario === "resume-target") return { ...summary({ ...base, state: "target-only" }), handler: "humanOperator", situation: "paused", m12Target: true, sections: sections(
+    ["workPaused"],
+    ["pausedPreview"],
+    ["notRechecked"],
+    ["neverRepeat"],
+    ["resumeLater"],
+    ["resumeOff"],
+  ) };
+  if (scenario === "resolved") return { ...summary({ ...base, state: "confirmed" }), handler: "humanOperator", situation: "resolved", m12Target: false, sections: sections(
+    ["neededPerson"],
+    ["caseResolved"],
+    ["nothingOutstanding"],
+    ["resolvedKeepsConversation"],
+    ["keepHistory"],
+    ["noActionNeeded"],
+  ) };
+  return { ...summary({ ...base, state: "waiting-human" }), handler: "nobody", situation: "automationStopped", m12Target: false, sections: sections(
+    ["needsOwner"],
+    [{ key: "belongsToCase", conversationId: "c-42", orderId: "ORD-1042" }, "supportHandled"],
+    ["noDecisionYet"],
+    ["accessCheckedSeparately"],
+    ["assignSomeone"],
+    ["assigningUnavailable"],
+  ) };
 }

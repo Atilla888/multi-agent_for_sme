@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import type { AuthenticatedSession } from "@/types/auth";
+import { withLocale } from "@/test/intl";
 
 vi.mock("next/navigation", () => ({
   usePathname: () => "/orders",
@@ -10,6 +11,8 @@ vi.mock("next/navigation", () => ({
 import { PageHeader } from "./PageHeader";
 import { Sidebar } from "./Sidebar";
 import { TopBar } from "./TopBar";
+import { MobileTabBar } from "./MobileTabBar";
+import { Preferences } from "./Preferences";
 
 const session: AuthenticatedSession = { subject: "s-1", displayName: "Aruzhan Kassym", roles: ["OWNER"], activeBusinessId: "b-1", expiresAt: "", businessName: "North Shop" };
 
@@ -42,4 +45,39 @@ describe("shell", () => {
     const described = renderToStaticMarkup(<PageHeader title="Forecasts" description="The model is not ready yet." />);
     expect(described).toContain('class="page-header__description"');
   });
+
+  it("speaks Russian and Kazakh when chosen", () => {
+    const russian = withLocale("ru", () => renderToStaticMarkup(<Sidebar session={session} />));
+    expect(russian).toContain("Заказы");
+    expect(russian).toContain('placeholder="Перейти…"');
+    expect(russian).toContain("Владелец");
+    expect(russian).toContain('aria-label="Выйти"');
+    expect(russian).not.toContain(">Orders<");
+    const kazakh = withLocale("kk", () => renderToStaticMarkup(<TopBar session={session} />));
+    expect(kazakh).toContain("Бизнес");
+    expect(kazakh).toContain("Тапсырыстар");
+    expect(withLocale("kk", () => renderToStaticMarkup(<MobileTabBar session={session} />))).toContain("Басты бет");
+    expect(withLocale("ru", () => renderToStaticMarkup(<PageHeader title="Заказы" source="sample" />))).toContain("Пример данных");
+  });
 });
+
+describe("preferences", () => {
+  it("offers the three languages by their own names and marks the current one", () => {
+    const markup = withLocale("kk", () => renderToStaticMarkup(<Preferences />));
+    expect(markup).toMatch(/<option value="en"[^>]*>English</);
+    expect(markup).toMatch(/<option value="ru"[^>]*>Русский</);
+    expect(markup).toMatch(/<option value="kk"[^>]*selected=""[^>]*>Қазақша</);
+    expect(markup).toContain('aria-label="Тіл"');
+  });
+
+  it("offers System, Light and Dark, with System pressed by default", () => {
+    const markup = renderToStaticMarkup(<Preferences />);
+    for (const choice of ["System", "Light", "Dark"]) expect(markup).toContain(`aria-label="${choice}"`);
+    expect(markup).toMatch(/aria-pressed="true"[^>]*aria-label="System"|aria-label="System"[^>]*aria-pressed="true"/);
+  });
+
+  it("lives in the sidebar and the mobile More sheet", () => {
+    expect(renderToStaticMarkup(<Sidebar session={session} />)).toContain('class="preferences');
+  });
+});
+

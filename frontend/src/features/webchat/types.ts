@@ -22,10 +22,13 @@ export type WebChatViewState =
 
 export type MessageDeliveryState = "sent" | "delivered" | "pending" | "failed";
 
+/** Who the customer sees as the writer: themselves, the business, or a team at the business. The screen words it. */
+export type WebChatSender = "you" | "business" | "support" | "sales" | "team";
+
 export interface WebChatMessage {
   readonly id: string;
   readonly actor: WebChatActor;
-  readonly customerLabel: string;
+  readonly sender: WebChatSender;
   readonly body: string;
   readonly time: string;
   readonly delivery: MessageDeliveryState;

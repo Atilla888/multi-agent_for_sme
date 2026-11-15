@@ -1,11 +1,22 @@
+import { useTranslations } from "next-intl";
+import { Preferences } from "@/components/layout/Preferences";
 import { Button, Card, CardContent, CardHeader, CardTitle, LoadingState, StateNotice, StatusBadge, Textarea } from "@/components/ui";
-import type { WebChatMessage, WebChatScreenModel } from "../types";
+import type { WebChatMessage, WebChatScreenModel, WebChatSender } from "../types";
 
-const deliveryLabel = { sent: "Sent", delivered: "Delivered", pending: "Sending", failed: "Not delivered" } as const;
+/** The sample order the preview cards talk about. Record content: shown as is in every language. */
+const sampleOrder = { reference: "ORD-1042", item: "Desk Lamp / Slate / standard size", quantity: "1" } as const;
 
-function MessageBubble({ message }: { readonly message: WebChatMessage }) {
+/** "You", the business itself, or a team at the business, e.g. "North Shop sales". */
+function useSenderName(businessName: string): (sender: WebChatSender) => string {
+  const t = useTranslations("webchat.senders");
+  return (sender) => sender === "business" ? businessName : sender === "you" ? t("you") : t(sender, { business: businessName });
+}
+
+function MessageBubble({ message, businessName }: { readonly message: WebChatMessage; readonly businessName: string }) {
+  const t = useTranslations("webchat");
+  const name = useSenderName(businessName)(message.sender);
   const customer = message.actor === "Customer";
-  return <li className={`webchat-message ${customer ? "webchat-message--customer" : "webchat-message--business"}`}><article aria-label={`${message.customerLabel} message`}><header><strong>{message.customerLabel}</strong></header><p>{message.body}</p><footer>{message.time} · {deliveryLabel[message.delivery]}</footer></article></li>;
+  return <li className={`webchat-message ${customer ? "webchat-message--customer" : "webchat-message--business"}`}><article aria-label={t("messageFrom", { name })}><header><strong>{name}</strong></header><p>{message.body}</p><footer>{message.time} · {t(`delivery.${message.delivery}`)}</footer></article></li>;
 }
 
 function Fact({ label, value, state }: { readonly label: string; readonly value: string; readonly state: "confirmed" | "known-failure" }) {
@@ -17,28 +28,35 @@ function PreviewAction({ label }: { readonly label: string }) {
 }
 
 function CustomerState({ model }: { readonly model: WebChatScreenModel }) {
+  const t = useTranslations("webchat");
+  const business = model.businessName;
   switch (model.state) {
-    case "loading": return <LoadingState label="Loading your conversation" lines={4} />;
-    case "unavailable": return <StateNotice state="dependency-unavailable" title="Chat is unavailable right now" description="We can't load your conversation at the moment. Please try again shortly." />;
-    case "initial": return <StateNotice state="not-configured" title="Start a conversation" description="Chat is not switched on yet. This is a preview of how it will look." />;
-    case "active": return <StateNotice state="not-configured" title="Preview only" description="Sending is not available until chat is connected." />;
-    case "clarification": return <Card className="webchat-state-card"><CardHeader><div><p className="card__label">One detail needed</p><CardTitle>Which size would you like?</CardTitle></div></CardHeader><CardContent><Textarea label="Size" disabled placeholder="Type your size" /><PreviewAction label="Send details" /></CardContent></Card>;
-    case "confirmation": return <Card className="webchat-state-card"><CardHeader><div><p className="card__label">Please confirm</p><CardTitle>Place this order?</CardTitle></div></CardHeader><CardContent><dl className="webchat-order-summary"><div><dt>Item</dt><dd>Desk Lamp / Slate / standard size</dd></div><div><dt>Quantity</dt><dd>1</dd></div></dl><p>If you confirm, North Shop will place this order. This preview cannot place it.</p><div className="webchat-actions"><PreviewAction label="Confirm order" /><Button type="button" variant="secondary" disabled>Change details</Button></div></CardContent></Card>;
-    case "processing": return <StateNotice state="processing" title="We are checking your request" description="We'll update you here when the result is available. No further action is needed right now." />;
-    case "confirmed": return <Card className="webchat-state-card"><CardHeader><div><p className="card__label">Your order</p><CardTitle>Order placed</CardTitle></div></CardHeader><CardContent><div className="webchat-facts"><Fact label="Order" value="Order created" state="confirmed" /><Fact label="Item" value="Reserved for you" state="confirmed" /></div><p>Order reference: ORD-1042.</p></CardContent></Card>;
-    case "known-failure": return <Card className="webchat-state-card"><CardHeader><div><p className="card__label">About your order</p><CardTitle>We need to help with the next step</CardTitle></div></CardHeader><CardContent><div className="webchat-facts"><Fact label="Order" value="Order ORD-1042 already exists" state="confirmed" /><Fact label="Item" value="Item was not reserved" state="known-failure" /></div><StateNotice state="known-failure" title="Please don't place the same order again" description="We'll help you check what is available and choose the next option." /><PreviewAction label="Ask for help" /></CardContent></Card>;
-    case "waiting-human": return <StateNotice state="waiting-human" title="A person is reviewing this" description="We'll update you here. This does not promise completion." />;
-    case "confirmation-pending": return <StateNotice state="pending" title="We are checking your request" description="Your request may have gone through, but we cannot confirm it yet. Please do not submit the same request again. We will update you when we know." />;
-    case "delivery-failure": return <Card className="webchat-state-card"><CardHeader><div><p className="card__label">Message problem</p><CardTitle>Your order is fine</CardTitle></div></CardHeader><CardContent><div className="webchat-facts"><Fact label="Order" value="Reservation remains confirmed" state="confirmed" /><Fact label="Message" value="Not delivered" state="known-failure" /></div><p>Only the message needs resending. Resending it must never place the order or reserve the item again.</p><PreviewAction label="Resend message" /></CardContent></Card>;
+    case "loading": return <LoadingState label={t("loading")} lines={4} />;
+    case "unavailable": return <StateNotice state="dependency-unavailable" title={t("unavailable.title")} description={t("unavailable.description")} />;
+    case "initial": return <StateNotice state="not-configured" title={t("initial.title")} description={t("initial.description")} />;
+    case "active": return <StateNotice state="not-configured" title={t("active.title")} description={t("active.description")} />;
+    case "clarification": return <Card className="webchat-state-card"><CardHeader><div><p className="card__label">{t("clarification.label")}</p><CardTitle>{t("clarification.question")}</CardTitle></div></CardHeader><CardContent><Textarea label={t("clarification.size")} disabled placeholder={t("clarification.sizePlaceholder")} /><PreviewAction label={t("clarification.send")} /></CardContent></Card>;
+    case "confirmation": return <Card className="webchat-state-card"><CardHeader><div><p className="card__label">{t("confirmation.label")}</p><CardTitle>{t("confirmation.title")}</CardTitle></div></CardHeader><CardContent><dl className="webchat-order-summary"><div><dt>{t("item")}</dt><dd>{sampleOrder.item}</dd></div><div><dt>{t("confirmation.quantity")}</dt><dd>{sampleOrder.quantity}</dd></div></dl><p>{t("confirmation.note", { business })}</p><div className="webchat-actions"><PreviewAction label={t("confirmation.confirm")} /><Button type="button" variant="secondary" disabled>{t("confirmation.change")}</Button></div></CardContent></Card>;
+    case "processing": return <StateNotice state="processing" title={t("checking")} description={t("processing")} />;
+    case "confirmed": return <Card className="webchat-state-card"><CardHeader><div><p className="card__label">{t("confirmed.label")}</p><CardTitle>{t("confirmed.title")}</CardTitle></div></CardHeader><CardContent><div className="webchat-facts"><Fact label={t("order")} value={t("confirmed.orderCreated")} state="confirmed" /><Fact label={t("item")} value={t("confirmed.reserved")} state="confirmed" /></div><p>{t("confirmed.reference", { ref: sampleOrder.reference })}</p></CardContent></Card>;
+    case "known-failure": return <Card className="webchat-state-card"><CardHeader><div><p className="card__label">{t("knownFailure.label")}</p><CardTitle>{t("knownFailure.title")}</CardTitle></div></CardHeader><CardContent><div className="webchat-facts"><Fact label={t("order")} value={t("knownFailure.orderExists", { ref: sampleOrder.reference })} state="confirmed" /><Fact label={t("item")} value={t("knownFailure.notReserved")} state="known-failure" /></div><StateNotice state="known-failure" title={t("knownFailure.noticeTitle")} description={t("knownFailure.noticeDescription")} /><PreviewAction label={t("knownFailure.askForHelp")} /></CardContent></Card>;
+    case "waiting-human": return <StateNotice state="waiting-human" title={t("waitingHuman.title")} description={t("waitingHuman.description")} />;
+    case "confirmation-pending": return <StateNotice state="pending" title={t("checking")} description={t("confirmationPending")} />;
+    case "delivery-failure": return <Card className="webchat-state-card"><CardHeader><div><p className="card__label">{t("deliveryFailure.label")}</p><CardTitle>{t("deliveryFailure.title")}</CardTitle></div></CardHeader><CardContent><div className="webchat-facts"><Fact label={t("order")} value={t("deliveryFailure.reservationConfirmed")} state="confirmed" /><Fact label={t("message")} value={t("delivery.failed")} state="known-failure" /></div><p>{t("deliveryFailure.note")}</p><PreviewAction label={t("deliveryFailure.resend")} /></CardContent></Card>;
   }
 }
 
 function Composer() {
-  return <form className="webchat-composer" aria-label="Write a message"><Textarea label="Message" disabled placeholder="Write a message…" /><Button type="button" disabled>Send</Button></form>;
+  const t = useTranslations("webchat");
+  return <form className="webchat-composer" aria-label={t("composer.label")}><Textarea label={t("message")} disabled placeholder={t("composer.placeholder")} /><Button type="button" disabled>{t("composer.send")}</Button></form>;
 }
 
-/** Customer-facing chat widget. No staff navigation, no internal details. */
+/**
+ * Customer-facing chat widget. No staff navigation, no internal details. The header carries the
+ * language and theme switch; on a phone the header stacks, so the switch sits below the shop's name.
+ */
 export function CustomerWebChatScreen({ model }: { readonly model: WebChatScreenModel }) {
+  const t = useTranslations("webchat");
   const stateOwnsAction = ["loading", "unavailable", "confirmation", "clarification", "processing", "known-failure", "confirmation-pending", "delivery-failure"].includes(model.state);
-  return <main className="customer-chat-page"><section className="customer-chat-shell" aria-labelledby="customer-chat-title"><header className="webchat-header"><div><p className="card__label">Chat with</p><h1 id="customer-chat-title">{model.businessName}</h1></div><span className="webchat-header__status">Preview</span></header>{model.state !== "loading" && model.state !== "unavailable" ? <ol className="webchat-timeline" aria-label="Messages">{model.messages.map((message) => <MessageBubble key={message.id} message={message} />)}</ol> : null}<div className="webchat-state"><CustomerState model={model} /></div>{!stateOwnsAction ? <Composer /> : null}<footer className="webchat-footer">Only your conversation with {model.businessName} is shown here. Your details stay private.</footer></section></main>;
+  return <main className="customer-chat-page"><section className="customer-chat-shell" aria-labelledby="customer-chat-title"><header className="webchat-header"><div><p className="card__label">{t("chatWith")}</p><h1 id="customer-chat-title">{model.businessName}</h1></div><div className="webchat-header__aside"><span className="webchat-header__status">{t("preview")}</span><Preferences /></div></header>{model.state !== "loading" && model.state !== "unavailable" ? <ol className="webchat-timeline" aria-label={t("messages")}>{model.messages.map((message) => <MessageBubble key={message.id} message={message} businessName={model.businessName} />)}</ol> : null}<div className="webchat-state"><CustomerState model={model} /></div>{!stateOwnsAction ? <Composer /> : null}<footer className="webchat-footer">{t("footer", { business: model.businessName })}</footer></section></main>;
 }

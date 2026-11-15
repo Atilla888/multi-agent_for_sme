@@ -1,4 +1,5 @@
 import type { InputHTMLAttributes } from "react";
+import { useTranslations } from "next-intl";
 import { Field } from "./Field";
 
 export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "size"> {
@@ -35,7 +36,7 @@ export interface SearchInputProps extends Omit<InputProps, "type"> {
 
 export function SearchInput({
   className = "",
-  clearLabel = "Clear search",
+  clearLabel: givenClearLabel,
   containerClassName = "",
   description,
   disabled,
@@ -47,6 +48,8 @@ export function SearchInput({
   required,
   ...props
 }: SearchInputProps) {
+  const t = useTranslations("common");
+  const clearLabel = givenClearLabel ?? t("clearSearch");
   return (
     <Field className={`search-field ${containerClassName}`.trim()} description={description} error={error} id={id} label={label} required={required}>
       {(fieldProps) => (

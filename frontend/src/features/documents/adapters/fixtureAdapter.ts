@@ -1,5 +1,9 @@
+import { createTranslator } from "next-intl";
+import { locales } from "@/i18n/locales";
+import { messagesFor } from "@/i18n/messages";
+import { documentText } from "../documentText";
 import { demoDocuments } from "../fixtures/demoDocuments";
-import type { DocumentDetailModel, DocumentsScreenModel, DocumentValidationState } from "../types";
+import type { DocumentDetailModel, DocumentListItem, DocumentsScreenModel, DocumentValidationState } from "../types";
 import type { DocumentDataAdapter } from "./contracts";
 
 export const DOCUMENT_FIXTURE_MODE = "sample" as const;
@@ -15,11 +19,19 @@ function parseValidationState(value: string | string[] | undefined): DocumentVal
     : "default";
 }
 
+/** Search matches the title, the version and the access and publishing labels, in any interface language. */
+const translators = locales.map((locale) => createTranslator({ locale, messages: messagesFor(locale), namespace: "documents" }));
+
+function searchText(document: DocumentListItem): string {
+  const labels = translators.map((t) => documentText(t, document)).map((text) => `${text.access} ${text.availability}`);
+  return `${document.title} ${document.latestVersion} ${labels.join(" ")}`.toLocaleLowerCase();
+}
+
 export const documentFixtureAdapter: DocumentDataAdapter = {
   list(query, status) {
     const needle = query.trim().toLocaleLowerCase();
     return demoDocuments.filter((document) => {
-      const matchesText = !needle || `${document.title} ${document.latestVersion} ${document.accessLabel} ${document.availabilityLabel}`.toLocaleLowerCase().includes(needle);
+      const matchesText = !needle || searchText(document).includes(needle);
       const matchesStatus = status === "all" || document.availability === status;
       return matchesText && matchesStatus;
     });

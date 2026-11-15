@@ -1,8 +1,13 @@
 import type { IconName } from "@/components/ui/Icon";
+import type { shell } from "@/i18n/messages/shell";
 
 export type NavigationAccess = "standard" | "restricted" | "contextual-restricted";
 
+/** Translation key under shell.nav; the English label stays here for search and tests. */
+export type NavKey = keyof typeof shell.en.nav;
+
 export interface NavItem {
+  readonly key: NavKey;
   readonly label: string;
   readonly href: string;
   /** Screens that need an extra permission show a lock in the sidebar; the route itself stays reachable. */
@@ -19,56 +24,60 @@ export interface NavArea extends NavItem {
  * names stay the same, only the words people see changed.
  */
 export const staffNavigation: readonly NavArea[] = [
-  { label: "Overview", href: "/overview", icon: "home" },
+  { key: "overview", label: "Overview", href: "/overview", icon: "home" },
   {
+    key: "conversations",
     label: "Conversations",
     href: "/conversations",
     icon: "inbox",
     children: [
-      { label: "Inbox", href: "/conversations", icon: "inbox" },
-      { label: "Needs review", href: "/escalations", icon: "alert" },
+      { key: "inbox", label: "Inbox", href: "/conversations", icon: "inbox" },
+      { key: "needsReview", label: "Needs review", href: "/escalations", icon: "alert" },
     ],
   },
   {
+    key: "business",
     label: "Business",
     href: "/customers",
     icon: "package",
     children: [
-      { label: "Customers", href: "/customers", icon: "users" },
-      { label: "Orders", href: "/orders", icon: "package" },
-      { label: "Products", href: "/products", icon: "tag" },
-      { label: "Inventory", href: "/inventory", icon: "box" },
+      { key: "customers", label: "Customers", href: "/customers", icon: "users" },
+      { key: "orders", label: "Orders", href: "/orders", icon: "package" },
+      { key: "products", label: "Products", href: "/products", icon: "tag" },
+      { key: "inventory", label: "Inventory", href: "/inventory", icon: "box" },
     ],
   },
   {
+    key: "insights",
     label: "Insights",
     href: "/analytics",
     icon: "chart",
     children: [
-      { label: "Reports", href: "/analytics", icon: "chart" },
-      { label: "Forecasts", href: "/forecasts", icon: "trend" },
-      { label: "Documents", href: "/documents", icon: "book" },
+      { key: "reports", label: "Reports", href: "/analytics", icon: "chart" },
+      { key: "forecasts", label: "Forecasts", href: "/forecasts", icon: "trend" },
+      { key: "documents", label: "Documents", href: "/documents", icon: "book" },
     ],
   },
   {
+    key: "administration",
     label: "Administration",
     href: "/integrations",
     icon: "settings",
     children: [
-      { label: "Channels", href: "/integrations", icon: "plug" },
-      { label: "Settings", href: "/settings", icon: "settings" },
-      { label: "Activity log", href: "/audit", access: "restricted", icon: "shield" },
-      { label: "AI activity", href: "/agent-runs", access: "contextual-restricted", icon: "bot" },
+      { key: "channels", label: "Channels", href: "/integrations", icon: "plug" },
+      { key: "settings", label: "Settings", href: "/settings", icon: "settings" },
+      { key: "activityLog", label: "Activity log", href: "/audit", access: "restricted", icon: "shield" },
+      { key: "aiActivity", label: "AI activity", href: "/agent-runs", access: "contextual-restricted", icon: "bot" },
     ],
   },
 ] as const;
 
 /** Mobile bottom tab bar: the four screens people open most, plus a More sheet with the rest. */
 export const mobileTabs: readonly (NavItem & { readonly icon: IconName })[] = [
-  { label: "Home", href: "/overview", icon: "home" },
-  { label: "Inbox", href: "/conversations", icon: "inbox" },
-  { label: "Orders", href: "/orders", icon: "package" },
-  { label: "Reports", href: "/analytics", icon: "chart" },
+  { key: "home", label: "Home", href: "/overview", icon: "home" },
+  { key: "inbox", label: "Inbox", href: "/conversations", icon: "inbox" },
+  { key: "orders", label: "Orders", href: "/orders", icon: "package" },
+  { key: "reports", label: "Reports", href: "/analytics", icon: "chart" },
 ] as const;
 
 /** Every staff destination once, in navigation order; used by header search and the mobile More sheet. */
@@ -97,14 +106,20 @@ export function findNavigationLabel(pathname: string): string {
   );
 }
 
-/** Breadcrumb trail for the header, e.g. "/orders/ORD-1" → ["Business", "Orders"]. */
-export function findNavigationTrail(pathname: string): readonly string[] {
+/** Breadcrumb trail as translation keys, e.g. "/orders/ORD-1" → ["business", "orders"]. */
+export function findNavigationTrailKeys(pathname: string): readonly NavKey[] {
   for (const area of staffNavigation) {
     const child = [...(area.children ?? [])]
       .sort((a, b) => b.href.length - a.href.length)
       .find((item) => isRouteActive(pathname, item.href));
-    if (child) return child.label === area.label ? [area.label] : [area.label, child.label];
-    if (isRouteActive(pathname, area.href)) return [area.label];
+    if (child) return child.key === area.key ? [area.key] : [area.key, child.key];
+    if (isRouteActive(pathname, area.href)) return [area.key];
   }
-  return ["Workspace"];
+  return ["workspace"];
+}
+
+/** Breadcrumb trail for the header in English, e.g. "/orders/ORD-1" → ["Business", "Orders"]. */
+export function findNavigationTrail(pathname: string): readonly string[] {
+  const labels = new Map(staffNavigation.flatMap((area) => [area, ...(area.children ?? [])]).map((item) => [item.key, item.label] as const));
+  return findNavigationTrailKeys(pathname).map((key) => labels.get(key) ?? "Workspace");
 }

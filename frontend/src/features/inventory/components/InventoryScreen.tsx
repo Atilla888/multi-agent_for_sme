@@ -1,31 +1,35 @@
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button, Card, CardContent, CardHeader, CardTitle, StateNotice, StatusBadge, Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui";
 import { BusinessBoundary, BusinessFactList, EntityToolbar } from "@/features/business";
 import type { InventoryScreenModel } from "../types";
 
-const options = [{ value: "all", label: "All" }, { value: "confirmed", label: "In stock" }, { value: "known-failure", label: "Out of stock" }, { value: "stale-conflict", label: "Needs a fresh check" }, { value: "outcome-unknown", label: "Needs checking" }] as const;
-
 /** Inventory: stock on hand and reservations, with when each count was last checked. */
 export function InventoryScreen({ model }: { readonly model: InventoryScreenModel }) {
+  const t = useTranslations("inventory");
+  const common = useTranslations("common");
+  const states = useTranslations("states");
+  const options = [{ value: "all", label: t("filters.all") }, { value: "confirmed", label: t("filters.inStock") }, { value: "known-failure", label: t("filters.outOfStock") }, { value: "stale-conflict", label: t("filters.freshCheck") }, { value: "outcome-unknown", label: states("outcome-unknown.label") }];
+  const selected = model.selected;
   return <div className="feature-page business-screen">
-    <PageHeader title="Inventory" description="Stock on hand and what is reserved for orders. Every count shows when it was last checked." source="sample" />
-    <EntityToolbar action="/inventory" query={model.query} searchLabel="Search inventory" searchPlaceholder="Product name or SKU" status={model.status} statusLabel="Filter inventory" options={options} />
-    <BusinessBoundary state={model.validationState} family="Inventory" emptyDescription="No stock records match this search or filter.">
+    <PageHeader title={t("title")} description={t("description")} source="sample" />
+    <EntityToolbar action="/inventory" query={model.query} searchLabel={t("searchLabel")} searchPlaceholder={t("searchPlaceholder")} status={model.status} statusLabel={t("filterLabel")} options={options} />
+    <BusinessBoundary state={model.validationState} family="inventory" emptyDescription={t("empty")}>
       <div className="entity-master-detail">
-        <Table scrollLabel="Inventory" className="responsive-table">
-          <TableCaption className="sr-only">Stock on hand and reserved units per product.</TableCaption>
-          <TableHeader><TableRow><TableHead>Product</TableHead><TableHead>In stock</TableHead><TableHead>Reserved</TableHead><TableHead>Status</TableHead><TableHead className="col-secondary">Last checked</TableHead><TableHead><span className="sr-only">Open</span></TableHead></TableRow></TableHeader>
+        <Table scrollLabel={t("table.label")} className="responsive-table">
+          <TableCaption className="sr-only">{t("table.caption")}</TableCaption>
+          <TableHeader><TableRow><TableHead>{t("table.product")}</TableHead><TableHead>{t("table.inStock")}</TableHead><TableHead>{t("table.reserved")}</TableHead><TableHead>{t("table.status")}</TableHead><TableHead className="col-secondary">{t("table.lastChecked")}</TableHead><TableHead><span className="sr-only">{common("open")}</span></TableHead></TableRow></TableHeader>
           <TableBody>{model.items.map((item) => <TableRow key={item.id}>
-            <TableCell data-label="Product"><Link className="row-link" href={`/inventory?product=${item.productId}`}>{item.product}</Link><span className="table-cell-note cell-id">{item.sku}</span></TableCell>
-            <TableCell data-label="In stock" className="quantity-cell">{item.availableQuantity}</TableCell>
-            <TableCell data-label="Reserved" className="cell-number">{item.reservedQuantity}</TableCell>
-            <TableCell data-label="Status"><StatusBadge state={item.state} /><span className="table-cell-note">{item.stateLabel}</span></TableCell>
-            <TableCell data-label="Last checked" className="col-secondary">{item.observedAt}</TableCell>
-            <TableCell data-label=""><Link className="context-link" href={`/inventory?product=${item.productId}`}>View</Link></TableCell>
+            <TableCell data-label={t("table.product")}><Link className="row-link" href={`/inventory?product=${item.productId}`}>{item.product}</Link><span className="table-cell-note cell-id">{item.sku}</span></TableCell>
+            <TableCell data-label={t("table.inStock")} className="quantity-cell">{t(`records.${item.copy}.available`)}</TableCell>
+            <TableCell data-label={t("table.reserved")} className="cell-number">{t(`records.${item.copy}.reserved`)}</TableCell>
+            <TableCell data-label={t("table.status")}><StatusBadge state={item.state} /><span className="table-cell-note">{t(`records.${item.copy}.state`)}</span></TableCell>
+            <TableCell data-label={t("table.lastChecked")} className="col-secondary">{t(`records.${item.copy}.checked`)}</TableCell>
+            <TableCell data-label=""><Link className="context-link" href={`/inventory?product=${item.productId}`}>{common("view")}</Link></TableCell>
           </TableRow>)}</TableBody>
         </Table>
-        {model.selected ? <Card className="entity-side-detail"><CardHeader><div><p className="section-kicker">Selected product</p><CardTitle>{model.selected.product}</CardTitle></div><StatusBadge state={model.selected.state} /></CardHeader><CardContent>{model.selected.state === "outcome-unknown" ? <StateNotice state="outcome-unknown" title="Check before reserving again" description="A reservation may have gone through without a confirmation. Reserving again could hold the stock twice, so check the records first." /> : null}<BusinessFactList facts={[{ label: "In stock", value: model.selected.availableQuantity, note: "As last checked, not a live count." }, { label: "Reserved", value: model.selected.reservedQuantity, note: model.selected.reservationEvidence }, { label: "Source", value: model.selected.source, note: model.selected.observedAt }, { label: "Note", value: model.selected.decisionNote }]} /><div className="related-actions"><Link className="context-link" href={`/products?product=${model.selected.productId}`}>Open product</Link>{model.selected.relatedOrder ? <Link className="context-link" href={`/orders/${model.selected.relatedOrder}`}>Order {model.selected.relatedOrder}</Link> : null}</div><div><Button disabled variant="secondary">Refresh count</Button><p className="muted-copy">Refreshing from here is not available yet.</p></div></CardContent></Card> : null}
+        {selected ? <Card className="entity-side-detail"><CardHeader><div><p className="section-kicker">{t("selected")}</p><CardTitle>{selected.product}</CardTitle></div><StatusBadge state={selected.state} /></CardHeader><CardContent>{selected.state === "outcome-unknown" ? <StateNotice state="outcome-unknown" title={t("checkFirst.title")} description={t("checkFirst.description")} /> : null}<BusinessFactList facts={[{ label: t("facts.inStock"), value: t(`records.${selected.copy}.available`), note: t("facts.inStockNote") }, { label: t("facts.reserved"), value: t(`records.${selected.copy}.reserved`), note: t(`records.${selected.copy}.reservation`) }, { label: t("facts.source"), value: t(`records.${selected.copy}.source`), note: t(`records.${selected.copy}.checked`) }, { label: t("facts.note"), value: t(`records.${selected.copy}.note`) }]} /><div className="related-actions"><Link className="context-link" href={`/products?product=${selected.productId}`}>{t("openProduct")}</Link>{selected.relatedOrder ? <Link className="context-link" href={`/orders/${selected.relatedOrder}`}>{t("order", { id: selected.relatedOrder })}</Link> : null}</div><div><Button disabled variant="secondary">{t("refresh")}</Button><p className="muted-copy">{t("refreshUnavailable")}</p></div></CardContent></Card> : null}
       </div>
     </BusinessBoundary>
   </div>;

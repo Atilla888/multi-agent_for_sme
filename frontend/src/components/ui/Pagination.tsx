@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 export interface PaginationProps {
   readonly currentPage: number;
   readonly label?: string;
@@ -19,13 +21,18 @@ export function paginationWindow(currentPage: number, totalPages: number): numbe
 
 export function Pagination({
   currentPage,
-  label = "Pagination",
-  nextLabel = "Next page",
+  label: givenLabel,
+  nextLabel: givenNext,
   onPageChange,
-  pageLabel = (page) => `Page ${page}`,
-  previousLabel = "Previous page",
+  pageLabel: givenPageLabel,
+  previousLabel: givenPrevious,
   totalPages,
 }: PaginationProps) {
+  const t = useTranslations("common.pagination");
+  const label = givenLabel ?? t("label");
+  const nextLabel = givenNext ?? t("next");
+  const previousLabel = givenPrevious ?? t("previous");
+  const pageLabel = givenPageLabel ?? ((page: number) => t("page", { page: String(page) }));
   const safeTotal = Math.max(1, totalPages);
   const safeCurrent = Math.min(Math.max(1, currentPage), safeTotal);
   const pages = paginationWindow(safeCurrent, safeTotal);

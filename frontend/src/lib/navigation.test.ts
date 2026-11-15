@@ -10,6 +10,8 @@ import {
   staffNavigation,
 } from "./navigation";
 import { matchNavigation } from "@/components/layout/NavigationSearch";
+import { shell } from "@/i18n/messages/shell";
+import { findNavigationTrailKeys } from "./navigation";
 
 describe("staff navigation", () => {
   it("keeps five groups with plain-language labels", () => {
@@ -105,3 +107,21 @@ describe("header trail", () => {
     expect(findNavigationTrail("/forecasts")).toEqual(["Insights", "Forecasts"]);
   });
 });
+
+describe("translated navigation", () => {
+  it("keeps every English label identical to its message, so search and translations agree", () => {
+    for (const item of [...staffNavigation, ...flatNavigation(), ...mobileTabs]) expect(shell.en.nav[item.key]).toBe(item.label);
+  });
+
+  it("gives the header trail as translation keys", () => {
+    expect(findNavigationTrailKeys("/orders/ORD-1042")).toEqual(["business", "orders"]);
+    expect(findNavigationTrailKeys("/unknown")).toEqual(["workspace"]);
+  });
+
+  it("matches header search against translated labels", () => {
+    const russian = (item: { readonly key: keyof typeof shell.ru.nav }) => shell.ru.nav[item.key];
+    expect(matchNavigation("заказ", flatNavigation(), russian)?.href).toBe("/orders");
+    expect(matchNavigation("склад", flatNavigation(), russian)?.href).toBe("/inventory");
+  });
+});
+

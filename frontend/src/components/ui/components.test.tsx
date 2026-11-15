@@ -322,3 +322,15 @@ function contrast(foreground: string | undefined, background: string | undefined
   const [light, dark] = [luminance(foreground), luminance(background)].sort((a, b) => b - a) as [number, number];
   return (light + 0.05) / (dark + 0.05);
 }
+
+describe("avatar colour across languages", () => {
+  it("takes the colour from colorKey when given, so a translated name keeps the same colour", () => {
+    const english = renderToStaticMarkup(<Avatar accessibleName="Customer Amina S." colorKey="Customer Amina S." initials="AS" />);
+    const russian = renderToStaticMarkup(<Avatar accessibleName="Клиент Amina S." colorKey="Customer Amina S." initials="AS" />);
+    const hue = (markup: string) => /avatar--hue-([0-5])/.exec(markup)?.[1];
+    expect(hue(russian)).toBe(hue(english));
+    expect(hue(russian)).toBe(String(avatarHue("Customer Amina S.")));
+    expect(russian).toContain('aria-label="Клиент Amina S."');
+  });
+});
+

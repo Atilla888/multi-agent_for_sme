@@ -4,6 +4,7 @@ import { ConversationList } from "./components/ConversationList";
 import { ConversationsScreen } from "./components/ConversationsScreen";
 import { demoConversationItems, demoConversationWorkspace } from "./fixtures/demoConversations";
 import { getConversationFixtureScreen, parseConversationScenario, parseConversationValidationState } from "./adapters/fixtureAdapter";
+import { withLocale } from "@/test/intl";
 
 describe("Inbox", () => {
   it("renders the list and the selected conversation", () => {
@@ -59,10 +60,10 @@ describe("Inbox", () => {
 
   it("hands over from Support to Sales without transferring access", () => {
     const workspace = demoConversationWorkspace("handoff");
-    const text = workspace.messages.map((message) => message.body).join(" ");
+    const markup = renderToStaticMarkup(<ConversationsScreen model={getConversationFixtureScreen("default", "handoff")} />);
     expect(workspace.handler).toBe("Sales Agent");
-    expect(text).toContain("access rights were not");
-    expect(workspace.notice?.description).toContain("do not transfer");
+    expect(markup).toContain("access rights were not");
+    expect(markup).toContain("do not transfer");
   });
 
   it("keeps a failed message separate from a confirmed reservation", () => {
@@ -77,5 +78,46 @@ describe("Inbox", () => {
     expect(markup).toContain("may have gone through");
     expect(markup).toContain("do not try to reserve again");
     expect(markup).not.toContain("OUTCOME_UNKNOWN");
+  });
+});
+
+describe("Inbox in Russian and Kazakh", () => {
+  const english = ["Inbox", "Conversations", "Needs attention", "Unread", "Support Agent", "Handled by", "Records", "Send message", "Search by name or message", "Verified", "Seen at", "Product and stock details were checked", "Yesterday", "System message at"];
+
+  it("translates the list, the timeline and the details panel into Russian", () => {
+    const markup = withLocale("ru", () => renderToStaticMarkup(<ConversationsScreen model={getConversationFixtureScreen("default", "default")} />));
+    for (const text of ["Входящие", "Диалоги", "Требуют внимания", "Агент поддержки", "Обработал", "Вчера", "Для этого диалога проверены данные о товаре и остатках.", "Создан · ORD-1042", "8 штук при последней проверке", "Отправить сообщение", "aria-label=\"3 диалога\"", "Системное сообщение в 10:40"]) expect(markup).toContain(text);
+    for (const text of english) expect(markup).not.toContain(text);
+  });
+
+  it("translates the list, the timeline and the details panel into Kazakh", () => {
+    const markup = withLocale("kk", () => renderToStaticMarkup(<ConversationsScreen model={getConversationFixtureScreen("default", "default")} />));
+    for (const text of ["Кіріс хабарлар", "Диалогтар", "Қолдау агенті", "Өңдеген", "Кеше", "Осы диалог үшін тауар мен қалдық деректері тексерілді.", "Жасалды · ORD-1042", "Соңғы тексеруде 8 дана", "Хабарлама жіберу", "Жүйе хабарламасы, сағат 10:40"]) expect(markup).toContain(text);
+    for (const text of english) expect(markup).not.toContain(text);
+  });
+
+  it("keeps what customers and agents wrote, names and channels as they are", () => {
+    const markup = withLocale("ru", () => renderToStaticMarkup(<ConversationsScreen model={getConversationFixtureScreen("default", "default")} />));
+    expect(markup).toContain("Amina S.");
+    expect(markup).toContain("Is the Slate desk lamp available?");
+    expect(markup).toContain("Desk Lamp · Slate");
+    expect(markup).toContain("Web Chat");
+  });
+
+  it("translates notices, system events and empty states", () => {
+    const failure = withLocale("ru", () => renderToStaticMarkup(<ConversationsScreen model={getConversationFixtureScreen("default", "known-failure")} />));
+    expect(failure).toContain("Заказ ORD-1042 создан. Зарезервировать под него товар не удалось.");
+    expect(failure).toContain("Товар не зарезервирован");
+    expect(failure).not.toContain("Stock was not reserved");
+    const delivery = withLocale("kk", () => renderToStaticMarkup(<ConversationsScreen model={getConversationFixtureScreen("default", "delivery-failure")} />));
+    expect(delivery).toContain("Жеткізілмеді");
+    expect(delivery).toContain("Тек хабарламаны қайта жіберіңіз");
+    expect(delivery).not.toContain("Not delivered");
+    const empty = withLocale("kk", () => renderToStaticMarkup(<ConversationsScreen model={getConversationFixtureScreen("empty", "default")} />));
+    expect(empty).toContain("Әзірге диалогтар жоқ");
+    expect(empty).not.toContain("No conversations yet");
+    const unavailable = withLocale("ru", () => renderToStaticMarkup(<ConversationsScreen model={getConversationFixtureScreen("m08-unavailable", "default")} />));
+    expect(unavailable).toContain("Обмен сообщениями пока не подключён");
+    expect(unavailable).not.toContain("Live messaging is not connected yet");
   });
 });

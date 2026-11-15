@@ -1,24 +1,37 @@
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { Avatar, Badge, ContextHelper, StatusBadge } from "@/components/ui";
-import type { ConversationWorkspace } from "../types";
-import { isAgent } from "../agents";
+import type { ContextFactFreshness, ContextFactValue, ConversationWorkspace } from "../types";
+import { actorKey, isAgent } from "../agents";
 
 /** The details panel: who and how first, then the order and stock facts with their source. */
 export function ConversationContextPanel({ workspace }: { readonly workspace: ConversationWorkspace }) {
+  const t = useTranslations("conversations");
+  const handler = t(`actors.${actorKey[workspace.handler]}`);
+  const value = (fact: ContextFactValue) => {
+    if ("record" in fact) return fact.record;
+    if (fact.key === "orderCreated") return t("facts.values.orderCreated", { orderId: fact.orderId });
+    if (fact.key === "stockUnits") return t("facts.values.stockUnits", { count: fact.count });
+    return t(`facts.values.${fact.key}`);
+  };
+  const freshness = (fact: ContextFactFreshness | undefined) => {
+    if (!fact) return "";
+    return fact.key === "seenAt" ? t("facts.freshness.seenAt", { time: fact.time }) : t(`facts.freshness.${fact.key}`);
+  };
   return <aside className="conversation-context details-panel" aria-labelledby="context-title">
     <section className="details-panel__group">
-      <h3 id="context-title">Details</h3>
+      <h3 id="context-title">{t("details.title")}</h3>
       <dl className="details-grid">
-        <div><dt>Status</dt><dd><StatusBadge state={workspace.state} /></dd></div>
-        <div><dt>Handled by</dt><dd className="details-grid__inline"><Avatar variant={isAgent(workspace.handler) ? "agent" : "person"} accessibleName={workspace.handler} initials="HO" />{workspace.handler}</dd></div>
-        <div><dt>Channel</dt><dd><Badge>{workspace.channel}</Badge></dd></div>
+        <div><dt>{t("details.status")}</dt><dd><StatusBadge state={workspace.state} /></dd></div>
+        <div><dt>{t("details.handledBy")}</dt><dd className="details-grid__inline"><Avatar variant={isAgent(workspace.handler) ? "agent" : "person"} accessibleName={handler} colorKey={workspace.handler} initials={t("personInitials")} />{handler}</dd></div>
+        <div><dt>{t("details.channel")}</dt><dd><Badge>{workspace.channel}</Badge></dd></div>
       </dl>
-      {workspace.escalation ? <Link className="context-link" href={`/escalations?case=${workspace.escalation.id}`}>{workspace.escalation.label} {workspace.escalation.id}</Link> : null}
+      {workspace.escalation ? <Link className="context-link" href={`/escalations?case=${workspace.escalation.id}`}>{t("details.openCase", { id: workspace.escalation.id })}</Link> : null}
     </section>
     <section className="details-panel__group">
-      <h3>Records</h3>
-      <dl className="details-grid">{workspace.facts.map((fact) => <div key={fact.label}><dt>{fact.label}</dt><dd><span className="details-grid__value">{fact.value}</span><span className="details-grid__source">{[fact.source, fact.freshness].filter(Boolean).join(" · ")}</span></dd></div>)}</dl>
+      <h3>{t("details.records")}</h3>
+      <dl className="details-grid">{workspace.facts.map((fact) => <div key={fact.label}><dt>{t(`facts.labels.${fact.label}`)}</dt><dd><span className="details-grid__value">{value(fact.value)}</span><span className="details-grid__source">{[t(`facts.sources.${fact.source}`), freshness(fact.freshness)].filter(Boolean).join(" · ")}</span></dd></div>)}</dl>
     </section>
-    <ContextHelper>Access is checked on every action, not by what is visible here.</ContextHelper>
+    <ContextHelper>{t("details.accessNote")}</ContextHelper>
   </aside>;
 }

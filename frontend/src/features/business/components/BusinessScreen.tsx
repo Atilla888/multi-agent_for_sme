@@ -1,24 +1,27 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { EmptyState, LoadingState, StateNotice } from "@/components/ui";
 import { Icon } from "@/components/ui/Icon";
 import type { BusinessValidationState } from "../types";
 
+/** Which record family a list or record shows; picks whole translated sentences for its states. */
+export type BusinessFamily = "customers" | "customer" | "orders" | "order" | "products" | "inventory";
+
 interface BusinessBoundaryProps {
   readonly state: BusinessValidationState;
   readonly children: ReactNode;
-  /** Plural, lower case, e.g. "orders". Used in the loading, empty and error copy. */
-  readonly family: string;
+  readonly family: BusinessFamily;
   readonly emptyDescription: string;
 }
 
 /** Shows loading, empty, no-access or unavailable states for a list, or the list itself. */
 export function BusinessBoundary({ state, children, family, emptyDescription }: BusinessBoundaryProps) {
-  const name = family.toLowerCase();
-  if (state === "loading") return <section className="business-loading" aria-label={`Loading ${name}`}><LoadingState label={`Loading ${name}`} lines={6} /><LoadingState label="Loading details" lines={4} /></section>;
-  if (state === "empty") return <EmptyState title={`No ${name} found`} description={emptyDescription} />;
-  if (state === "restricted") return <StateNotice state="permission-denied" title={`You don't have access to ${name}`} description="Ask an owner or administrator if you need this." />;
-  if (state === "unavailable") return <StateNotice state="dependency-unavailable" title={`${family} can't be loaded right now`} description="We could not reach the source. Nothing is shown in its place, so an empty screen here does not mean there are no records." />;
+  const t = useTranslations("business");
+  if (state === "loading") return <section className="business-loading" aria-label={t(`families.${family}.loading`)}><LoadingState label={t(`families.${family}.loading`)} lines={6} /><LoadingState label={t("loadingDetails")} lines={4} /></section>;
+  if (state === "empty") return <EmptyState title={t(`families.${family}.empty`)} description={emptyDescription} />;
+  if (state === "restricted") return <StateNotice state="permission-denied" title={t(`families.${family}.restricted`)} description={t("askForAccess")} />;
+  if (state === "unavailable") return <StateNotice state="dependency-unavailable" title={t(`families.${family}.unavailable`)} description={t("unavailableDescription")} />;
   return children;
 }
 
@@ -46,6 +49,7 @@ function filterHref(action: string, query: string, status: string): string {
 
 /** List toolbar: search field, filter chips with counts, and optional actions. */
 export function EntityToolbar({ action, query, searchLabel, searchPlaceholder, status, statusLabel, options, counts, actions }: EntityToolbarProps) {
+  const t = useTranslations("common");
   const id = action.replaceAll("/", "") || "business";
   return <div className="entity-toolbar">
     <form className="toolbar-search" action={action} method="get" role="search">
@@ -53,7 +57,7 @@ export function EntityToolbar({ action, query, searchLabel, searchPlaceholder, s
       <Icon name="search" size={16} />
       <input id={`${id}-search`} type="search" name="q" defaultValue={query} placeholder={searchPlaceholder} aria-describedby={`${id}-search-note`} />
       {status !== "all" ? <input type="hidden" name="status" value={status} /> : null}
-      <span className="sr-only" id={`${id}-search-note`}>Press Enter to search.</span>
+      <span className="sr-only" id={`${id}-search-note`}>{t("pressEnterToSearch")}</span>
     </form>
     <nav className="filter-chips" aria-label={statusLabel}>
       {options.map((option) => {
