@@ -1,5 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
+import { withLocale } from "@/test/intl";
 import { administrationApiContracts } from "./adapters/contracts";
 import { auditFixtureAdapter, getAuditFixtureScreen } from "./adapters/fixtureAdapter";
 import { AuditScreen } from "./components/AuditScreen";
@@ -54,5 +55,38 @@ describe("Activity log", () => {
     expect(administrationApiContracts.audit.publicEndpoint).toBeNull();
     expect(administrationApiContracts.audit.access).toBe("RESTRICTED");
     vi.unstubAllGlobals();
+  });
+
+  it("speaks Russian and Kazakh, with dates in the chosen language", () => {
+    const ru = withLocale("ru", () => render({ state: "fixture", event: "AUD-1043" }));
+    expect(ru).toContain("<h1>Журнал действий</h1>");
+    expect(ru).toContain("14 окт. 2026 г., 10:45");
+    expect(ru).toContain("Резервирование товара");
+    expect(ru).toContain("Заказ ORD-1042");
+    expect(ru).toContain("Запрещено правилами");
+    expect(ru).toContain("Нужно проверить");
+    expect(ru).toContain("Выбранная запись");
+    expect(ru).toContain('placeholder="Действие, заказ или сотрудник"');
+    expect(withLocale("ru", () => render())).toContain("У вас нет доступа к журналу действий");
+
+    const kk = withLocale("kk", () => render({ state: "fixture", event: "AUD-1043" }));
+    expect(kk).toContain("<h1>Әрекеттер журналы</h1>");
+    expect(kk).toContain("2026 ж. 14 қаз., 10:45");
+    expect(kk).toContain("Тапсырысты өзгерту");
+    expect(kk).toContain("op-demo-7 резерві");
+    expect(kk).toContain("Ереже бойынша шешім");
+    expect(kk).toContain("Таңдалған жазба");
+    expect(withLocale("kk", () => render({ state: "unavailable" }))).toContain("Бұл ештеңе болмады дегенді білдірмейді");
+
+    for (const markup of [ru, kk]) {
+      for (const record of ["AUD-1042", "corr-demo-1043", "North Shop"]) expect(markup).toContain(record);
+      for (const english of ["14 Oct 2026", "Reserve stock", "Change order", "Blocked by policy", "Needs checking", "Selected entry", "Search the log", "Recorded by the system", "Policy decision", "Operator"]) expect(markup).not.toContain(english);
+    }
+  });
+
+  it("finds entries by the words shown in any language", () => {
+    expect(getAuditFixtureScreen({ state: "fixture", q: "проверка резерва" }).items.map((item) => item.id)).toEqual(["AUD-1044"]);
+    expect(getAuditFixtureScreen({ state: "fixture", q: "Резервті тексеру" }).items.map((item) => item.id)).toEqual(["AUD-1044"]);
+    expect(getAuditFixtureScreen({ state: "fixture", q: "заказ ord-1042" }).items.map((item) => item.id)).toEqual(["AUD-1042", "AUD-1043"]);
   });
 });

@@ -7,6 +7,11 @@ import { GET as startLogin } from "@/app/api/auth/login/route";
 
 const { beginLogin } = vi.hoisted(() => ({ beginLogin: vi.fn() }));
 vi.mock("@/services/auth/oidc", () => ({ beginOidcLogin: beginLogin }));
+// The sign-in page carries the language/theme switch, which uses the App Router; there is none in tests.
+vi.mock("next/navigation", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("next/navigation")>()),
+  useRouter: () => ({ refresh() {}, push() {}, replace() {}, prefetch() {}, back() {}, forward() {} }),
+}));
 
 beforeEach(() => {
   vi.stubEnv("APP_ORIGIN", "http://127.0.0.1:3100");

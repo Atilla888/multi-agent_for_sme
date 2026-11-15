@@ -1,5 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import { withLocale } from "@/test/intl";
 import { forecastApiContract } from "./adapters/contracts";
 import { forecastFixtureAdapter, getForecastFixtureScreen } from "./adapters/fixtureAdapter";
 import { ForecastsScreen } from "./components/ForecastsScreen";
@@ -59,5 +60,35 @@ describe("Forecasts", () => {
     expect(String(forecastFixtureAdapter.readiness)).not.toContain("fetch(");
     const markup = renderToStaticMarkup(<ForecastsScreen model={getForecastFixtureScreen({})} />);
     expect(markup).not.toMatch(/TSR|FER|H0|H1|SINGLE|STATIC|ADAPTIVE/);
+  });
+});
+
+describe("Forecasts in Russian and Kazakh", () => {
+  const render = (locale: "ru" | "kk", query: Record<string, string> = {}) => withLocale(locale, () => renderToStaticMarkup(<ForecastsScreen model={getForecastFixtureScreen(query)} />));
+  const english = ["Forecasts are not ready yet", "Predicted sales", "What is missing", "Forecast model", "Sales history", "Request a forecast", "Request forecast", "How a forecast will be shown", "This is a description only", "Open Reports", "Not ready yet", "Planned"];
+
+  it("says in Russian that forecasts are not ready and nothing is predicted", () => {
+    const markup = render("ru");
+    expect(markup).toContain("<h1>Прогнозы</h1>");
+    expect(markup).toContain("Прогнозы пока не готовы");
+    expect(markup).toContain("Пока не готово");
+    expect(markup).toContain("Чего не хватает");
+    expect(markup).toMatch(/<button[^>]*disabled=""[^>]*><span>Запросить прогноз<\/span>/);
+    expect(markup).toMatch(/class="rule-note">Это только описание/);
+    expect(markup).toContain("Открыть отчёты");
+    for (const text of english) expect(markup).not.toContain(text);
+  });
+
+  it("says it in Kazakh too, and withholds the request section without access", () => {
+    const markup = render("kk");
+    expect(markup).toContain("<h1>Болжамдар</h1>");
+    expect(markup).toContain("Болжамдар әлі дайын емес");
+    expect(markup).toContain("Болжам моделі");
+    expect(markup).toContain("Жоспарланған");
+    expect(markup).toContain("Есептерді ашу");
+    for (const text of english) expect(markup).not.toContain(text);
+    const restricted = render("kk", { state: "restricted" });
+    expect(restricted).toContain("Болжамдарға рұқсатыңыз жоқ");
+    expect(restricted).not.toContain("Болжам сұрау");
   });
 });

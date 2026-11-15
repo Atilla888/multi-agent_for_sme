@@ -35,6 +35,7 @@ import { RealAnalyticsScreen, RealCustomerScreen, RealInventoryScreen, RealOrder
 import { RealConversationsScreen } from "@/features/integration/RealConversationsScreen";
 import { liveAnalytics, liveConversations, liveCustomer, liveInventory, liveOrder, liveProducts } from "./liveStubs";
 import type { AuthenticatedSession } from "@/types/auth";
+import { testLocale } from "@/test/intl";
 
 const session: AuthenticatedSession = { subject: "preview", displayName: "Aruzhan Kassym", roles: ["OWNER"], activeBusinessId: "north-shop", expiresAt: "", businessName: "North Shop" };
 
@@ -66,9 +67,10 @@ const screens: Record<string, () => ReactNode> = {
 };
 
 const theme = process.env.PREVIEW_THEME === "dark" ? "dark" : "light"; // PREVIEW_THEME=dark npm run preview
+const locale = testLocale(); // PREVIEW_LOCALE=ru|kk npm run preview
 
 function page(title: string, css: string, body: string): string {
-  return `<!doctype html><html lang="en" data-theme="${theme}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${title}</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap"><style>${css}</style></head><body>${body}</body></html>`;
+  return `<!doctype html><html lang="${locale}" data-theme="${theme}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${title}</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap"><style>${css}</style></head><body>${body}</body></html>`;
 }
 
 it("writes every screen to .preview/", async () => {

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { avatarHue } from "@/components/ui/Avatar";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { initials } from "@/components/layout/sessionDisplay";
@@ -6,76 +7,80 @@ import { Button, Card, CardContent, CardHeader, CardTitle, StateNotice, StatusBa
 import { Icon } from "@/components/ui/Icon";
 import { BusinessBoundary } from "@/features/business";
 import type { ProductState } from "@/types/states";
-import type { OrderDetailModel, OrderDetailView } from "../types";
+import type { OrderDetailModel } from "../types";
+import { useOrderWords } from "./useOrderWords";
 
 interface TimelineStep {
+  readonly id: string;
   readonly title: string;
   readonly detail: string;
   readonly state: ProductState;
 }
 
-function timeline(order: OrderDetailView): readonly TimelineStep[] {
-  return [
-    { title: "Order created", detail: order.createEvidence, state: order.orderState },
-    { title: "Stock reserved", detail: order.reservationEvidence, state: order.reservationState },
-    { title: "Delivery", detail: `${order.orderDelivery}. No update does not mean it has not shipped.`, state: "not-available" },
-    { title: "Customer message", detail: `${order.messageDelivery}. Messages never change the order or the reservation.`, state: order.messageDelivery.startsWith("Confirmation message") ? "message-delivery-failed" : "not-available" },
-  ];
-}
-
 /** Order detail: status, items and what happened on the left; customer and next step on the right. */
 export function OrderDetailScreen({ model }: { readonly model: OrderDetailModel }) {
+  const t = useTranslations("orders");
+  const words = useOrderWords();
   const order = model.order;
+  const scenario = order?.scenario ?? "confirmed";
+  const createEvidence = order ? t(`scenarios.${scenario}.createEvidence`, { orderRef: order.refs.order ?? "", version: order.version }) : "";
+  const reservationEvidence = order ? t(`scenarios.${scenario}.reservationEvidence`, { reservationRef: order.refs.reservation ?? "" }) : "";
+  const timeline: readonly TimelineStep[] = order ? [
+    { id: "created", title: t("detail.timeline.created"), detail: createEvidence, state: order.orderState },
+    { id: "reserved", title: t("detail.timeline.reserved"), detail: reservationEvidence, state: order.reservationState },
+    { id: "delivery", title: t("detail.timeline.delivery"), detail: t(`detail.delivery.${order.orderDelivery}`), state: "not-available" },
+    { id: "message", title: t("detail.timeline.message"), detail: t(`detail.customerMessage.${order.messageDelivery}`), state: order.messageDelivery === "confirmationNotDelivered" ? "message-delivery-failed" : "not-available" },
+  ] : [];
   return <div className="feature-page business-screen order-detail">
-    <PageHeader title={order ? `Order ${order.id}` : "Order"} description={order ? `${order.observedAt} · ${order.channel}` : undefined} source="sample" backHref="/orders" backLabel="Orders" />
-    <BusinessBoundary state={model.validationState} family="Order" emptyDescription="There is no order with this number.">{order ? <>
+    <PageHeader title={order ? t("detail.titleWithId", { id: order.id }) : t("detail.title")} description={order ? `${t("detail.lastUpdatedToday", { time: order.observedAt.time })} · ${order.channel}` : undefined} source="sample" backHref="/orders" backLabel={t("title")} />
+    <BusinessBoundary state={model.validationState} family="order" emptyDescription={t("detail.emptyDescription")}>{order ? <>
       <div className="order-detail__title">
         <StatusBadge state={order.orderState} />
         <StatusBadge state={order.reservationState} />
       </div>
-      {order.notice ? <StateNotice state={order.notice.state} title={order.notice.title} description={order.notice.description} /> : null}
+      {order.notice ? <StateNotice state={order.notice.state} title={t(`scenarios.${scenario}.noticeTitle`)} description={t(`scenarios.${scenario}.noticeDescription`)} /> : null}
       <div className="detail-layout">
         <div className="detail-layout__main">
           <Card>
-            <CardHeader><CardTitle>Order and stock</CardTitle></CardHeader>
+            <CardHeader><CardTitle>{t("detail.orderAndStock")}</CardTitle></CardHeader>
             <CardContent className="state-pair">
               <div className="state-box">
-                <div className="state-box__head"><span>Order</span><StatusBadge state={order.orderState} /></div>
-                <strong>{order.orderLabel}</strong>
-                <p>{order.createEvidence}</p>
+                <div className="state-box__head"><span>{t("columns.order")}</span><StatusBadge state={order.orderState} /></div>
+                <strong>{words.orderLabel(order.orderLabel)}</strong>
+                <p>{createEvidence}</p>
               </div>
               <div className="state-box">
-                <div className="state-box__head"><span>Stock reservation</span><StatusBadge state={order.reservationState} /></div>
-                <strong>{order.reservationLabel}</strong>
-                <p>{order.reservationEvidence}</p>
+                <div className="state-box__head"><span>{t("columns.reservation")}</span><StatusBadge state={order.reservationState} /></div>
+                <strong>{words.reservationLabel(order.reservationLabel)}</strong>
+                <p>{reservationEvidence}</p>
               </div>
-              <p className="rule-note">Creating an order and reserving stock are two separate steps. One can succeed while the other does not.</p>
+              <p className="rule-note">{t("detail.ruleNote")}</p>
             </CardContent>
           </Card>
           <Card>
-            <CardHeader><CardTitle>Items</CardTitle></CardHeader>
+            <CardHeader><CardTitle>{t("columns.items")}</CardTitle></CardHeader>
             <CardContent>
-              <ul className="order-items" aria-label={`Items in ${order.id}`}>
+              <ul className="order-items" aria-label={t("detail.itemsIn", { id: order.id })}>
                 {order.lines.map((line) => <li key={line.productId}>
                   <span className="order-items__icon"><Icon name="box" size={18} /></span>
                   <span className="order-items__text">
                     <strong>{line.product}</strong>
-                    <span>{line.sku} · {line.quantity} ordered · {line.reservedQuantity} reserved</span>
-                    <span><Link className="context-link" href={`/products?product=${line.productId}`}>Product</Link> · <Link className="context-link" href={`/inventory?product=${line.productId}`}>Stock</Link></span>
+                    <span>{t("detail.lineFacts", { sku: line.sku, ordered: line.quantity, reserved: line.reservedQuantity })}</span>
+                    <span><Link className="context-link" href={`/products?product=${line.productId}`}>{t("detail.productLink")}</Link> · <Link className="context-link" href={`/inventory?product=${line.productId}`}>{t("detail.stockLink")}</Link></span>
                   </span>
                   <strong className="cell-number">{line.unitPrice}</strong>
                 </li>)}
               </ul>
               <dl className="order-totals">
-                <div><dt>Total</dt><dd>{order.total}</dd></div>
+                <div><dt>{t("columns.total")}</dt><dd>{order.total}</dd></div>
               </dl>
             </CardContent>
           </Card>
           <Card>
-            <CardHeader><CardTitle>What happened</CardTitle></CardHeader>
+            <CardHeader><CardTitle>{t("detail.whatHappened")}</CardTitle></CardHeader>
             <CardContent>
               <ol className="timeline">
-                {timeline(order).map((step) => <li key={step.title}>
+                {timeline.map((step) => <li key={step.id}>
                   <span className="timeline__dot" aria-hidden="true" />
                   <span className="timeline__text"><strong>{step.title}</strong><span>{step.detail}</span></span>
                   <StatusBadge state={step.state} />
@@ -84,21 +89,21 @@ export function OrderDetailScreen({ model }: { readonly model: OrderDetailModel 
             </CardContent>
           </Card>
         </div>
-        <aside className="detail-layout__side details-panel" aria-label="Order details">
+        <aside className="detail-layout__side details-panel" aria-label={t("detail.detailsLabel")}>
           <section className="details-panel__group">
-            <h3>Customer</h3>
+            <h3>{t("columns.customer")}</h3>
             <div className="customer-card__who">
               <span className={`avatar avatar--hue-${avatarHue(order.customer)}`} aria-hidden="true">{initials(order.customer)}</span>
               <span><strong>{order.customer}</strong><span>{order.phone}</span></span>
             </div>
-            <div className="details-panel__links"><Link className="context-link" href={`/customers/${order.customerId}`}>Open customer</Link><Link className="context-link" href="/conversations/c-42">Open conversation</Link></div>
+            <div className="details-panel__links"><Link className="context-link" href={`/customers/${order.customerId}`}>{t("detail.openCustomer")}</Link><Link className="context-link" href="/conversations/c-42">{t("detail.openConversation")}</Link></div>
           </section>
           <section className="details-panel__group next-steps">
-            <h3>Next step</h3>
-            <strong>{order.nextStep}</strong>
-            <p>{order.nextDetail}</p>
-            {order.scenario === "e02" ? <><Button disabled>Change order</Button><p className="rule-note">Changing orders is switched off by policy.</p></> : null}
-            {["outcome-unknown", "attention", "e02"].includes(order.scenario) ? <Link className="button button--primary" href={`/escalations?scenario=${order.scenario === "outcome-unknown" ? "outcome-unknown" : order.scenario === "e02" ? "restricted" : "waiting-human"}`}>Open review case</Link> : null}
+            <h3>{t("detail.nextStep")}</h3>
+            <strong>{t(`scenarios.${scenario}.nextStep`)}</strong>
+            <p>{t(`scenarios.${scenario}.nextDetail`, { reservationRef: order.refs.reservation ?? "" })}</p>
+            {order.scenario === "e02" ? <><Button disabled>{t("detail.changeOrder")}</Button><p className="rule-note">{t("detail.changeBlockedNote")}</p></> : null}
+            {["outcome-unknown", "attention", "e02"].includes(order.scenario) ? <Link className="button button--primary" href={`/escalations?scenario=${order.scenario === "outcome-unknown" ? "outcome-unknown" : order.scenario === "e02" ? "restricted" : "waiting-human"}`}>{t("detail.openReviewCase")}</Link> : null}
           </section>
         </aside>
       </div>

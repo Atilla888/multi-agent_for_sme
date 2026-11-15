@@ -1,5 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
+import { withLocale } from "@/test/intl";
 import { documentApiContract } from "./adapters/contracts";
 import { documentFixtureAdapter, getDocumentDetailFixture, getDocumentsFixtureScreen } from "./adapters/fixtureAdapter";
 import { DocumentDetailScreen } from "./components/DocumentDetailScreen";
@@ -127,5 +128,77 @@ describe("Documents", () => {
     const list = renderToStaticMarkup(<DocumentsScreen model={getDocumentsFixtureScreen({})} />);
     const detail = renderToStaticMarkup(<DocumentDetailScreen model={getDocumentDetailFixture("doc-returns", {})} />);
     expect(`${list}${detail}`).not.toContain("Business Brain");
+  });
+});
+
+describe("Documents in Russian and Kazakh", () => {
+  const list = (locale: "ru" | "kk", query: Record<string, string> = {}) => withLocale(locale, () => renderToStaticMarkup(<DocumentsScreen model={getDocumentsFixtureScreen(query)} />));
+  const detail = (locale: "ru" | "kk", id: string, query: Record<string, string> = {}) => withLocale(locale, () => renderToStaticMarkup(<DocumentDetailScreen model={getDocumentDetailFixture(id, query)} />));
+  const englishList = ["Latest version", "Who can use it", "Customers and staff", "Staff only", "Search documents", "Title or version", "Ready to publish", "Uploading is not available yet", "<span>Upload</span>", ">View<", "Agents use V1 only", "Not published yet", "Published 14 Oct"];
+  const englishDetail = ["Uploaded", "Used by agents", "is current", "Versions of", "Plain text", "Previously published", "Kept for reference", "Publish version", "Document details", "The file could not be read", "Documents inform answers", "Agents keep using"];
+
+  it("words the list in Russian, with Russian dates, and leaves titles and the shop name as recorded", () => {
+    const markup = list("ru");
+    expect(markup).toContain("<h1>Документы</h1>");
+    expect(markup).toContain('placeholder="Название или версия"');
+    expect(markup).toContain('data-label="Кто может использовать"');
+    expect(markup).toContain("Клиенты и сотрудники");
+    expect(markup).toContain("V1 опубликована, V2 ждёт");
+    expect(markup).toContain("Агенты используют только V1");
+    expect(markup).toContain("Удалено 30 сент., 18:00");
+    expect(markup).toContain("Returns and exchanges policy");
+    expect(markup).toContain("North Shop");
+    for (const english of englishList) expect(markup).not.toContain(english);
+  });
+
+  it("words the list in Kazakh", () => {
+    const markup = list("kk");
+    expect(markup).toContain("<h1>Құжаттар</h1>");
+    expect(markup).toContain("Соңғы нұсқа");
+    expect(markup).toContain("Тек қызметкерлер");
+    expect(markup).toContain("V1 жарияланған, V2 өңделмеді");
+    expect(markup).toContain("Жарияланды: 14 қаз., 10:32");
+    expect(markup).toContain("<span>Жүктеу</span>");
+    expect(markup).toContain("Shipping service guide");
+    for (const english of englishList) expect(markup).not.toContain(english);
+  });
+
+  it("finds documents by their Russian and Kazakh labels", () => {
+    expect(getDocumentsFixtureScreen({ q: "только сотрудники" }).items.map((item) => item.id)).toEqual(["doc-warranty", "doc-operations"]);
+    expect(getDocumentsFixtureScreen({ q: "күтуде" }).items.map((item) => item.id)).toEqual(["doc-shipping"]);
+  });
+
+  it("words the list's empty, no-access and unavailable states", () => {
+    expect(list("ru", { q: "нет такого" })).toContain("Документы не найдены");
+    expect(list("kk", { state: "restricted" })).toContain("Құжаттарға рұқсатыңыз жоқ");
+    expect(list("ru", { state: "unavailable" })).toContain("Пустой экран не означает, что документов нет");
+    expect(list("kk", { state: "loading" })).toContain('aria-label="Құжаттар жүктелуде"');
+  });
+
+  it("words a document's life, versions and details in Russian", () => {
+    const markup = detail("ru", "doc-warranty");
+    expect(markup).toContain("1 · Загружено");
+    expect(markup).toContain("V1 — текущая");
+    expect(markup).toContain("V2 не удалось обработать. Агенты по-прежнему используют V1");
+    expect(markup).toContain('aria-label="Версии документа «Warranty handling guide»"');
+    expect(markup).toContain("Обычный текст · UTF-8");
+    expect(markup).toContain("Не удалось полностью прочитать файл");
+    expect(markup).toContain("Текущая · 02 окт., 11:28");
+    expect(markup).toContain("<span>Опубликовать версию</span>");
+    expect(markup).toContain("warranty-guide-v2.txt");
+    for (const english of englishDetail) expect(markup).not.toContain(english);
+  });
+
+  it("words a document's life, versions and details in Kazakh", () => {
+    const markup = detail("kk", "doc-retired");
+    expect(markup).toContain("4 · Агенттер қолданады");
+    expect(markup).toContain("Ештеңе жарияланбаған");
+    expect(markup).toContain("Бұл құжат жойылды");
+    expect(markup).toContain("Дайын (ескі нұсқа)");
+    expect(markup).toContain("Анықтама үшін сақталған.");
+    expect(markup).toContain("Жарияланған нұсқа");
+    expect(markup).toContain("Retired seasonal promotion");
+    for (const english of [...englishDetail, "Removed", "Not used", "Nothing published", "Ready (old)"]) expect(markup).not.toContain(english);
+    expect(detail("kk", "missing")).toContain("Құжат табылмады");
   });
 });

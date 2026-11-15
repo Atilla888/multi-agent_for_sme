@@ -1,5 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
+import { withLocale } from "@/test/intl";
 import { administrationApiContracts } from "./adapters/contracts";
 import { getSettingsFixtureScreen, settingsFixtureAdapter } from "./adapters/fixtureAdapter";
 import { SettingsScreen } from "./components/SettingsScreen";
@@ -48,5 +49,30 @@ describe("Settings", () => {
     expect(render("empty")).toContain("No settings to show");
     expect(render("loading")).toContain("Loading settings");
     vi.unstubAllGlobals();
+  });
+
+  it("speaks Russian and Kazakh and keeps record values as they are", () => {
+    const ru = withLocale("ru", () => render());
+    expect(ru).toContain("<h1>Настройки</h1>");
+    expect(ru).toContain("Что отключено");
+    expect(ru).toContain('value="Учётная запись компании (единый вход)"');
+    expect(ru).toContain('value="Владелец, Оператор, Администратор платформы"');
+    expect(ru).toContain('value="Запрещено правилами"');
+    expect(ru).toMatch(/<button[^>]*disabled=""[^>]*><span>Сохранить изменения<\/span>/);
+    expect(withLocale("ru", () => render("unavailable"))).toContain("Сейчас не удаётся загрузить настройки");
+
+    const kk = withLocale("kk", () => render());
+    expect(kk).toContain("<h1>Баптаулар</h1>");
+    expect(kk).toContain("Өшірілген мүмкіндіктер");
+    expect(kk).toContain('value="Иесі, Оператор, Платформа әкімшісі"');
+    expect(kk).toContain('value="Әзірге қолжетімсіз"');
+    expect(kk).toContain("Бұл экранда ештеңе сақталмайды");
+    expect(withLocale("kk", () => render("empty"))).toContain("Көрсететін баптаулар жоқ");
+
+    for (const markup of [ru, kk]) {
+      expect(markup).toContain('value="North Shop"');
+      expect(markup).toContain('value="Asia/Qyzylorda"');
+      for (const english of ["What is switched off", "Business name", "Time zone", "Save changes", "Company account", "Blocked by policy", "Owner, Operator", "Not available yet", "Nothing on this screen is saved"]) expect(markup).not.toContain(english);
+    }
   });
 });

@@ -1,5 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
+import { withLocale } from "@/test/intl";
 import { administrationApiContracts } from "./adapters/contracts";
 import { getIntegrationsFixtureScreen, integrationsFixtureAdapter } from "./adapters/fixtureAdapter";
 import { IntegrationsScreen } from "./components/IntegrationsScreen";
@@ -50,5 +51,28 @@ describe("Channels", () => {
     expect(render("unavailable")).toContain("can&#x27;t be loaded right now");
     expect(render("empty")).toContain("No channels yet");
     expect(render("loading")).toContain("Loading channels");
+  });
+
+  it("speaks Russian and Kazakh and keeps the channel names", () => {
+    const ru = withLocale("ru", () => render());
+    expect(ru).toContain("<h1>Каналы</h1>");
+    expect(ru).toContain("Пока не подключён ни один канал");
+    expect(ru).toContain("Клиенты пока не могут написать вам в WhatsApp.");
+    expect(ru).toContain("<strong>Не настроено</strong>");
+    expect(ru).toMatch(/<button[^>]*disabled=""[^>]*><span>Проверить подключение<\/span>/);
+    expect(withLocale("ru", () => render("restricted"))).toContain("У вас нет доступа к каналам");
+
+    const kk = withLocale("kk", () => render());
+    expect(kk).toContain("<h1>Арналар</h1>");
+    expect(kk).toContain("Әзірге бірде-бір арна қосылмаған");
+    expect(kk).toContain("Клиенттер сізге Telegram арқылы әлі жаза алмайды.");
+    expect(kk).toContain("<strong>Қосылмаған</strong>");
+    expect(kk).toMatch(/<button[^>]*disabled=""[^>]*><span>Қосылымды тексеру<\/span>/);
+    expect(withLocale("kk", () => render("loading"))).toContain("Арналар жүктелуде");
+
+    for (const markup of [ru, kk]) {
+      for (const channel of ["Instagram", "WhatsApp", "Telegram", "Web Chat"]) expect(markup).toContain(channel);
+      for (const english of ["No channels are connected yet", "Not connected", "Not set up", "Used for", "Last checked", "Test connection", "Customer messages", "Chat on your website", "can&#x27;t message you"]) expect(markup).not.toContain(english);
+    }
   });
 });

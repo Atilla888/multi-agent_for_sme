@@ -1,5 +1,10 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
+import { withLocale } from "@/test/intl";
+
+// The header's language and theme switch refreshes the page through the App Router.
+vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh() {} }) }));
+
 import { webChatApiContract } from "./adapters/contracts";
 import { getWebChatFixtureScreen, webChatFixtureAdapter } from "./adapters/fixtureAdapter";
 import { CustomerWebChatScreen } from "./components/CustomerWebChatScreen";
@@ -95,5 +100,51 @@ describe("Customer Web Chat", () => {
     expect(markup).toContain("customer-chat-page");
     expect(markup).toContain("webchat-timeline");
     expect(markup).not.toMatch(/LangGraph|Adaptive Orchestrator|raw prompt|chain-of-thought|E02 |LOCAL UI|unavailable ·/);
+  });
+
+  it("lets the customer switch language and theme from the chat header", () => {
+    const markup = render("active");
+    const header = markup.slice(markup.indexOf('class="webchat-header"'), markup.indexOf('class="webchat-timeline"'));
+    expect(header).toContain('class="preferences"');
+    expect(header).toContain('aria-label="Language"');
+    for (const choice of ["System", "Light", "Dark"]) expect(header).toContain(`aria-label="${choice}"`);
+    expect(header.indexOf("North Shop")).toBeLessThan(header.indexOf('class="preferences"'));
+  });
+
+  it("speaks Russian to the customer and keeps the conversation as written", () => {
+    const markup = withLocale("ru", () => render("confirmation"));
+    expect(markup).toContain("Чат с");
+    expect(markup).toContain("Предпросмотр");
+    expect(markup).toContain("<strong>Вы</strong>");
+    expect(markup).toContain("<strong>Отдел продаж North Shop</strong>");
+    expect(markup).toContain('aria-label="Сообщение: Вы"');
+    expect(markup).toContain("10:42 · Доставлено");
+    expect(markup).toMatch(/<button[^>]*disabled=""[^>]*><span>Подтвердить заказ<\/span>/);
+    expect(markup).toContain("Если вы подтвердите, North Shop оформит этот заказ.");
+    expect(markup).toContain("Здесь показан только ваш диалог с North Shop.");
+    expect(markup).toContain('aria-label="Язык"');
+    expect(markup).toMatch(/<option value="ru"[^>]*selected=""/);
+    expect(markup).toContain("I would like one Desk Lamp in Slate.");
+    expect(markup).toContain("Desk Lamp / Slate / standard size");
+    expect(withLocale("ru", () => render("delivery-failure"))).toContain("Сообщение</span><strong>Не доставлено");
+    expect(withLocale("ru", () => render("active"))).toContain('placeholder="Напишите сообщение…"');
+    for (const english of ["Chat with", "Preview", ">You<", "North Shop sales", "Delivered", "Please confirm", "Confirm order", "Change details", "Only your conversation", "Language"]) expect(markup).not.toContain(english);
+  });
+
+  it("speaks Kazakh to the customer and keeps the conversation as written", () => {
+    const markup = withLocale("kk", () => render("known-failure"));
+    expect(markup).toContain("Алдын ала қарау");
+    expect(markup).toContain("<strong>Сіз</strong>");
+    expect(markup).toContain("<strong>North Shop сату бөлімі</strong>");
+    expect(markup).toContain("ORD-1042 тапсырысы бұрыннан бар");
+    expect(markup).toContain("Тауар резервтелмеді");
+    expect(markup).toContain("Бұл тапсырысты қайта рәсімдемеңіз");
+    expect(markup).toMatch(/<button[^>]*disabled=""[^>]*><span>Көмек сұрау<\/span>/);
+    expect(markup).toContain("Мұнда тек сіз бен North Shop арасындағы диалог көрсетіледі.");
+    expect(markup).toContain('aria-label="Тіл"');
+    expect(markup).toContain("There is an update about your order.");
+    expect(withLocale("kk", () => render("loading"))).toContain("Диалогыңыз жүктелуде");
+    expect(withLocale("kk", () => render("waiting-human"))).toContain("Мұны қызметкер қарап жатыр");
+    for (const english of ["Chat with", "Preview", ">You<", "North Shop sales", "already exists", "Item was not reserved", "Ask for help", "Only your conversation", "Language"]) expect(markup).not.toContain(english);
   });
 });

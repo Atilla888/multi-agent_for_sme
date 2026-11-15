@@ -66,7 +66,13 @@ Keycloak handles passwords (Authorization Code flow with PKCE). The browser keep
 
 Written for shop owners and operators, not engineers. Light mode is warm and human, dark mode graphite and precise; it follows the operating system. Geist for text and Geist Mono for order numbers, IDs and times. Status is a small icon plus plain words (`Needs checking`, `Needs a person`, `Not ready yet`) mapped one-to-one onto the backend states in `src/types/states.ts`; colour never carries meaning alone. Controls that aren't available yet are shown disabled with a short note. Tokens and component styles live in `src/styles/globals.css`; the full specification is [docs/DESIGN.md](../docs/DESIGN.md) (§6).
 
-`npm run preview` renders every screen, including the live-data ones from stub records, into `.preview/`; `PREVIEW_THEME=dark npm run preview` renders the dark variant.
+## Languages and theme
+
+The interface is available in English, Russian and Kazakh (Cyrillic). The language switch and the System / Light / Dark switch sit above the account in the sidebar, in the More sheet on phones, on the sign-in page and in the customer chat. Both choices are remembered in cookies (`lang`, `theme`); without a saved language the browser's preferred language is used, then English. Record content (customer names, messages, product names, documents) is shown as entered.
+
+Text lives in `src/i18n/messages/<area>.ts`, one file per screen area with English, Russian and Kazakh side by side; the namespace is the file name (`useTranslations("orders")`). English is the source: TypeScript rejects a missing or extra key, and `src/i18n/i18n.test.ts` fails if a placeholder differs or a translation is left in English. Messages use ICU syntax for placeholders and plurals.
+
+`npm run preview` renders every screen, including the live-data ones from stub records, into `.preview/`. `PREVIEW_THEME=dark` renders the dark variant and `PREVIEW_LOCALE=ru` or `kk` renders another language.
 
 ## Not yet available
 

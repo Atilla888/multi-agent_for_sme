@@ -1,19 +1,25 @@
 import { demoConversationItems } from "@/features/conversations/fixtures/demoConversations";
 import { demoEscalationQueue } from "@/features/escalations/fixtures/demoEscalations";
+import type { EscalationReason, EscalationSummary } from "@/features/escalations/types";
 import { demoOrderItems } from "@/features/orders/fixtures/demoOrders";
 import type { ProductState } from "@/types/states";
 
+/** Which count a number on the Overview is. */
+export type OverviewKpiKind = "openConversations" | "waitingHuman" | "orders" | "ordersToCheck";
+
 export interface OverviewKpi {
-  readonly label: string;
+  readonly kind: OverviewKpiKind;
   readonly value: number;
-  readonly note: string;
   readonly href: string;
 }
 
+/** A case that needs a person. The screen names the reason and the time in the reader's language. */
 export interface OverviewAttentionItem {
   readonly id: string;
-  readonly title: string;
-  readonly meta: string;
+  readonly reason: EscalationReason;
+  readonly orderId?: string;
+  readonly participant: string;
+  readonly time: EscalationSummary["time"];
   readonly state: ProductState;
   readonly href: string;
 }
@@ -47,20 +53,20 @@ export function getOverviewFixture(): OverviewModel {
   return {
     mode: "sample",
     kpis: [
-      { label: "Open conversations", value: openConversations, note: `${demoConversationItems.filter((item) => item.unread).length} unread`, href: "/conversations" },
-      { label: "Waiting for a person", value: waitingHuman, note: `${demoEscalationQueue.length} cases in review`, href: "/escalations" },
-      { label: "Orders", value: demoOrderItems.length, note: "in total", href: "/orders" },
-      { label: "Orders to check", value: ordersNeedingAttention.length, note: "stock or review needed", href: "/orders?status=attention" },
+      { kind: "openConversations", value: openConversations, href: "/conversations" },
+      { kind: "waitingHuman", value: waitingHuman, href: "/escalations" },
+      { kind: "orders", value: demoOrderItems.length, href: "/orders" },
+      { kind: "ordersToCheck", value: ordersNeedingAttention.length, href: "/orders?status=attention" },
     ],
-    attention: [
-      ...demoEscalationQueue.map((item) => ({
-        id: item.id,
-        title: item.reason,
-        meta: [item.orderId, item.participant, item.time].filter(Boolean).join(" · "),
-        state: item.state,
-        href: "/escalations",
-      })),
-    ],
+    attention: demoEscalationQueue.map((item) => ({
+      id: item.id,
+      reason: item.reasonKey,
+      orderId: item.orderId,
+      participant: item.participant,
+      time: item.time,
+      state: item.state,
+      href: "/escalations",
+    })),
     recentOrders: demoOrderItems.slice(0, 4).map((order) => ({
       id: order.id,
       customer: order.customer,

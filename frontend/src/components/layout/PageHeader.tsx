@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import type { ReactNode } from "react";
 import { Icon } from "@/components/ui/Icon";
 import { DataSourceTag, type DataSource } from "@/components/ui/DataSourceTag";
@@ -16,9 +17,10 @@ interface PageHeaderProps {
 
 /** Title, data tag and actions on one row; a description only where a screen needs to explain a limitation. */
 export function PageHeader({ title, description, source, actions, backHref, backLabel }: PageHeaderProps) {
+  const t = useTranslations("common");
   return (
     <header className="page-header">
-      {backHref ? <Link className="back-link" href={backHref}><Icon name="chevronLeft" size={16} />{backLabel ?? "Back"}</Link> : null}
+      {backHref ? <Link className="back-link" href={backHref}><Icon name="chevronLeft" size={16} />{backLabel ?? t("back")}</Link> : null}
       <div className="page-header__row">
         <div className="page-header__title">
           <h1>{title}</h1>
