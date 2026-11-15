@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
-import { Avatar } from "./Avatar";
+import { Avatar, avatarHue } from "./Avatar";
 import { Badge } from "./Badge";
 import { Button } from "./Button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./Card";
@@ -185,6 +185,16 @@ describe("surface and display primitives", () => {
     expect(markup).toContain("card--elevated");
     expect(markup).toContain("card__title");
     expect(markup).toContain("card__footer");
+  });
+
+  it("colours people deterministically and agents neutrally", () => {
+    expect(avatarHue("Amina S.")).toBe(avatarHue("Amina S."));
+    expect([0, 1, 2, 3, 4, 5]).toContain(avatarHue("Mira K."));
+    expect(renderToStaticMarkup(<Avatar accessibleName="Amina S." initials="AS" />)).toMatch(/avatar--hue-[0-5]/);
+    const agent = renderToStaticMarkup(<Avatar variant="agent" accessibleName="Support Agent" initials="" />);
+    expect(agent).toContain("avatar--agent");
+    expect(agent).toContain('aria-label="Support Agent"');
+    expect(agent).not.toMatch(/avatar--hue-/);
   });
 
   it("renders labelled helpers and semantic separators", () => {
