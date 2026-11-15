@@ -38,6 +38,18 @@ describe("live inbox", () => {
     expect(markup).not.toMatch(/AUTONOMOUS_SUCCESS|fixture|OUTCOME_UNKNOWN/);
   });
 
+  it("shows only live fields in the details panel", async () => {
+    const api = { conversations: vi.fn().mockResolvedValue(parseConversations({ items: [summary] })), conversation: vi.fn().mockResolvedValue(parseConversationDetail(detail)) } as unknown as RealReadApi;
+    const markup = renderToStaticMarkup(<RealConversationsScreen model={await loadConversations(api, {})} />);
+    expect(markup).toContain("conversation-context details-panel");
+    expect(markup).toContain("details-grid");
+    expect(markup).not.toContain("Reservation");
+    expect(markup).not.toContain("What the assistant did");
+    expect(markup).toContain("Runs");
+    expect(markup).toContain("avatar--agent");
+    expect(markup).not.toMatch(/badge--(sales|support|analytics)/);
+  });
+
   it("shows an empty inbox without inventing conversations", async () => {
     const api = { conversations: vi.fn().mockResolvedValue([]), conversation: vi.fn() } as unknown as RealReadApi;
     const model = await loadConversations(api, {});
