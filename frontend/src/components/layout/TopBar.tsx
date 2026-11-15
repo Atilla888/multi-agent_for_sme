@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { avatarHue } from "@/components/ui/Avatar";
 import { Icon } from "@/components/ui/Icon";
 import { findNavigationTrail } from "@/lib/navigation";
 import type { AuthenticatedSession } from "@/types/auth";
-import { NavigationSearch } from "./NavigationSearch";
 import { businessLabel, initials } from "./sessionDisplay";
 
 export function TopBar({ session }: { readonly session?: AuthenticatedSession }) {
@@ -25,12 +25,11 @@ export function TopBar({ session }: { readonly session?: AuthenticatedSession })
         </nav>
         <p className="topbar__business">{businessLabel(session)}</p>
       </div>
-      <NavigationSearch />
       <div className="topbar__actions">
         <Link className="icon-button icon-button--ghost" href="/escalations" aria-label="Cases that need review" title="Needs review">
-          <Icon name="bell" />
+          <Icon name="bell" size={16} />
         </Link>
-        <span className="avatar-initials topbar__avatar" aria-hidden="true">{session ? initials(session.displayName) : "?"}</span>
+        <span className={`avatar avatar--hue-${avatarHue(session?.displayName ?? "?")} topbar__avatar`} aria-hidden="true">{session ? initials(session.displayName) : "?"}</span>
       </div>
     </header>
   );

@@ -1,8 +1,10 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { avatarHue } from "@/components/ui/Avatar";
 import { Icon } from "@/components/ui/Icon";
 import { staffNavigation } from "@/lib/navigation";
+import { NavigationSearch } from "./NavigationSearch";
 import { SidebarSection } from "./SidebarSection";
 import { businessLabel, initials, roleLabel } from "./sessionDisplay";
 import type { AuthenticatedSession } from "@/types/auth";
@@ -14,12 +16,11 @@ export function Sidebar({ session }: { readonly session?: AuthenticatedSession }
   return (
     <aside className="sidebar">
       <div className="sidebar__brand">
-        <span className="sidebar__logo" aria-hidden="true">{initials(business)}</span>
-        <span className="sidebar__brand-text">
-          <strong>{business}</strong>
-          <span>Retail Ops workspace</span>
-        </span>
+        <span className="workspace-mark" aria-hidden="true">{business.charAt(0).toUpperCase()}</span>
+        <strong className="sidebar__brand-text">{business}</strong>
       </div>
+
+      <NavigationSearch />
 
       <nav aria-label="Main">
         <ul className="nav-list">
@@ -30,7 +31,7 @@ export function Sidebar({ session }: { readonly session?: AuthenticatedSession }
       </nav>
 
       <div className="account-boundary">
-        <span className="avatar-initials" aria-hidden="true">{session ? initials(session.displayName) : "?"}</span>
+        <span className={`avatar avatar--hue-${avatarHue(session?.displayName ?? "?")}`} aria-hidden="true">{session ? initials(session.displayName) : "?"}</span>
         <span className="account-boundary__text">
           <strong>{session?.displayName ?? "Not signed in"}</strong>
           <span>{roleLabel(session)}</span>
@@ -38,7 +39,7 @@ export function Sidebar({ session }: { readonly session?: AuthenticatedSession }
         {session ? (
           <form action="/api/auth/logout" method="post">
             <button className="sidebar__signout" type="submit" aria-label="Sign out" title="Sign out">
-              <Icon name="logout" size={18} />
+              <Icon name="logout" size={15} />
             </button>
           </form>
         ) : null}

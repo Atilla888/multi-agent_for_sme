@@ -14,23 +14,19 @@ interface PageHeaderProps {
   readonly backLabel?: string;
 }
 
-/** Every screen starts with the same header so people always know where they are. */
+/** Title, data tag and actions on one row; a description only where a screen needs to explain a limitation. */
 export function PageHeader({ title, description, source, actions, backHref, backLabel }: PageHeaderProps) {
   return (
     <header className="page-header">
       {backHref ? <Link className="back-link" href={backHref}><Icon name="chevronLeft" size={16} />{backLabel ?? "Back"}</Link> : null}
       <div className="page-header__row">
-        <div className="page-header__text">
+        <div className="page-header__title">
           <h1>{title}</h1>
-          {description ? <p>{description}</p> : null}
+          {source ? <DataSourceTag source={source} /> : null}
         </div>
-        {source || actions ? (
-          <div className="page-header__aside">
-            {source ? <DataSourceTag source={source} /> : null}
-            {actions}
-          </div>
-        ) : null}
+        {actions ? <div className="page-header__aside">{actions}</div> : null}
       </div>
+      {description ? <p className="page-header__description">{description}</p> : null}
     </header>
   );
 }
