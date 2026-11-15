@@ -1,9 +1,10 @@
 import { authenticatedReadApi } from "@/services/auth/server";
+import { localPreviewEnabled } from "@/services/auth/localPreview";
 import { ApiError } from "@/services/api/client";
 import { loadAnalytics, loadConversations, loadCustomer, loadInventory, loadOrder, loadProducts, type Query } from "./adapters";
 import { ReadError, RealAnalyticsScreen, RealConversationsScreen, RealCustomerScreen, RealInventoryScreen, RealOrderScreen, RealProductsScreen } from "./components";
 
-export function fixtureReview(query: Query) { return process.env.P5I_ENABLE_FIXTURE_REVIEW === "true" && query.mode === "fixture"; }
+export function fixtureReview(query: Query) { return localPreviewEnabled() || (process.env.P5I_ENABLE_FIXTURE_REVIEW === "true" && query.mode === "fixture"); }
 async function attempt<T>(read: () => Promise<T>): Promise<{ data: T; error?: never } | { error: ApiError; data?: never }> {
   try { return { data: await read() }; } catch (error) { if (!(error instanceof ApiError)) throw error; return { error }; }
 }

@@ -5,6 +5,7 @@ import { ApiError, createApiClient } from "@/services/api/client";
 import { readApi } from "@/services/api/reads";
 import { oidcEnvironment, safeReturnTo } from "./configuration";
 import { sessionCookie, sessions } from "./store";
+import { localPreviewEnabled, localPreviewIdentity } from "./localPreview";
 import type { AuthAdapter } from "./contracts";
 
 export const currentServerSession = cache(async () => {
@@ -25,7 +26,7 @@ export const currentServerSession = cache(async () => {
 });
 
 export const serverAuthAdapter: AuthAdapter = {
-  async getSession() { return (await currentServerSession())?.identity ?? null; },
+  async getSession() { return localPreviewEnabled() ? localPreviewIdentity : (await currentServerSession())?.identity ?? null; },
   async beginLogin(returnTo) { redirect(`/api/auth/login?returnTo=${encodeURIComponent(safeReturnTo(returnTo))}`); },
   async logout() { const store = await cookies(); sessions.take(store.get(sessionCookie)?.value); store.delete(sessionCookie); },
 };
