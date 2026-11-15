@@ -16,5 +16,5 @@ function AuditBoundary({ model }: { readonly model: AuditScreenModel }) {
 
 /** Activity log: who did what, when, and the result. */
 export function AuditScreen({ model }: { readonly model: AuditScreenModel }) {
-  return <div className="feature-page admin-screen audit-screen"><PageHeader title="Activity log" description="A record of important actions in your account: who did what, when, and the result." source="sample" />{model.state === "fixture" ? <form className="admin-filter" action="/audit" method="get"><input type="hidden" name="state" value="fixture" /><Input id="audit-search" name="q" label="Search the log" defaultValue={model.query} placeholder="Action, order or person" /><Button type="submit" variant="secondary">Search</Button></form> : null}<AuditBoundary model={model} /></div>;
+  return <div className="feature-page admin-screen audit-screen"><PageHeader title="Activity log" source="sample" />{model.state === "fixture" ? <form className="admin-filter" action="/audit" method="get"><input type="hidden" name="state" value="fixture" /><Input id="audit-search" name="q" label="Search the log" defaultValue={model.query} placeholder="Action, order or person" /><Button type="submit" variant="secondary">Search</Button></form> : null}<AuditBoundary model={model} /></div>;
 }

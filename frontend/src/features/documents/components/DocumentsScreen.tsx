@@ -38,7 +38,7 @@ export function DocumentsScreen({ model }: { readonly model: DocumentsScreenMode
         <TableBody>{model.items.map((document) => <TableRow key={document.id}>
           <TableCell data-label="Document"><Link className="row-link" href={`/documents/${document.id}`}>{document.title}</Link><span className="table-cell-note">{document.business}</span></TableCell>
           <TableCell data-label="Who can use it" className="col-secondary">{document.accessLabel}</TableCell>
-          <TableCell data-label="Latest version"><strong>{document.latestVersion}</strong></TableCell>
+          <TableCell data-label="Latest version"><span className="cell-id">{document.latestVersion}</span></TableCell>
           <TableCell data-label="Processing"><StatusBadge state={document.processingBadge} /><span className="table-cell-note">{document.processingLabel}</span></TableCell>
           <TableCell data-label="Published"><StatusBadge state={document.availabilityBadge} /><span className="table-cell-note">{document.availabilityLabel}</span><span className="table-cell-note">{document.retrievabilityLabel}</span></TableCell>
           <TableCell data-label="Updated" className="col-secondary">{document.updatedAt}</TableCell>
