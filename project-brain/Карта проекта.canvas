@@ -1,0 +1,303 @@
+{
+  "nodes": [
+    {
+      "id": "0444cecd9a6cbe9e",
+      "type": "group",
+      "x": -40,
+      "y": -60,
+      "width": 400,
+      "height": 540,
+      "label": "Контекст",
+      "color": "4"
+    },
+    {
+      "id": "e792b9f3adae6637",
+      "type": "file",
+      "x": 0,
+      "y": -320,
+      "width": 320,
+      "height": 160,
+      "file": "00 Старт.md"
+    },
+    {
+      "id": "bab7da78f006d1aa",
+      "type": "file",
+      "x": 0,
+      "y": 0,
+      "width": 320,
+      "height": 120,
+      "file": "01 Контекст/Продукт.md"
+    },
+    {
+      "id": "98bde6ccc0ac1e38",
+      "type": "file",
+      "x": 0,
+      "y": 160,
+      "width": 320,
+      "height": 120,
+      "file": "01 Контекст/Текущее состояние.md"
+    },
+    {
+      "id": "986c1e00dc1b8332",
+      "type": "file",
+      "x": 0,
+      "y": 320,
+      "width": 320,
+      "height": 120,
+      "file": "01 Контекст/Команда и правила.md"
+    },
+    {
+      "id": "79128d73075e15e6",
+      "type": "group",
+      "x": 440,
+      "y": -60,
+      "width": 400,
+      "height": 860,
+      "label": "Система",
+      "color": "5"
+    },
+    {
+      "id": "8fd6bfdb843f9b46",
+      "type": "file",
+      "x": 480,
+      "y": 0,
+      "width": 320,
+      "height": 120,
+      "file": "02 Система/Архитектура.md"
+    },
+    {
+      "id": "66750fdcaf33d275",
+      "type": "file",
+      "x": 480,
+      "y": 160,
+      "width": 320,
+      "height": 120,
+      "file": "02 Система/Агенты и инструменты.md"
+    },
+    {
+      "id": "4d1a814ce6e36633",
+      "type": "file",
+      "x": 480,
+      "y": 320,
+      "width": 320,
+      "height": 120,
+      "file": "02 Система/Business Brain и RAG.md"
+    },
+    {
+      "id": "e28ae7b02e1e2461",
+      "type": "file",
+      "x": 480,
+      "y": 480,
+      "width": 320,
+      "height": 120,
+      "file": "02 Система/Фронтенд.md"
+    },
+    {
+      "id": "10eb8b652d7ec318",
+      "type": "file",
+      "x": 480,
+      "y": 640,
+      "width": 320,
+      "height": 120,
+      "file": "02 Система/Каналы и WhatsApp-демо.md"
+    },
+    {
+      "id": "1e4a9794a7b23b72",
+      "type": "group",
+      "x": 880,
+      "y": -60,
+      "width": 400,
+      "height": 380,
+      "label": "Исследования",
+      "color": "6"
+    },
+    {
+      "id": "eaf406dbf4e354da",
+      "type": "file",
+      "x": 920,
+      "y": 0,
+      "width": 320,
+      "height": 120,
+      "file": "03 Исследования/Сравнение архитектур.md"
+    },
+    {
+      "id": "83206df625c18c4b",
+      "type": "file",
+      "x": 920,
+      "y": 160,
+      "width": 320,
+      "height": 120,
+      "file": "03 Исследования/UX и дизайн.md"
+    },
+    {
+      "id": "ea31e49359109516",
+      "type": "group",
+      "x": 1320,
+      "y": -60,
+      "width": 400,
+      "height": 860,
+      "label": "Работа и память",
+      "color": "2"
+    },
+    {
+      "id": "a6164f6a921f8f4a",
+      "type": "file",
+      "x": 1360,
+      "y": 0,
+      "width": 320,
+      "height": 120,
+      "file": "04 Работа/Локальный запуск.md"
+    },
+    {
+      "id": "c08e8c4374d97c7c",
+      "type": "file",
+      "x": 1360,
+      "y": 160,
+      "width": 320,
+      "height": 120,
+      "file": "04 Работа/Следующие шаги.md"
+    },
+    {
+      "id": "42a1728bbfaaf09d",
+      "type": "file",
+      "x": 1360,
+      "y": 320,
+      "width": 320,
+      "height": 120,
+      "file": "04 Работа/Решения.md"
+    },
+    {
+      "id": "e2c3277e26505f29",
+      "type": "file",
+      "x": 1360,
+      "y": 480,
+      "width": 320,
+      "height": 120,
+      "file": "04 Работа/Расхождения источников.md"
+    },
+    {
+      "id": "57e7bb5f0d1c27ef",
+      "type": "file",
+      "x": 1360,
+      "y": 640,
+      "width": 320,
+      "height": 120,
+      "file": "05 Память/Журнал.md"
+    },
+    {
+      "id": "743905180966c7e1",
+      "type": "text",
+      "x": 880,
+      "y": 380,
+      "width": 400,
+      "height": 200,
+      "color": "1",
+      "text": "## Главный риск\n\nНаучный вклад — сравнение **M09–M11** (Single / Static / Adaptive).\nВсе три не начаты и заблокированы **M08**."
+    }
+  ],
+  "edges": [
+    {
+      "id": "92b086c6001af0b7",
+      "fromNode": "e792b9f3adae6637",
+      "fromSide": "bottom",
+      "toNode": "bab7da78f006d1aa",
+      "toSide": "top",
+      "toEnd": "arrow"
+    },
+    {
+      "id": "4824870dedd19631",
+      "fromNode": "bab7da78f006d1aa",
+      "fromSide": "right",
+      "toNode": "8fd6bfdb843f9b46",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "реализует"
+    },
+    {
+      "id": "094423becce5248d",
+      "fromNode": "98bde6ccc0ac1e38",
+      "fromSide": "right",
+      "toNode": "c08e8c4374d97c7c",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "открыто"
+    },
+    {
+      "id": "dbcd1468715022fe",
+      "fromNode": "8fd6bfdb843f9b46",
+      "fromSide": "bottom",
+      "toNode": "66750fdcaf33d275",
+      "toSide": "top",
+      "toEnd": "arrow"
+    },
+    {
+      "id": "5336356c4046a090",
+      "fromNode": "66750fdcaf33d275",
+      "fromSide": "bottom",
+      "toNode": "4d1a814ce6e36633",
+      "toSide": "top",
+      "toEnd": "arrow",
+      "label": "контекст"
+    },
+    {
+      "id": "9aec34213709b9cb",
+      "fromNode": "66750fdcaf33d275",
+      "fromSide": "left",
+      "toNode": "10eb8b652d7ec318",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "канал"
+    },
+    {
+      "id": "f6134359a032a6e0",
+      "fromNode": "e28ae7b02e1e2461",
+      "fromSide": "right",
+      "toNode": "83206df625c18c4b",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "по дизайну"
+    },
+    {
+      "id": "69ad694c4e3a270e",
+      "fromNode": "bab7da78f006d1aa",
+      "fromSide": "right",
+      "toNode": "eaf406dbf4e354da",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "научный вклад"
+    },
+    {
+      "id": "b0b8ee6a2b895422",
+      "fromNode": "eaf406dbf4e354da",
+      "fromSide": "bottom",
+      "toNode": "743905180966c7e1",
+      "toSide": "top",
+      "toEnd": "arrow"
+    },
+    {
+      "id": "6047de27e973cea0",
+      "fromNode": "743905180966c7e1",
+      "fromSide": "right",
+      "toNode": "c08e8c4374d97c7c",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "приоритет"
+    },
+    {
+      "id": "702d8640aa7aab5c",
+      "fromNode": "e2c3277e26505f29",
+      "fromSide": "top",
+      "toNode": "c08e8c4374d97c7c",
+      "toSide": "bottom",
+      "toEnd": "arrow"
+    },
+    {
+      "id": "226242ba5cc52fc2",
+      "fromNode": "42a1728bbfaaf09d",
+      "fromSide": "bottom",
+      "toNode": "57e7bb5f0d1c27ef",
+      "toSide": "top",
+      "toEnd": "arrow"
+    }
+  ]
+}
