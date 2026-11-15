@@ -2,7 +2,7 @@
 
 ## 1. Purpose and authority
 
-This is the **approved UX/UI contract** for the retail/e-commerce frontend. It consolidates the completed design phases 2A–3E. The current design file is [Diplom — Multi-Agent Platform UI (Lab 3)](https://www.figma.com/design/W6XefZbbmZq1YZltBfsry7) (`W6XefZbbmZq1YZltBfsry7`); see §29 for its pages, breakpoints and flows. The design phases 3A–3E were done in the earlier file `OFXTN83nFl3RqukrEYQrFy`, where the pages named below live. Use `03C — Design System` for visual foundations/components, `03D — High-Fidelity Screens` for approved P0 visuals and `03E — Interactive Prototype` for validated interaction semantics. Figma links demonstrate a design, **not** a running backend.
+This is the **approved UX/UI contract** for the retail/e-commerce frontend. It consolidates the completed design phases 2A–3E. The current design file is [Diplom — Multi-Agent Platform UI (Lab 3)](https://www.figma.com/design/W6XefZbbmZq1YZltBfsry7) (`W6XefZbbmZq1YZltBfsry7`); see §29 for its pages, breakpoints and flows. The design phases 3A–3E were done in the earlier file `OFXTN83nFl3RqukrEYQrFy`, where the pages named below live. The Figma files still define screen structure, flows and interaction semantics (`03D`, `03E`, Lab 3); the visual layer (colour, type, components) is now the system in §6. Figma links demonstrate a design, **not** a running backend.
 
 The [consolidated master PDF](../research/master/release/FINAL_MASTER_DEVELOPMENT_SAFE.pdf) is authoritative for architecture, tool contracts and current engineering evidence. [PRD](PRD.md), [Architecture](ARCHITECTURE.md) and [Rules](RULES.md) supply product/engineering context where consistent with that newer master. For UX, the approved [IA](research/PHASE_2C_INFORMATION_ARCHITECTURE.md), [flows](research/PHASE_2D_CORE_USER_FLOWS.md), [screen inventory](research/PHASE_2E_FINAL_SCREEN_INVENTORY.md), [reviewed UX](research/PHASE_3B_UX_REVIEW.md), [Design System](research/PHASE_3C_DESIGN_SYSTEM.md), [high-fi](research/PHASE_3D_HIGH_FIDELITY.md) and [prototype](research/PHASE_3E_INTERACTIVE_PROTOTYPE.md) govern their respective decisions. Earlier [competitor research](research/UX_COMPETITOR_ANALYSIS.md), [Phase 2B validation](research/PHASE_2B_UX_VALIDATION.md) and [low-fi alternatives](research/PHASE_3A_LOW_FI_WIREFRAMES.md) are evidence, not competing navigation or style specifications. Exact route syntax, data DTOs and breakpoint values are not frozen here; do not invent them from mockups.
 
@@ -66,11 +66,18 @@ Use the approved desktop-reference shell for all staff families: sidebar with si
 
 On session expiry, protect content and reauthenticate without resubmitting commands. On a business switch, clear prior-business fetched data, subscriptions, selection and sensitive previews **before** new-scope content appears; isolate unsent drafts to their original scope. On a deep link, refetch and authorize the destination and show a privacy-safe denial if needed. Preserve same-business queue/filter, case and safe return context; revalidate facts and revisions before consequential action. The shell and overview do not create a universal access model.
 
-## 6. Design System handoff
+## 6. Visual system
 
-Use Phase 3C's **primary light theme** and native semantic variable/component architecture; reference [its report](research/PHASE_3C_DESIGN_SYSTEM.md) and Figma `03C` for exact visual application. Primitive color roles alias into semantic surface/text/border/action/status/focus/chart roles. Inter provides Page Title, Section, Card, Body, Small, Caption/Label and Metric hierarchy; persistent labels, legibility and wrapping take priority over shrinking critical text. The spacing scale is **4, 8, 12, 16, 24, 32, 48 px**; radii are restrained (4/6/8 px and pill), with borders/dividers before subtle floating/modal elevation.
+The app's visual layer was redesigned in November 2026 so it reads as a calm, well-made product rather than a template: **light mode takes the warmth of folk (a human CRM), dark mode the precision of Linear**, one design that follows the operating system (pinnable with `data-theme`). The tokens live in `frontend/src/styles/globals.css`; every component reads them.
 
-Use semantic labels and explanatory text alongside color; `status/unknown`, Known Failure, pending, restricted and confirmed must not collapse into one color-coded badge. Actual and Predicted require labels, position and solid/dashed line treatment, not color alone. Reuse Core buttons/inputs/status/card/loading/empty components; navigation items, breadcrumb, business context and restricted link; Conversation/AI ownership, handoff, proposal/result and delivery parts; Business Entity order/reservation/product/inventory/freshness parts; Escalation evidence/decision/reconciliation parts; Analytics/Forecast charts/provenance/readiness; and separate Customer Web Chat components. Buttons use Primary/Secondary/Tertiary-Ghost/Destructive hierarchy with visible focus/disabled/loading states; **Destructive** denotes a destructive action, not a generic error. Inputs retain visible labels and distinct error/read-only/disabled states. Do not create a per-screen style system.
+- **Colour.** The chrome is neutral. Light: content `#ffffff`, sidebar `#f7f6f3`, hairlines `#ebe9e4`, text `#1c1b19`. Dark: content `#101113`, sidebar `#0b0c0d`, hairlines `#212226`, text `#e4e5e7`. The primary button is near-black in light and near-white in dark. Colour appears only in person avatars, the orange workspace mark, small status icons with their words, and chart data. No violet, no gradients, no translucent blur, no coloured shadows. Every text token passes WCAG AA on every surface it sits on in both themes (checked by tests).
+- **Type.** Geist at a 13 px base for dense UI, Geist Mono for order numbers, IDs, counts and times; weights 400 / 500 / 600; sentence case.
+- **Status marks.** A small line icon plus words in the tone colour, never a filled pill. Shapes differ wherever meanings differ: "Needs checking" (outcome unknown) is a dashed circle with a question mark, "Failed" a crossed circle, "Needs a person" a person in a circle. A list row may show the icon alone; its label stays available to screen readers.
+- **People and agents.** People get initials on one of six muted colours picked from their name; AI agents get a neutral mark and are never colour-coded.
+- **Structure.** Hairlines instead of shadows; 4 px tags, 6 px controls, 8 px panels; no cards inside cards. Lists are Linear-style rows. Detail pages and the Inbox put facts in a details panel on the right. A product rule is one quiet line (`.rule-note`) beside what it qualifies; decorative explanation is not shown.
+- **Motion.** 120–180 ms ease-out on hover and press; nothing bounces or moves on scroll; reduced motion is honoured.
+
+The semantic distinctions in §7 are unchanged: only how each state is drawn changed, not what it means.
 
 ## 7. Semantic state model and effect truth
 
@@ -223,7 +230,7 @@ M08 live-provider/channel acceptance remains incomplete; E02 policy remains rest
 
 ## 28. Figma and design references
 
-The pages below are in the earlier phase 3A–3E file (`OFXTN83nFl3RqukrEYQrFy`). The current lab 3 file is described in §29.
+The pages below are in the earlier phase 3A–3E file (`OFXTN83nFl3RqukrEYQrFy`). The current lab 3 file is described in §29. Since the November 2026 redesign these files define structure and interaction only; for colour, type and components follow §6.
 
 | Figma page | Role in implementation |
 | --- | --- |
@@ -236,6 +243,8 @@ The pages below are in the earlier phase 3A–3E file (`OFXTN83nFl3RqukrEYQrFy`)
 For detailed evidence and variants, use [Phase 2E screen contracts](research/PHASE_2E_FINAL_SCREEN_INVENTORY.md), [Phase 3C components](research/PHASE_3C_DESIGN_SYSTEM.md), [Phase 3D high-fi validation](research/PHASE_3D_HIGH_FIDELITY.md) and [Phase 3E prototype validation](research/PHASE_3E_INTERACTIVE_PROTOTYPE.md). Implement visuals from 03C/03D and interaction truth from 03E plus trusted backend contracts. Phase 4 remains **READY / NOT STARTED** until separately authorized and accepted.
 
 ## 29. Lab 3 clickable prototype (responsive, mock data)
+
+> The app no longer follows this prototype's visual style (dark sidebar, Inter, blue accent); it keeps its screens, breakpoints and flows. See §6 for the current visual system.
 
 The lab 3 UX/UI deliverable is the Figma file [Diplom — Multi-Agent Platform UI (Lab 3)](https://www.figma.com/design/W6XefZbbmZq1YZltBfsry7) (`W6XefZbbmZq1YZltBfsry7`). It is a self-contained demonstration built on the decisions in §§3–23. All data in it is mock data for a sample store, "Ayala Outdoor" (Almaty, prices in ₸). It does not change the status of any capability in §24.
 
