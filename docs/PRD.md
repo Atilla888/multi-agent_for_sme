@@ -6,7 +6,7 @@
 
 **Positioning:** AI-Native Business Operating System for small and medium-sized enterprises (SMEs), centered on customer operations and business analytics. **MVP domain:** retail and e-commerce.
 
-**Status:** Product scope is specified here; the audited `Diplom` folder contains no application or prior project artifacts. Every capability below is **PLANNED** unless explicitly marked **RESEARCH TARGET** or **OPTIONAL / FUTURE**. See [MEMORY.md](MEMORY.md) for project decisions and implementation status.
+**Status:** This document defines product scope and target behavior. What is implemented today is tracked in the [README](../README.md#status).
 
 ## 2. Problem and vision
 
@@ -30,13 +30,13 @@ Exact employee roles, approval levels, and customer identity-verification rules 
 
 - **Business Brain:** Shared access to structured business facts, unstructured documents, conversation and execution history, current state, rules, and available tools. Structured records are normally accessed through authorized APIs/queries/tools; RAG is for relevant unstructured knowledge.
 - **Specialized agents:** MVP roles are **Sales**, **Support**, and **Analytics**. Each has a bounded responsibility, goal, permitted tools, access permissions, and relevant shared context.
-- **Business tools:** Validated operations that read or change actual business state. Example candidate operations include `find_product`, `check_inventory`, `create_order`, `update_order`, `reserve_inventory`, `find_customer`, `get_order`, `get_sales_report`, and `forecast_sales`; this is not a frozen API or final tool list.
+- **Business tools:** Validated operations that read or change actual business state. The registry is fixed at ten tools: `find_product`, `check_inventory`, `find_customer`, `get_order`, `create_order`, `update_order`, `reserve_inventory`, `get_delivery_status`, `get_sales_report` and `forecast_sales`.
 - **Adaptive orchestrator:** A **RESEARCH TARGET** that can select an agent, request a tool, continue, hand off, clarify, or escalate based on context and state. Its algorithm is not yet fixed.
 - **Human handoff:** A person receives the relevant verified facts and execution state when automation cannot safely finish.
 
 ## 5. MVP boundary
 
-**IN SCOPE — PLANNED:** a retail/e-commerce workflow spanning customer conversations, customers, products, inventory, orders, sales data, documents/FAQ, three core agents, shared Business Brain, authorized business actions, human escalation, owner-facing analytics, a sales forecasting module, and a full-stack application. The target customer channels are Instagram, WhatsApp, Telegram, and Web Chat. The exact launch sequence and channel access are TBD. The planned business-tool set is approximately 7–10 operations, to be finalized from end-to-end workflows.
+**IN SCOPE — PLANNED:** a retail/e-commerce workflow spanning customer conversations, customers, products, inventory, orders, sales data, documents/FAQ, three core agents, shared Business Brain, authorized business actions, human escalation, owner-facing analytics, a sales forecasting module, and a full-stack application. The target customer channels are Instagram, WhatsApp, Telegram, and Web Chat. The exact launch sequence and channel access are TBD. The business-tool set is the ten operations listed in section 4.
 
 **RESEARCH TARGET:** Implement and evaluate Single Agent, Static Multi-Agent, and Context-Aware Adaptive Multi-Agent arrangements using comparable scenarios, business tools, data, and evaluation rules. Ablations may test the contribution of shared context, adaptive routing, handoff, structured state, and confidence-based escalation where feasible.
 
@@ -44,7 +44,7 @@ Exact employee roles, approval levels, and customer identity-verification rules 
 
 ## 6. Functional requirements
 
-These are target behaviors, not claims of implementation. IDs support links to [ARCHITECTURE.md](ARCHITECTURE.md) and [TASKS.md](TASKS.md).
+These are target behaviors. IDs are referenced from [ARCHITECTURE.md](ARCHITECTURE.md).
 
 | ID | Capability | Required behavior |
 | --- | --- | --- |
@@ -94,4 +94,4 @@ Candidate measures: task success rate, tool selection accuracy, invalid action r
 - Channel APIs, permissions, and test accounts may constrain which integrations can be demonstrated.
 - Business write semantics, identity verification, approval boundaries, tenant isolation, and recovery from uncertain tool outcomes are unresolved.
 - Forecast target and historical data availability are unresolved; forecasting quality must be evaluated separately from orchestration quality.
-- The accepted technology baseline is **PLANNED**, not implemented in this folder. See [ARCHITECTURE.md](ARCHITECTURE.md).
+- The technology stack is described in [ARCHITECTURE.md](ARCHITECTURE.md).

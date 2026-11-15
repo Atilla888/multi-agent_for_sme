@@ -1,24 +1,72 @@
-# Intelligent Adaptive Multi-Agent Platform
+# Backend
 
-> **Current status: P3 COMPLETE; M01–M07 FORMALLY REVALIDATED.** M01–M03 and M05–M07 are PASS; M04 is PASS WITH APPROVED LIMITATION — E02. Independent fresh-state gates and the final 114/114 regression passed on frozen baseline `1cd69e3` without source/test/configuration changes. M08 remains PARTIAL/BLOCKED/DEFERRED; frontend and later milestones were not started.
+FastAPI service with PostgreSQL, Keycloak and MinIO, run with Docker Compose.
 
-The candidate provides PostgreSQL/pgvector and tenant isolation, the tenant-scoped domain/repository core, ten strict business-tool boundaries, identity/authorization, Business Brain and Knowledge/RAG foundations. The `update_order` mutation branch remains policy-blocked under E02; `forecast_sales` returns `MODEL_NOT_READY` before a validated artifact.
+## Layout
 
-## Reproducible local environment
+| Path | Contents |
+| --- | --- |
+| `services/backend/src/platform_backend/api` | HTTP routes |
+| `…/security` | Token validation, staff identity, business membership |
+| `…/domain`, `…/application`, `…/repositories` | Domain model, services and data access |
+| `…/tools` | The ten business tools and the executor that validates and runs them |
+| `…/agents` | Sales, Support and Analytics runtime, prompts, LLM providers (Claude, Gemini, Ollama) |
+| `…/brain`, `…/knowledge`, `…/rag` | Business Brain context assembly and document retrieval |
+| `…/channels` | WhatsApp webhook and staff inbox |
+| `…/demo` | Demo shop seed data |
+| `infra/compose` | `compose.yaml` (core stack), `compose.p5i.yaml` (Keycloak sign-in for the frontend), `compose.demo.yaml` (WhatsApp demo) |
+| `infra/migrations` | Alembic migrations |
+| `implementation_handoff/…/physical_schema.sql` | Approved database schema, applied by the first migration (hash-pinned) |
+| `tests` | Unit, integration, security and contract tests |
 
-1. Use Python 3.12 and create `.venv`.
-2. Install the project with dev dependencies using `requirements-m01-m07.lock` as constraints.
-3. Copy `.env.example` to an ignored local env file and replace every `CHANGE_ME_*` placeholder.
-4. Validate Compose without printing expanded secrets.
-5. Start an isolated Compose project and wait for ordinary services to become healthy.
-6. Run migrations and the scoped M01–M07 tests. Live/provider M08 tests require a separate authorized gate.
+## Run
 
-The Windows `py` launcher may require refresh after installing Python; the exact CPython executable or `.venv\Scripts\python.exe` is authoritative.
+```bash
+cp .env.example .env          # replace every CHANGE_ME_* value
+docker compose -f infra/compose/compose.yaml --env-file .env up -d --wait
+curl http://127.0.0.1:8000/health/ready
+```
 
-## Safety boundaries
+The stack starts PostgreSQL, Redis, MinIO, Keycloak, runs migrations and starts the API on port 8000. For the WhatsApp demo, see [docs/WHATSAPP_DEMO.md](../docs/WHATSAPP_DEMO.md).
 
-- Keep `.env`, `.env.p2.local`, `.venv`, credentials and provider keys out of Git.
-- Use isolated Compose project names; do not reuse or delete unrelated volumes.
-- Preserve exactly ten trusted business tools, E02 restrictions and `OUTCOME_UNKNOWN` no-blind-retry behavior.
-- Do not treat the unavailable full historical handoff as runtime authority. The required physical schema is hash-pinned and present.
-- Do not claim M08, frontend, M09–M13, Pilot or Final completion from the P2 result.
+## Local Python environment
+
+```bash
+python3.12 -m venv .venv && source .venv/bin/activate
+pip install -e ".[dev]" -c requirements.lock
+```
+
+## Test
+
+```bash
+docker compose -f infra/compose/compose.yaml --env-file .env --profile test run --rm db-tests \
+  pytest -q tests/unit tests/integration tests/security tests/contract
+
+ruff check . && mypy
+```
+
+Tests that call a real LLM are opt-in through the `llm-test` Compose profile and need a provider key.
+
+## Configuration
+
+| Variable | Purpose |
+| --- | --- |
+| `DEV_LLM_PROVIDER` | `claude` or `gemini` |
+| `DEV_LLM_MODEL` | Model name, e.g. `claude-opus-5-5` or `gemini-3.8-flash` |
+| `ANTHROPIC_API_KEY` / `GEMINI_API_KEY` | Provider key, read from the environment only |
+| `OIDC_*`, `KEYCLOAK_PUBLIC_ORIGIN`, `HTTP_CORS_ORIGINS` | Frontend sign-in |
+| `WHATSAPP_*` | WhatsApp demo channel |
+
+All variables are listed in [`.env.example`](.env.example).
+
+## API
+
+- `GET /health/live`, `GET /health/ready`
+- `GET /me`, `/products`, `/products/{id}`, `/inventory`, `/customers/{id}`, `/orders/{id}`, `/analytics/sales`, `/conversations`, `/conversations/{id}` — require a staff token
+- `POST /webhooks/whatsapp` — WhatsApp Cloud API webhook (signature-checked)
+
+## Safety rules
+
+- Never commit `.env`, `.venv` or provider keys.
+- Use isolated Compose project names; don't reuse or delete unrelated volumes.
+- Keep exactly ten trusted business tools. An `OUTCOME_UNKNOWN` write is reconciled, never blindly retried. `update_order` stays blocked by policy.

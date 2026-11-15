@@ -1,54 +1,103 @@
-# Diploma Project
+# Multi-Agent Platform for SMEs
 
-Development of an Intelligent Adaptive Multi-Agent Platform for Customer Interaction Automation and Business Analytics in SMEs.
+An intelligent adaptive multi-agent platform that automates customer conversations and business analytics for small and medium-sized retail businesses. Built as a diploma project.
 
-## Repository structure
+## What it does
 
-- [`platform/`](platform/) — reconstructed backend/infrastructure candidate.
-- [`docs/`](docs/) — approved product, architecture, design and research documents.
-- [`docs/uml/`](docs/uml/) — UML 2.5 diagrams (all 14 types) and ER diagrams as PlantUML sources, PNG renders and one combined PDF.
-- [`design/`](design/) — local Figma development plugins and visual-source guidance.
-- [`research/master/release/`](research/master/release/) — development-safe consolidated master release.
-- [`frontend/`](frontend/) — P5A/P5B foundation and design system plus the completed P5C Conversations + Escalations, P5D Business Screens, P5E Documents / Knowledge, P5F Analytics + Forecasts, and P5G/H Web Chat + Administration slices.
+- **Answers customers.** Sales, Support and Analytics agents reply to customer messages using the shop's real catalog, stock, orders and policies.
+- **Acts safely.** Agents only *propose* actions. A trusted executor checks permissions and business rules, then runs one of ten business tools (find a product, check stock, create an order, reserve stock…). Writes need explicit customer confirmation.
+- **Hands off to people.** Anything the agents cannot settle with verified facts goes to a human operator, with the full context attached.
+- **Gives staff one workspace.** Inbox, escalations, customers, orders, products, inventory, knowledge base and sales analytics.
 
-## Current status
+**Research question:** does *context-aware adaptive* multi-agent orchestration outperform a single agent and a static multi-agent setup under the same conditions? See [PRD §9](docs/PRD.md#9-research-requirements-and-success-measures).
 
-- Design phases 2A–3F: **COMPLETE** as recorded design status.
-- Platform reconstruction P2: **COMPLETE**.
-- Formal revalidation P3: **COMPLETE** against frozen baseline `1cd69e3`.
-- M08 deferred freeze P4: **COMPLETE**.
-- Private GitHub publication P4.5: **COMPLETE**.
-- M01, M02, M03, M05, M06 and M07: **PASS**; M04: **PASS WITH APPROVED LIMITATION — E02**.
-- M08: **PARTIAL / BLOCKED / DEFERRED**.
-- M09–M13, Pilot and Final: **NOT STARTED / not re-established**.
-- Frontend track: **IN PROGRESS**; P5A–P5I are **COMPLETE** in their recorded scopes; P5J/K are **READY / NOT STARTED**.
+## Architecture
 
-P3 independently froze source/tests, ran milestone-specific gates on fresh isolated volumes, and passed the final M01–M07 regression **114/114** with no failures or skips. P4 then froze M08 without weakening its live-provider acceptance gate and opened the independent frontend track.
+```mermaid
+flowchart LR
+    C[WhatsApp / Web Chat] --> API[FastAPI + Keycloak auth]
+    S[Staff dashboard<br/>Next.js] --> API
+    API --> A[Sales / Support / Analytics agents]
+    A --> B[Business Brain<br/>shared context]
+    A --> T[Tool executor<br/>10 validated tools]
+    B --> D[(PostgreSQL + pgvector)]
+    B --> K[(Documents in MinIO)]
+    T --> D
+    A -.-> H[Human escalation]
+```
 
-## Canonical documentation
+Details: [Architecture](docs/ARCHITECTURE.md) · [UML diagrams](docs/uml/README.md)
 
-Start with [PRD](docs/PRD.md), [architecture](docs/ARCHITECTURE.md), [rules](docs/RULES.md), [design](docs/DESIGN.md), [tasks](docs/TASKS.md), and [memory](docs/MEMORY.md). Detailed UX research is under [`docs/research/`](docs/research/). Where older working text conflicts with the safe final master or later approved phase records, follow the documented authority order.
+| Layer | Technology |
+| --- | --- |
+| Backend | Python 3.12, FastAPI, Pydantic, SQLAlchemy, Alembic |
+| Data | PostgreSQL with pgvector and row-level security, Redis, MinIO |
+| Identity | Keycloak (OIDC, PKCE) |
+| LLM | Claude or Gemini via API; Ollama for local experiments |
+| Frontend | Next.js 16, React 19, TypeScript, Tailwind CSS 4 |
+| Infrastructure | Docker Compose |
 
-## Platform entry point
+## Repository layout
 
-Read [`platform/README.md`](platform/README.md). Reproducible P2 setup uses official Python 3.12, `platform/.venv`, the project dependency pins and isolated Docker Compose resources. Local `.env` files and credentials are not committed.
+```
+platform/   Backend service, database migrations, Docker Compose, tests
+frontend/   Staff dashboard and customer web chat (Next.js)
+docs/       Product, architecture, design and UX research documents, UML diagrams
+research/   Consolidated master document (PDF)
+```
 
-## UX / design
+## Getting started
 
-The Figma cloud file is the visual source of truth: [Diplom — Multi-Agent Platform UI (Lab 3)](https://www.figma.com/design/W6XefZbbmZq1YZltBfsry7) (`W6XefZbbmZq1YZltBfsry7`), a clickable prototype with desktop, tablet and mobile layouts on mock data (see [`docs/DESIGN.md` §29](docs/DESIGN.md#29-lab-3-clickable-prototype-responsive-mock-data)). See also [`design/README.md`](design/README.md).
+Requirements: Docker, Python 3.12, Node.js 24.
 
-## Research master and provenance
+```bash
+# Backend
+cd platform
+cp .env.example .env          # replace every CHANGE_ME_* value
+docker compose -f infra/compose/compose.yaml --env-file .env up -d --wait
+curl http://127.0.0.1:8000/health/ready
 
-The canonical safe release is [`FINAL_MASTER_DEVELOPMENT_SAFE.pdf`](research/master/release/FINAL_MASTER_DEVELOPMENT_SAFE.pdf), SHA-256 `7CD44044971EFB42451CF236078E8FBA8D9FF6ABCB264B0C005938204D008D45`. An INTERNAL edition exists outside this repository and remains owner-restricted.
+# Frontend
+cd ../frontend
+npm ci
+cp .env.example .env.local
+npm run dev                   # http://127.0.0.1:3000
+```
 
-Recovery evidence distinguishes original/session-evidenced content, documentation-guided reconstruction and new tests. The larger historical sanitized handoff package is unavailable; its only current runtime dependency, the hash-pinned physical SQL, is present and verified. Raw session journals, historical secrets and private research material are not repository content.
+More: [backend guide](platform/README.md) · [frontend guide](frontend/README.md) · [WhatsApp demo](docs/WHATSAPP_DEMO.md)
 
-## Next step
+## Status
 
-Primary active track: **P5 — frontend implementation**. P5A established the technical foundation, [P5B](docs/frontend/P5B_DESIGN_SYSTEM_IMPLEMENTATION.md) implemented the reusable design system, [P5C](docs/frontend/P5C_CONVERSATIONS_ESCALATIONS_IMPLEMENTATION.md) completed Conversations + Escalations, [P5D](docs/frontend/P5D_BUSINESS_SCREENS_IMPLEMENTATION.md) completed truthful Customers, Orders, Products and Inventory, [P5E](docs/frontend/P5E_DOCUMENTS_KNOWLEDGE_IMPLEMENTATION.md) completed Documents / Knowledge, [P5F](docs/frontend/P5F_ANALYTICS_FORECASTS_IMPLEMENTATION.md) completed historical Analytics plus truthful Forecasts `MODEL_NOT_READY`, and [P5G/H](docs/frontend/P5GH_WEBCHAT_ADMIN_IMPLEMENTATION.md) completed separate Customer Web Chat plus truthful Administration screens. [P5I](docs/frontend/P5I_FULLSTACK_INTEGRATION_IMPLEMENTATION.md) completed real authentication and available safe reads. **P5J/K are READY / NOT STARTED**.
+| Area | Status |
+| --- | --- |
+| Data model, tenant isolation, business tools, identity | ✅ Done, covered by automated tests |
+| Business Brain and document retrieval (RAG) | ✅ Done, covered by automated tests |
+| Sales, Support and Analytics agents | ✅ Implemented · ⏳ acceptance with a live LLM pending |
+| Staff dashboard | ✅ All screens · live data for sign-in, products, inventory, customer and order details, sales analytics and inbox; other screens use sample data |
+| WhatsApp channel | ✅ Demo, answered by Claude |
+| Single / Static / Adaptive orchestration variants | ⬜ Not started |
+| Resuming a case after a human decision | ⬜ Designed, not built |
+| Sales forecasting model | ⬜ Not started — forecasts return "model not ready" |
+| Instagram, Telegram, web chat transport | ⬜ Not started |
 
-Deferred dependency: **M08 external provider/API acceptance**. M08 remains PARTIAL / BLOCKED / DEFERRED and unavailable live capabilities must not be presented as operational.
+Known limitation: changing an existing order (`update_order`) is blocked by policy and routed to a person.
 
-P5I completed [real FastAPI + Keycloak integration](docs/frontend/P5I_FULLSTACK_INTEGRATION_IMPLEMENTATION.md) for available safe reads. See the [final capability matrix](docs/frontend/P5I_FINAL_CAPABILITY_MATRIX.md) for remaining fixture/unavailable surfaces. Recommended next step: review and merge the P5I integration branch, then separately authorize P5J/K QA/deployment-hardening scope.
+## Documentation
 
-Parallel future experiment: **Ollama/local-model evaluation** on separate hardware/branch. It does not replace or complete formal M08 acceptance.
+| Document | Contents |
+| --- | --- |
+| [PRD](docs/PRD.md) | Product scope, users, requirements, research measures |
+| [Architecture](docs/ARCHITECTURE.md) | Layers, agents, Business Brain, tools, runtime flows |
+| [Design](docs/DESIGN.md) | UX/UI contract for every screen |
+| [Development rules](docs/RULES.md) | Engineering, security and research rules |
+| [WhatsApp demo](docs/WHATSAPP_DEMO.md) | Step-by-step demo setup |
+| [UX research](docs/research/) | Competitor analysis, information architecture, user flows, design system |
+| [UML](docs/uml/README.md) | All 14 UML 2.5 diagram types plus ER diagrams |
+| [Ollama experiment](docs/experiments/OLLAMA_LOCAL_EXPERIMENT.md) | Running the agents on a local model |
+| [Master document](research/master/release/FINAL_MASTER_DEVELOPMENT_SAFE.pdf) | Consolidated project specification |
+
+Visual design: [Figma — Multi-Agent Platform UI](https://www.figma.com/design/W6XefZbbmZq1YZltBfsry7) (clickable desktop, tablet and mobile prototype).
+
+## License
+
+[MIT](LICENSE)

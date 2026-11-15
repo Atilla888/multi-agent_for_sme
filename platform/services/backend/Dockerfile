@@ -5,9 +5,9 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1
 
 WORKDIR /workspace
-COPY requirements-m01-m07.lock ./
+COPY requirements.lock ./
 RUN python -m pip install --upgrade pip==25.2 && \
-    python -m pip install -c requirements-m01-m07.lock \
+    python -m pip install -c requirements.lock \
       alembic==1.20.0 fastapi==0.116.1 pydantic==2.11.7 \
       pydantic-settings==2.10.1 'psycopg[binary,pool]==3.2.10' \
       SQLAlchemy==2.0.54 'uvicorn[standard]==0.35.0' 'PyJWT[crypto]==2.15.0' \
@@ -36,7 +36,7 @@ USER 65532:65532
 CMD ["uvicorn", "platform_backend.api.app:app", "--host", "0.0.0.0", "--port", "8000"]
 
 FROM dependencies AS test-dependencies
-RUN python -m pip install -c requirements-m01-m07.lock \
+RUN python -m pip install -c requirements.lock \
       mypy==1.17.1 pytest==8.4.2 pytest-cov==6.2.1 ruff==0.12.11
 
 FROM test-dependencies AS test

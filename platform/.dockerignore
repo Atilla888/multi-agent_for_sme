@@ -9,8 +9,6 @@
 **/.ruff_cache/
 **/.venv/
 **/node_modules/
-experiments/raw/
-data/development/
 implementation_handoff/**
 !implementation_handoff/contracts/
 !implementation_handoff/contracts/docs/

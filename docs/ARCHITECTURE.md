@@ -2,7 +2,7 @@
 
 ## 1. Status and principles
 
-This is a **PLANNED** MVP architecture, not a description of running software. The repository audit found no source code, manifests, diagrams, configuration, or infrastructure. The technologies below are the accepted **PROJECT BASELINE / PLANNED** for the diploma, but none is **IMPLEMENTED** in this folder. Product scope lives in [PRD.md](PRD.md).
+This document describes the MVP architecture. The backend core (data, tenant isolation, business tools, identity, Business Brain, document retrieval), the specialist agents, the staff frontend and a WhatsApp demo channel are implemented. The three research orchestration variants and the forecasting model are not built yet. Current status is in the [README](../README.md#status); product scope lives in [PRD.md](PRD.md).
 
 Architectural rules: put authorization and business invariants in deterministic application services; give agents only relevant context and permitted tools; use structured sources for operational facts and RAG for unstructured knowledge; preserve context and provenance across handoffs; keep research variants comparable; prefer an implementable modular MVP.
 
@@ -27,21 +27,21 @@ flowchart LR
     R --> X
 ```
 
-The diagram names responsibilities, not deployed services or existing modules. The channel adapters normalize external events; the API boundary authenticates requests and associates them with the correct business context. The orchestrator selects permitted next steps. Agents generate task reasoning and tool proposals. The executor independently checks authorization, validated inputs, business rules, and state before performing a tool call.
+The diagram names responsibilities, not separately deployed services. The channel adapters normalize external events; the API boundary authenticates requests and associates them with the correct business context. The orchestrator selects permitted next steps. Agents generate task reasoning and tool proposals. The executor independently checks authorization, validated inputs, business rules, and state before performing a tool call.
 
 ## 3. Layers and project baseline technology
 
-| Layer | Responsibility | Planned implementation direction |
+| Layer | Responsibility | Technology |
 | --- | --- | --- |
 | Client channels | Message transport and normalization for target channels | Channel adapters plus Web Chat; external API feasibility TBD |
 | API and security | Staff authentication, request validation, permissions, API contracts | Python/FastAPI/Pydantic; Keycloak with OAuth2/OIDC/JWT and RBAC |
-| Orchestration | Route, continue, hand off, clarify, escalate, persist execution state | LangGraph; LangChain where justified; policy is a research target |
-| Agents | Bounded Sales, Support, Analytics behavior | API-based and open-source LLMs for experiments |
+| Orchestration | Route, continue, hand off, clarify, escalate, persist execution state | LangGraph (planned); the adaptive policy is a research target |
+| Agents | Bounded Sales, Support, Analytics behavior | Claude and Gemini via API; Ollama for local experiments |
 | Business Brain | Authorized structured context, documents, history, rules, tool registry | PostgreSQL, pgvector, Redis, MinIO/S3 |
 | Tools and business operations | Validated reads/writes, reports, forecast requests | Application services and explicit tool contracts |
-| Data and operations | Durable records, object storage, local runtime, telemetry | PostgreSQL, Docker, Docker Compose, GitHub Actions |
+| Data and operations | Durable records, object storage, local runtime, telemetry | PostgreSQL, Docker, Docker Compose |
 
-The accepted frontend baseline is Next.js, React, and TypeScript; the accepted ML baseline is pandas, scikit-learn, XGBoost, and PyTorch. These technology choices are planned, not implemented; use of individual ML libraries depends on the accepted workflow and evaluation. A service/API layer should mediate UI data access. No page tree or navigation is fixed; [DESIGN.md](DESIGN.md) is a research skeleton. A modular backend can keep API routers thin, orchestration and agent policy separate, and business services authoritative. This is a code organization proposal, not a microservice commitment. Kafka/NATS, ClickHouse, Kubernetes, event sourcing, and CQRS are optional/future rather than MVP baseline technologies.
+The frontend uses Next.js, React and TypeScript and reads data through a typed service/API layer; screens and navigation are specified in [DESIGN.md](DESIGN.md). The planned forecasting stack is pandas, scikit-learn and XGBoost. The backend is a modular monolith — thin API routers, separate orchestration and agent policy, authoritative business services — not a set of microservices. Kafka/NATS, ClickHouse, Kubernetes, event sourcing and CQRS are out of scope for the MVP.
 
 ## 4. Identity and authorization
 
@@ -66,9 +66,9 @@ The Business Brain is a context boundary, not a second database or a synonym for
 
 ## 7. Tool execution and data
 
-The candidate tool set is approximately 7–10 operations chosen from actual workflows; example names in [PRD.md](PRD.md) are illustrative, not API contracts. Each final tool needs a typed input/output contract, permission rule, validated resource scope, business preconditions, error result, and audit event. Writes additionally need explicit state-transition, duplicate/retry, and uncertain-outcome behavior. Agents request actions; deterministic services decide whether they may run. No database schema is committed by this document.
+The tool registry is fixed at ten operations (see [PRD.md](PRD.md#4-core-concepts)). Each tool has a typed input/output contract, permission rule, validated resource scope, business preconditions, error result and audit event (`platform_backend/tools/`). Writes additionally define state-transition, duplicate/retry and uncertain-outcome (`OUTCOME_UNKNOWN`) behavior. Agents request actions; deterministic services decide whether they may run. The physical schema is defined by the Alembic migrations in `platform/infra/migrations/`.
 
-Operational records should preserve customer, product, order, inventory, sales, and conversation relationships as needed by accepted workflows. The precise use of baseline PostgreSQL, pgvector, Redis, and MinIO/S3 in each workflow remains to be defined. Data retention, tenant isolation, backups, and migration strategy require later decisions.
+Operational records preserve customer, product, order, inventory, sales and conversation relationships. PostgreSQL row-level security isolates tenants, pgvector stores document embeddings and MinIO holds uploaded documents. Data retention, backups and a production migration strategy require later decisions.
 
 ## 8. Analytics and ML
 
@@ -122,10 +122,10 @@ All variants should share the same business data, security checks, tool implemen
 
 ## 11. Deployment and security
 
-Docker and Docker Compose are the accepted baseline for local development/demo; no deployment files exist. External channel providers, LLMs, identity provider, database, and storage must have explicit credentials and environment separation. The application must validate webhooks, scope reads/writes to the current business, prevent prompt content from changing permissions, and retain auditable records of consequential actions. Actual threat controls and operational procedures are implementation decisions.
+Docker Compose files for local development and the demo are in `platform/infra/compose/`; there is no production deployment yet. External channel providers, LLMs, identity provider, database, and storage must have explicit credentials and environment separation. The application must validate webhooks, scope reads/writes to the current business, prevent prompt content from changing permissions, and retain auditable records of consequential actions. Actual threat controls and operational procedures are implementation decisions.
 
 ## 12. Decision register and open technical questions
 
-**Current direction:** modular full-stack MVP, three specialized agents, deterministic tool/security layer, Business Brain with structured and document paths, three comparable research variants. These are project-brief decisions, not implemented components.
+**Decided:** modular full-stack MVP, three specialized agents, deterministic tool/security layer, Business Brain with structured and document paths, three comparable research variants.
 
-**Open:** exact channel launch sequence and provider access; final tool contracts and business transitions; customer verification; tenant model; persistence schema; retrieval/corpus governance; model/provider and budget; confidence policy; human approval boundaries; forecast target/data; logging retention; exact deployment topology. See [MEMORY.md](MEMORY.md#open-questions) for unresolved project decisions.
+**Open:** channel launch sequence and provider access; order-change transitions (`update_order` is blocked by policy); customer verification; retrieval/corpus governance; model/provider and budget; confidence policy; human approval boundaries; forecast target and data; logging retention; production deployment topology.

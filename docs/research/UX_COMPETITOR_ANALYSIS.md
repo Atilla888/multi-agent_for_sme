@@ -2,7 +2,7 @@
 
 ## 2.0 Research Method
 
-**Research date:** 2026-09-29. **Scope:** public official product documentation/help centers first, then official product pages. The supplied research brief calls this work “Phase 2”; in the existing [project roadmap](../TASKS.md), it fulfills the research portion of **Phase 0.5**, while roadmap Phase 2 remains Business Core. All external observations below are *documented or vendor-presented behavior*, not a hands-on test of authenticated workspaces. Public page screenshots and copy do not establish interaction quality, reliability, or entitlement on every plan. Each cited link gives the source title and URL; sources were checked on the research date. “Observed” means explicitly shown or described in an accessible source. “Interpretation” means a design inference for our planned product. **Access limit:** direct opening of `ubee.kz` timed out; its search-indexed official-domain excerpt is treated as a lead, not direct verification. No source code, live accounts, UML, Draw.io, PDFs, presentations, or lab reports exist in this repository. Sections 2.8–2.12 therefore map [PRD.md](../PRD.md) and [ARCHITECTURE.md](../ARCHITECTURE.md), not unseen UML.
+**Research date:** 2026-09-29. **Scope:** public official product documentation/help centers first, then official product pages. The supplied research brief calls this work “Phase 2”; in the project roadmap of the time, it fulfills the research portion of **Phase 0.5**, while roadmap Phase 2 remains Business Core. All external observations below are *documented or vendor-presented behavior*, not a hands-on test of authenticated workspaces. Public page screenshots and copy do not establish interaction quality, reliability, or entitlement on every plan. Each cited link gives the source title and URL; sources were checked on the research date. “Observed” means explicitly shown or described in an accessible source. “Interpretation” means a design inference for our planned product. **Access limit:** direct opening of `ubee.kz` timed out; its search-indexed official-domain excerpt is treated as a lead, not direct verification. No source code, live accounts, UML, Draw.io, PDFs, presentations, or lab reports exist in this repository. Sections 2.8–2.12 therefore map [PRD.md](../PRD.md) and [ARCHITECTURE.md](../ARCHITECTURE.md), not unseen UML.
 
 Two separate evaluation lenses are used; no combined score is calculated:
 
@@ -667,7 +667,7 @@ Platform (role-scoped)
 
 ## 2.10 Core User Flows
 
-These flows specify required feedback and safe terminal outcomes; exact tool contracts and permissions remain open in [MEMORY.md](../MEMORY.md#open-questions). A tool name below is illustrative, as in the PRD.
+These flows specify required feedback and safe terminal outcomes; exact tool contracts and permissions remained open at the time of this research. A tool name below is illustrative, as in the PRD.
 
 | Flow | User, trigger and UI entry | System actors and tools | Visible feedback and exception | Terminal state |
 | --- | --- | --- | --- | --- |

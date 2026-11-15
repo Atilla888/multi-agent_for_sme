@@ -28,9 +28,6 @@ coverage/
 # Runtime state and generated evidence
 .runtime/
 volumes/
-experiments/raw/*
-!experiments/raw/.gitkeep
-tests/evidence/*.local.*
 
 # Editors and OS
 .idea/

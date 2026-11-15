@@ -1,15 +1,15 @@
 # Development Rules
 
-These rules govern future human and AI-assisted changes. They apply to the planned system in [PRD.md](PRD.md) and [ARCHITECTURE.md](ARCHITECTURE.md). They do not imply that an application already exists.
+These rules govern human and AI-assisted changes to the system described in [PRD.md](PRD.md) and [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ## 1. Mandatory context and status
 
-Before a meaningful change, read [PRD.md](PRD.md), [ARCHITECTURE.md](ARCHITECTURE.md), this file, [TASKS.md](TASKS.md), and [MEMORY.md](MEMORY.md). Read [DESIGN.md](DESIGN.md) for UI work. Inspect actual files and tests before claiming a feature exists. Use **IMPLEMENTED**, **PROJECT BASELINE / PLANNED**, **RESEARCH TARGET**, and **OPTIONAL / FUTURE** consistently; a diagram or roadmap is never proof of implementation.
+Before a meaningful change, read [PRD.md](PRD.md), [ARCHITECTURE.md](ARCHITECTURE.md) and this file. Read [DESIGN.md](DESIGN.md) for UI work. Inspect actual files and tests before claiming a feature exists. Use **IMPLEMENTED**, **PROJECT BASELINE / PLANNED**, **RESEARCH TARGET**, and **OPTIONAL / FUTURE** consistently; a diagram or roadmap is never proof of implementation.
 
 ## 2. General engineering
 
 - Keep changes within the accepted task and MVP domain. Do not invent requirements, APIs, database schema, business rules, or competitor capabilities.
-- Resolve routine choices with existing evidence; record consequential open choices or source conflicts in `MEMORY.md` instead of silently deciding them.
+- Resolve routine choices with existing evidence; record consequential open choices or source conflicts in the owning document or the pull request instead of silently deciding them.
 - Prefer the simplest working structure. Reuse existing abstractions; avoid duplicate business logic and unrelated refactoring.
 - Add a dependency only when its purpose, maintenance cost, and fit with the candidate stack are clear. Do not introduce major architecture changes without an explicit project decision.
 - Treat user-provided examples as illustrative until accepted as contracts or benchmark cases.
@@ -19,7 +19,7 @@ Before a meaningful change, read [PRD.md](PRD.md), [ARCHITECTURE.md](ARCHITECTUR
 - Maintain explicit boundaries between channel adapters, API/security, orchestration, agents, Business Brain, tool executor, and business/data services. These are logical boundaries; they do not mandate microservices.
 - Keep business invariants in deterministic services, outside prompts and UI components. Agents may propose actions; only the authorized executor performs them.
 - For frontend implementation, use the accepted Next.js/React/TypeScript baseline, reusable accessible components, and a clear API/service layer. Include loading, empty, error, and permission states for actual workflows.
-- Do not invent final colors, typography, navigation, or design tokens. Apply [DESIGN.md](DESIGN.md) once research decisions are approved.
+- Do not invent colors, typography, navigation or design tokens; follow [DESIGN.md](DESIGN.md) and the shared components in `frontend/src`.
 
 ## 4. Backend and database
 
@@ -52,6 +52,6 @@ Before a meaningful change, read [PRD.md](PRD.md), [ARCHITECTURE.md](ARCHITECTUR
 
 ## 8. Git and documentation
 
-- Keep changes reviewable and scoped; preserve unrelated work. Document important product or architecture decisions in the owning file and summarize consequential decisions or conflicts in `MEMORY.md`.
-- Update `TASKS.md` only when status is supported by repository evidence. Mark tasks complete after their acceptance criteria are met, not when they are merely described.
-- Use requirement IDs from `PRD.md` in architecture/task references when they improve traceability. Avoid duplicating full specifications across documents.
+- Keep changes reviewable and scoped; preserve unrelated work. Document important product or architecture decisions in the owning file.
+- Update the status table in the README only when tests or working code support it, not when work is merely described.
+- Use requirement IDs from `PRD.md` in architecture references when they improve traceability. Avoid duplicating full specifications across documents.

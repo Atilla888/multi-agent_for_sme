@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "sme-adaptive-platform"
 version = "0.1.0"
-description = "Tenant-safe SME platform implementation with M08 development agent foundation"
+description = "Multi-agent platform for customer operations and business analytics in SMEs"
 requires-python = ">=3.11,<3.14"
 dependencies = [
   "alembic==1.20.0",

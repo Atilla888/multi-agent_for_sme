@@ -65,6 +65,3 @@ ChromeProfile*/
 *.out
 *.synctex.gz
 *.toc
-
-# Plugin dist is intentionally versioned for local Figma manifest import.
-# Lockfiles and the development-safe PDF are intentionally not ignored.
