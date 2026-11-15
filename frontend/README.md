@@ -19,6 +19,8 @@ npm run dev                  # http://127.0.0.1:3000
 
 The root redirects to `/overview`; staff pages require sign-in. `/chat` is the customer web chat preview.
 
+To look around without Keycloak or the backend, set `LOCAL_PREVIEW_NO_SIGN_IN=true` in `.env.local`: `npm run dev` then opens every staff page as a demo owner on sample data. Production builds ignore it.
+
 ## Commands
 
 | Command | Purpose |
