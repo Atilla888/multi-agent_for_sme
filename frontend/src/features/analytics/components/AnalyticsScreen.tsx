@@ -38,15 +38,7 @@ function AnalyticsResult({ model }: { readonly model: AnalyticsScreenModel }) {
       <Card><CardHeader><CardTitle>Last updated</CardTitle><StatusBadge state={report.freshness === "current" ? "confirmed" : "stale-conflict"} /></CardHeader><CardContent><p className="analytics-metric-value">{report.freshness === "current" ? "Up to date" : "Out of date"}</p><p>Taken {report.observedAt.slice(0, 10)} · {report.timezone}</p></CardContent></Card>
     </section>
     <section className="analytics-visual-grid">
-      <Card className="analytics-chart-card"><CardHeader><div><p className="section-kicker">By {groupLabel[report.granularity]}</p><CardTitle>{report.metricLabel}</CardTitle></div><StatusBadge state={report.completeness === "complete" ? "confirmed" : "stale-conflict"} /></CardHeader><CardContent><ActualChart series={report.series} metricLabel={report.metricLabel} /><p className="analytics-chart-note">{model.state === "incomplete" ? "The missing period breaks the line; it is not drawn as zero." : "Each point is the confirmed orders recorded in that period."}</p></CardContent></Card>
-      <Card className="analytics-provenance"><CardHeader><CardTitle>About this report</CardTitle></CardHeader><CardContent><dl className="business-facts">
-        <div><dt>Business</dt><dd><strong>North Shop</strong></dd></div>
-        <div><dt>Period</dt><dd><strong>{report.periodLabel}</strong><span>{report.timezone}</span></dd></div>
-        <div><dt>Measure</dt><dd><strong>{report.metricLabel}</strong><span>{report.unitLabel}</span></dd></div>
-        <div><dt>What is counted</dt><dd><strong>Confirmed orders only</strong><span>By the date the order was created</span></dd></div>
-        <div><dt>Up to</dt><dd><strong>{report.cutoff.slice(0, 10)}</strong><span>Each currency is shown separately</span></dd></div>
-        <div><dt>Source</dt><dd><strong>{report.sourceLabel}</strong></dd></div>
-      </dl></CardContent></Card>
+      <Card className="analytics-chart-card"><CardHeader><div><p className="section-kicker">By {groupLabel[report.granularity]}</p><CardTitle>{report.metricLabel}</CardTitle></div><StatusBadge state={report.completeness === "complete" ? "confirmed" : "stale-conflict"} /></CardHeader><CardContent><ActualChart series={report.series} metricLabel={report.metricLabel} /><p className="analytics-chart-note">{model.state === "incomplete" ? "The missing period breaks the line; it is not drawn as zero." : "Each point is the confirmed orders recorded in that period."}</p><p className="rule-note">Confirmed orders only, counted by the date the order was created. Each currency is shown separately. North Shop · {report.sourceLabel} · up to {report.cutoff.slice(0, 10)}</p></CardContent></Card>
     </section>
     <Table scrollLabel="Report figures" className="analytics-table">
       <TableCaption className="sr-only">The figures behind the chart.</TableCaption>
@@ -59,7 +51,7 @@ function AnalyticsResult({ model }: { readonly model: AnalyticsScreenModel }) {
 /** Reports: confirmed orders for a past period. Predictions live on the Forecasts screen. */
 export function AnalyticsScreen({ model }: { readonly model: AnalyticsScreenModel }) {
   return <div className="feature-page business-screen analytics-screen">
-    <PageHeader title="Reports" description="Confirmed orders for a past period, as recorded in your account." source="sample" />
+    <PageHeader title="Reports" source="sample" />
     <form className="analytics-controls" action="/analytics" method="get">
       <Select id="analytics-period" name="period" label="Period" defaultValue={model.period}><option value="last-complete-month">Last month</option><option value="previous-complete-month">The month before</option></Select>
       <Select id="analytics-metric" name="metric" label="Measure" defaultValue={model.metric}><option value="CONFIRMED_ORDER_UNITS">Units sold</option><option value="CONFIRMED_ORDER_VALUE">Order value</option></Select>
@@ -67,6 +59,6 @@ export function AnalyticsScreen({ model }: { readonly model: AnalyticsScreenMode
       <Button type="submit">Update report</Button>
     </form>
     <AnalyticsBoundary model={model} />
-    <Card className="analytics-forecast-link"><CardHeader><div><p className="section-kicker">Looking ahead?</p><CardTitle>Forecasts are a separate screen</CardTitle></div></CardHeader><CardContent><p>Reports only ever show what was recorded, so recorded figures are never mixed with predictions.</p><Link className="context-link" href="/forecasts">Open Forecasts</Link></CardContent></Card>
+    <p className="rule-note">Reports show only what was recorded, never predictions. <Link className="context-link" href="/forecasts">Open Forecasts</Link></p>
   </div>;
 }

@@ -6,6 +6,13 @@ import { chartSegments } from "./components/ActualChart";
 import { AnalyticsScreen } from "./components/AnalyticsScreen";
 
 describe("Reports", () => {
+  it("drops decorative report cards but keeps the rules", () => {
+    const markup = renderToStaticMarkup(<AnalyticsScreen model={getAnalyticsFixtureScreen({})} />);
+    expect(markup).not.toContain("About this report");
+    expect(markup).not.toContain("Looking ahead");
+    expect(markup).toContain("Confirmed orders only");
+    expect(markup).toContain('class="rule-note"');
+  });
   it("renders the report with its chart, figures and sample-data label", () => {
     const markup = renderToStaticMarkup(<AnalyticsScreen model={getAnalyticsFixtureScreen({})} />);
     expect(markup).toContain("Reports");
