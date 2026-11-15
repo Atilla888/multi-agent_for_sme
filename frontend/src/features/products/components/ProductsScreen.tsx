@@ -18,7 +18,7 @@ export function ProductsScreen({ model }: { readonly model: ProductsScreenModel 
           <TableHeader><TableRow><TableHead>Product</TableHead><TableHead>SKU</TableHead><TableHead className="col-secondary">Variant</TableHead><TableHead>Price</TableHead><TableHead>Status</TableHead><TableHead><span className="sr-only">Open</span></TableHead></TableRow></TableHeader>
           <TableBody>{model.items.map((product) => <TableRow key={product.id}>
             <TableCell data-label="Product"><Link className="row-link" href={`/products?product=${product.id}`}>{product.name}</Link></TableCell>
-            <TableCell data-label="SKU">{product.sku}</TableCell>
+            <TableCell data-label="SKU" className="cell-id">{product.sku}</TableCell>
             <TableCell data-label="Variant" className="col-secondary">{product.variant}</TableCell>
             <TableCell data-label="Price" className="cell-number">{product.price}</TableCell>
             <TableCell data-label="Status"><StatusBadge state={product.status} /></TableCell>

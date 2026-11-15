@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { avatarHue } from "@/components/ui/Avatar";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { initials } from "@/components/layout/sessionDisplay";
 import { Button, Card, CardContent, CardHeader, CardTitle, StateNotice, StatusBadge } from "@/components/ui";
@@ -48,7 +49,7 @@ export function OrderDetailScreen({ model }: { readonly model: OrderDetailModel 
                 <strong>{order.reservationLabel}</strong>
                 <p>{order.reservationEvidence}</p>
               </div>
-              <p className="muted-copy state-pair__note">Creating an order and reserving stock are two separate steps. One can succeed while the other does not.</p>
+              <p className="rule-note">Creating an order and reserving stock are two separate steps. One can succeed while the other does not.</p>
             </CardContent>
           </Card>
           <Card>
@@ -83,26 +84,22 @@ export function OrderDetailScreen({ model }: { readonly model: OrderDetailModel 
             </CardContent>
           </Card>
         </div>
-        <aside className="detail-layout__side">
-          <Card>
-            <CardHeader><CardTitle>Customer</CardTitle></CardHeader>
-            <CardContent className="customer-card">
-              <div className="customer-card__who">
-                <span className="avatar-initials avatar-initials--soft" aria-hidden="true">{initials(order.customer)}</span>
-                <span><strong>{order.customer}</strong><span>{order.phone}</span></span>
-              </div>
-              <Link className="button button--secondary" href={`/customers/${order.customerId}`}>Open customer</Link>
-              <Link className="button button--secondary" href="/conversations/c-42">Open conversation</Link>
-            </CardContent>
-          </Card>
-          <Card className="safe-step-card">
-            <CardHeader><div><p className="section-kicker">Next step</p><CardTitle>{order.nextStep}</CardTitle></div></CardHeader>
-            <CardContent className="next-steps">
-              <p>{order.nextDetail}</p>
-              {order.scenario === "e02" ? <><Button disabled>Change order</Button><p className="muted-copy">Changing orders is switched off by policy.</p></> : null}
-              {["outcome-unknown", "attention", "e02"].includes(order.scenario) ? <Link className="button button--primary" href={`/escalations?scenario=${order.scenario === "outcome-unknown" ? "outcome-unknown" : order.scenario === "e02" ? "restricted" : "waiting-human"}`}>Open review case</Link> : null}
-            </CardContent>
-          </Card>
+        <aside className="detail-layout__side details-panel" aria-label="Order details">
+          <section className="details-panel__group">
+            <h3>Customer</h3>
+            <div className="customer-card__who">
+              <span className={`avatar avatar--hue-${avatarHue(order.customer)}`} aria-hidden="true">{initials(order.customer)}</span>
+              <span><strong>{order.customer}</strong><span>{order.phone}</span></span>
+            </div>
+            <div className="details-panel__links"><Link className="context-link" href={`/customers/${order.customerId}`}>Open customer</Link><Link className="context-link" href="/conversations/c-42">Open conversation</Link></div>
+          </section>
+          <section className="details-panel__group next-steps">
+            <h3>Next step</h3>
+            <strong>{order.nextStep}</strong>
+            <p>{order.nextDetail}</p>
+            {order.scenario === "e02" ? <><Button disabled>Change order</Button><p className="rule-note">Changing orders is switched off by policy.</p></> : null}
+            {["outcome-unknown", "attention", "e02"].includes(order.scenario) ? <Link className="button button--primary" href={`/escalations?scenario=${order.scenario === "outcome-unknown" ? "outcome-unknown" : order.scenario === "e02" ? "restricted" : "waiting-human"}`}>Open review case</Link> : null}
+          </section>
         </aside>
       </div>
     </> : null}</BusinessBoundary>

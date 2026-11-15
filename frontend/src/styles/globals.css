@@ -1041,28 +1041,30 @@ thead .table__head { border-top: 0; }
 .business-facts dd span { color: var(--foreground-muted); font-size: var(--type-small-size); }
 
 .record-links { display: grid; gap: var(--space-2); padding: 0; margin: 0; list-style: none; }
-.record-links a { display: grid; gap: 2px; padding: var(--space-3) var(--space-4); background: var(--surface-muted); border-radius: var(--radius-md); transition: background-color var(--motion-fast); }
-.record-links a:hover { background: var(--surface-hover); }
+.record-links a { display: grid; gap: 2px; padding: var(--space-2) 0; border-top: 1px solid var(--border); transition: color var(--motion-fast); }
+.record-links li:first-child a { border-top: 0; }
+.record-links a:hover strong { text-decoration: underline; text-underline-offset: 3px; }
 .record-links span { color: var(--foreground-muted); font-size: var(--type-caption-size); }
-.record-links__row { display: grid; gap: 4px; padding: var(--space-2) var(--space-3); background: var(--surface-muted); border-radius: var(--radius-md); }
-.record-links__row > span { display: flex; align-items: center; gap: var(--space-2); }
 .related-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3) var(--space-4); }
-.safe-step-card { border-color: color-mix(in srgb, var(--primary) 35%, var(--border)); background: color-mix(in srgb, var(--primary-soft) 45%, var(--surface)); }
 
 /* Detail pages: title row with badges, main + side columns. */
 .order-detail__title { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); }
 .order-detail__title p { flex: 1 1 100%; color: var(--foreground-muted); font-size: var(--type-small-size); }
-.detail-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, 340px); align-items: start; gap: var(--space-4); }
+.detail-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, 300px); align-items: start; gap: var(--space-4); }
+.detail-layout__side.details-panel { gap: 0; border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; }
+.details-panel__links { display: flex; flex-wrap: wrap; gap: var(--space-3); }
 .detail-layout__main, .detail-layout__side { min-width: 0; display: grid; gap: var(--space-4); }
 .state-box { display: grid; gap: var(--space-1); padding: var(--space-3) var(--space-4); background: var(--surface-muted); border-radius: var(--radius-md); }
 .state-box__head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); color: var(--foreground-muted); font-size: var(--type-caption-size); }
 .state-box p { color: var(--foreground-muted); font-size: var(--type-small-size); }
-.state-pair__note { grid-column: 1 / -1; font-size: var(--type-caption-size); }
+/* A product rule, said once in one quiet line beside what it qualifies. */
+.rule-note { color: var(--foreground-muted); font-size: var(--type-caption-size); line-height: var(--type-caption-line); }
+.state-pair > .rule-note { grid-column: 1 / -1; }
 
 .order-items, .timeline { display: grid; gap: 0; padding: 0; margin: 0; list-style: none; }
 .order-items li, .timeline li { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) 0; }
 .order-items li + li, .timeline li + li { border-top: 1px solid var(--border); }
-.order-items__icon { width: 40px; height: 40px; display: inline-grid; flex: 0 0 auto; place-items: center; color: var(--foreground-muted); background: var(--surface-muted); border-radius: var(--radius-md); }
+.order-items__icon { width: 28px; height: 28px; display: inline-grid; flex: 0 0 auto; place-items: center; color: var(--foreground-muted); background: var(--surface-muted); border-radius: var(--radius-sm); }
 .order-items__text, .timeline__text { min-width: 0; display: grid; flex: 1 1 auto; gap: 2px; }
 .order-items__text > span, .timeline__text > span { color: var(--foreground-muted); font-size: var(--type-caption-size); line-height: var(--type-caption-line); }
 .order-items__text strong, .timeline__text strong { font-weight: 500; }
@@ -1070,8 +1072,11 @@ thead .table__head { border-top: 0; }
 .order-totals div { display: flex; justify-content: space-between; }
 .order-totals dt { color: var(--foreground-muted); }
 .order-totals dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
-.timeline__dot { width: 10px; height: 10px; flex: 0 0 auto; background: var(--primary); border-radius: var(--radius-pill); }
+.timeline__dot { width: 8px; height: 8px; flex: 0 0 auto; background: var(--border-strong); border-radius: var(--radius-pill); }
 .customer-card, .next-steps { display: grid; gap: var(--space-3); }
+.next-steps > strong { font-weight: 500; }
+.next-steps > p { color: var(--foreground-muted); }
+.customer-card__who .avatar { width: 28px; height: 28px; }
 .customer-card__who { display: flex; align-items: center; gap: var(--space-3); }
 .customer-card__who > span:last-child { display: grid; }
 .customer-card__who > span:last-child span { color: var(--foreground-muted); font-size: var(--type-caption-size); }

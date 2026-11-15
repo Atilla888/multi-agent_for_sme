@@ -5,6 +5,20 @@ import { OrderDetailScreen } from "./components/OrderDetailScreen";
 import { OrdersScreen } from "./components/OrdersScreen";
 
 describe("Orders", () => {
+  it("keeps order and reservation as two separate statuses with a mono order id", () => {
+    const markup = renderToStaticMarkup(<OrdersScreen model={getOrdersFixtureScreen({})} />);
+    const row = markup.slice(markup.indexOf(">ORD-1043<"), markup.indexOf(">ORD-1044<")); // table cells, not the export link
+    expect(row.match(/status-badge /g)).toHaveLength(2);
+    expect(row).toContain("Failed");
+    expect(markup).toMatch(/class="row-link cell-id"[^>]*>ORD-1043</);
+  });
+
+  it("puts the order's customer and next step in the details panel", () => {
+    const markup = renderToStaticMarkup(<OrderDetailScreen model={getOrderDetailFixture("ORD-1044", {})} />);
+    expect(markup).toContain("detail-layout__side details-panel");
+    expect(markup).toContain('class="rule-note"');
+  });
+
   it("shows order status and stock reservation as separate columns", () => {
     const markup = renderToStaticMarkup(<OrdersScreen model={getOrdersFixtureScreen({})} />);
     expect(markup).toContain("Order status");
