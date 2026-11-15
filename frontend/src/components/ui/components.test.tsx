@@ -239,6 +239,29 @@ describe("design tokens", () => {
   });
 });
 
+describe("primitive styles", () => {
+  const css = readFileSync(fileURLToPath(new URL("../../styles/globals.css", import.meta.url)), "utf8");
+
+  it("draws agents and tags without hue", () => {
+    expect(css).not.toMatch(/--agent-(sales|support|analytics)/);
+    expect(css).toMatch(/\.badge\s*\{[^}]*border-radius: var\(--radius-xs\)/);
+  });
+
+  it("has no shadow on cards and no nested card chrome", () => {
+    expect(css).toMatch(/\.card\s*\{[^}]*box-shadow: none/);
+    expect(css).toContain(".card .card");
+  });
+
+  it("sets ids and times in Geist Mono and numbers right-aligned", () => {
+    expect(css).toMatch(/\.cell-id\s*\{[^}]*font-family: var\(--font-mono\)/);
+    expect(css).toMatch(/\.cell-number\s*\{[^}]*text-align: right/);
+  });
+
+  it("stacks table rows on phones", () => {
+    expect(css).toMatch(/@media \(max-width: 640px\)[\s\S]*\.responsive-table/);
+  });
+});
+
 function hexToRgb(hex: string): [number, number, number] {
   const value = hex.replace("#", "");
   return [0, 2, 4].map((i) => parseInt(value.slice(i, i + 2), 16)) as [number, number, number];
