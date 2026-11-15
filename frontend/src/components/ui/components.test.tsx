@@ -187,35 +187,80 @@ describe("design tokens", () => {
   const cssPath = fileURLToPath(new URL("../../styles/globals.css", import.meta.url));
   const css = readFileSync(cssPath, "utf8");
 
-  it("defines one accent and semantic status tones for light and dark", () => {
-    expect(css).toContain("--primary: #0071e3");
-    expect(css).toContain("--background: #f5f5f7");
-    expect(css).toContain("@media (prefers-color-scheme: dark)");
-    expect(css).toContain("--status-unknown:");
-    expect(css).toContain("--status-waiting:");
-    expect(css).toContain("--chart-actual:");
-    expect(css).toContain("--chart-predicted:");
-    expect(css).toContain("--radius-md: 10px");
-    expect(css).toContain("--radius-lg: 14px");
-    expect(css).not.toContain("navy");
+  it("uses the folk/Linear palette and no banned colours", () => {
+    expect(css).toContain("--background: #ffffff");
+    expect(css).toContain("--sidebar-bg: #f7f6f3");
+    expect(css).toContain("--foreground: #1c1b19");
+    expect(css).toContain("--workspace-mark: #d9773a");
+    expect(css).not.toMatch(/#0071e3|backdrop-filter|linear-gradient|radial-gradient/i);
+    for (const hex of css.match(/#[0-9a-f]{6}\b/gi) ?? []) expect(isVioletHue(hex), hex).toBe(false);
   });
 
-  it("keeps the shell breakpoints and translucent chrome", () => {
-    expect(css).toContain("--sidebar-width: 248px");
-    expect(css).toContain("--rail-width: 72px");
-    expect(css).toContain("@media (max-width: 1100px)");
-    expect(css).toContain("@media (max-width: 640px)");
-    expect(css).toContain(".mobile-tabbar");
-    expect(css).toContain("backdrop-filter: blur(24px)");
+  it("defines dark values for the OS setting and for data-theme=dark, and lets data-theme=light win", () => {
+    expect(css).toContain(':root:not([data-theme="light"])');
+    expect(css).toMatch(/:root\[data-theme="dark"\][^}]*--background: #101113/);
   });
 
-  it("uses the system font, size-specific tracking, focus rings and accessibility preferences", () => {
-    expect(css).toContain("-apple-system, BlinkMacSystemFont");
-    expect(css).toContain("--tracking-tight: -0.02em");
-    expect(css).toContain("--type-body-line: 20px");
+  it("passes AA contrast for text tokens in both themes", () => {
+    for (const theme of ["light", "dark"] as const) {
+      const t = tokens(css, theme);
+      for (const bg of ["--background", "--sidebar-bg", "--surface-selected", "--tag-bg"]) {
+        expect(contrast(t["--foreground"], t[bg]), `${theme} --foreground on ${bg}`).toBeGreaterThanOrEqual(4.5);
+        expect(contrast(t["--foreground-muted"], t[bg]), `${theme} --foreground-muted on ${bg}`).toBeGreaterThanOrEqual(4.5);
+      }
+      for (const tone of ["success", "pending", "waiting", "danger", "unknown"]) {
+        expect(contrast(t[`--status-${tone}`], t["--background"]), `${theme} --status-${tone}`).toBeGreaterThanOrEqual(4.5);
+      }
+    }
+  });
+
+  it("uses Geist, keeps focus rings and accessibility preferences", () => {
+    expect(css).toContain("--font-sans: var(--font-geist)");
+    expect(css).toContain("--font-mono: var(--font-geist-mono)");
     expect(css).toContain("outline: 2px solid var(--focus-ring)");
     expect(css).toContain("@media (prefers-reduced-motion: reduce)");
-    expect(css).toContain("@media (prefers-reduced-transparency: reduce)");
     expect(css).toContain("@media (prefers-contrast: more)");
   });
 });
+
+function hexToRgb(hex: string): [number, number, number] {
+  const value = hex.replace("#", "");
+  return [0, 2, 4].map((i) => parseInt(value.slice(i, i + 2), 16)) as [number, number, number];
+}
+
+/** True for violet/lavender: hue 270–330 degrees with visible saturation. */
+function isVioletHue(hex: string): boolean {
+  const [r, g, b] = hexToRgb(hex).map((c) => c / 255) as [number, number, number];
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const delta = max - min;
+  if (delta === 0) return false;
+  const lightness = (max + min) / 2;
+  const saturation = delta / (1 - Math.abs(2 * lightness - 1));
+  let hue = max === r ? ((g - b) / delta) % 6 : max === g ? (b - r) / delta + 2 : (r - g) / delta + 4;
+  hue = (hue * 60 + 360) % 360;
+  return hue >= 270 && hue <= 330 && saturation > 0.15;
+}
+
+/** Hex values of the custom properties declared in the light (:root) or pinned dark token block. */
+function tokens(source: string, theme: "light" | "dark"): Record<string, string> {
+  const block = theme === "light"
+    ? source.match(/:root\s*\{([\s\S]*?)\n\}/)?.[1]
+    : source.match(/:root\[data-theme="dark"\]\s*\{([\s\S]*?)\n\s*\}/)?.[1];
+  if (!block) throw new Error(`no ${theme} token block`);
+  return Object.fromEntries([...block.matchAll(/(--[a-z0-9-]+):\s*(#[0-9a-f]{6})\b/gi)].map((m) => [m[1], m[2]]));
+}
+
+/** WCAG 2.x contrast ratio between two hex colours. */
+function contrast(foreground: string | undefined, background: string | undefined): number {
+  if (!foreground || !background) return 0;
+  const luminance = (hex: string) => {
+    const [r, g, b] = hexToRgb(hex).map((c) => {
+      const s = c / 255;
+      return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+    }) as [number, number, number];
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  };
+  const [light, dark] = [luminance(foreground), luminance(background)].sort((a, b) => b - a) as [number, number];
+  return (light + 0.05) / (dark + 0.05);
+}
