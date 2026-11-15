@@ -60,3 +60,14 @@ describe("explicit browser login initiation", () => {
     expect(cookie).toMatchObject({ path: "/", httpOnly: true, secure: false, sameSite: "lax", maxAge: 300 });
   });
 });
+
+describe("sign-in page", () => {
+  it("signs in from a single quiet column", async () => {
+    const markup = renderToStaticMarkup(await LoginPage({ searchParams: Promise.resolve({}) }));
+    expect(markup).toContain('class="button button--primary"');
+    expect(markup).not.toContain("signin__brand");
+    expect(markup).not.toContain("✓");
+    expect(markup).toContain("Retail Ops");
+    expect(markup).toContain('class="workspace-mark"');
+  });
+});
