@@ -270,6 +270,15 @@ describe("primitive styles", () => {
   it("stacks table rows on phones", () => {
     expect(css).toMatch(/@media \(max-width: 640px\)[\s\S]*\.responsive-table/);
   });
+
+  it("truncates previews and wraps long message words", () => {
+    expect(css).toMatch(/\.conversation-row__preview\s*\{[^}]*text-overflow: ellipsis/);
+    expect(css).toMatch(/\.message-bubble\s*\{[^}]*overflow-wrap: anywhere/);
+  });
+
+  it("stacks the Inbox panes on phones", () => {
+    expect(css).toMatch(/@media \(max-width: 760px\)\s*\{[^@]*\.conversation-layout\s*\{[^}]*grid-template-columns: minmax\(0, 1fr\)/);
+  });
 });
 
 function hexToRgb(hex: string): [number, number, number] {

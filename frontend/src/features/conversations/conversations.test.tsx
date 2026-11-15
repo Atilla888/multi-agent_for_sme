@@ -21,6 +21,20 @@ describe("Inbox", () => {
     expect(getConversationFixtureScreen("default", "default", "missing").selected).toBeNull();
   });
 
+  it("renders system events as one compact line", () => {
+    const markup = renderToStaticMarkup(<ConversationsScreen model={getConversationFixtureScreen("default", "default")} />);
+    expect(markup).toContain("timeline-entry--system");
+    expect(markup).toContain("Product and stock details were checked");
+  });
+
+  it("never colour-codes the agent and puts details in the side panel", () => {
+    const markup = renderToStaticMarkup(<ConversationsScreen model={getConversationFixtureScreen("default", "default")} />);
+    expect(markup).toContain("avatar--agent");
+    expect(markup).not.toMatch(/badge--(sales|support|analytics)/);
+    expect(markup).toContain("conversation-context details-panel");
+    expect(markup).toContain("details-grid");
+  });
+
   it("names every actor and never a fourth orchestrator agent", () => {
     const markup = renderToStaticMarkup(<ConversationsScreen model={getConversationFixtureScreen("default", "default")} />);
     expect(markup).toContain("Customer");
